@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Bookmark - PathCurator</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0"><i class="bi bi-bookmark-plus"></i> Add Bookmark to PathCurator</h4>
+                    </div>
+                    <div class="card-body">
+                        <div id="loading" class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Loading pathways...</p>
+                        </div>
+                        
+                        <form id="bookmarkForm" class="d-none">
+                            <div class="mb-3">
+                                <label for="url" class="form-label">URL</label>
+                                <input type="url" class="form-control" id="url" readonly>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Title</label>
+                                <input type="text" class="form-control" id="title" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" rows="3"></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="pathway" class="form-label">Select Pathway</label>
+                                <select class="form-select" id="pathway" required>
+                                    <option value="">Choose a pathway...</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3 d-none" id="stepGroup">
+                                <label for="step" class="form-label">Select Step</label>
+                                <select class="form-select" id="step" required>
+                                    <option value="">Choose a step...</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="type" class="form-label">Bookmark Type</label>
+                                <select class="form-select" id="type">
+                                    <option value="resource">Resource</option>
+                                    <option value="tool">Tool</option>
+                                    <option value="video">Video</option>
+                                    <option value="article">Article</option>
+                                    <option value="course">Course</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="contentType" class="form-label">Content Type</label>
+                                <select class="form-select" id="contentType">
+                                    <option value="read">Read</option>
+                                    <option value="watch">Watch</option>
+                                    <option value="listen">Listen</option>
+                                    <option value="participate">Participate</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="context" class="form-label">Context (Optional)</label>
+                                <textarea class="form-control" id="context" rows="2" placeholder="How does this resource fit into the learning pathway?"></textarea>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="required" checked>
+                                <label class="form-check-label" for="required">
+                                    Required resource
+                                </label>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-bookmark-plus"></i> Add Bookmark
+                                </button>
+                                <a href="dashboard.html" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                                </a>
+                            </div>
+                        </form>
+                        
+                        <div id="error" class="alert alert-danger d-none" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i> <span id="errorMessage"></span>
+                        </div>
+                        
+                        <div id="success" class="alert alert-success d-none" role="alert">
+                            <i class="bi bi-check-circle"></i> Bookmark added successfully!
+                            <div class="mt-2">
+                                <button class="btn btn-sm btn-success" onclick="window.close()">Close Window</button>
+                                <a href="dashboard.html" class="btn btn-sm btn-outline-success">Go to Dashboard</a>
+                                <button class="btn btn-sm btn-info" onclick="
+                                    try {
+                                        // Try to refresh parent window if same origin
+                                        if (window.opener && !window.opener.closed && window.opener.location.hostname === window.location.hostname) {
+                                            window.opener.location.reload(); 
+                                            window.close();
+                                            return;
+                                        }
+                                    } catch (e) {
+                                        console.log('Cross-origin restriction, using localStorage communication');
+                                    }
+                                    
+                                    // Use localStorage communication for cross-origin or fallback
+                                    localStorage.setItem('pathcurator_refresh_needed', Date.now().toString());
+                                    setTimeout(() => localStorage.removeItem('pathcurator_refresh_needed'), 5000);
+                                    alert('Bookmark saved! Please refresh your PathCurator tab to see the new bookmark.');
+                                    window.close();
+                                ">
+                                    Refresh Dashboard & Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bookmarklet Installation Card -->
+                <div class="card mt-4 shadow-sm">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="bi bi-bookmark-star"></i> Install Bookmarklet</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Drag this button to your bookmarks bar to quickly add any page to PathCurator:</p>
+                        <div class="text-center">
+                            <a href="" id="bookmarkletLink" class="btn btn-lg btn-primary">
+                                <i class="bi bi-bookmark-plus"></i> Add to PathCurator
+                            </a>
+                        </div>
+                        <p class="text-muted small mt-3">
+                            <strong>How to use:</strong> Click the bookmarklet on any webpage to add it to your PathCurator pathways.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="chrome-polyfill-sync.js"></script>
+    <script type="module" src="bookmarklet.js"></script>
+</body>
+</html>
