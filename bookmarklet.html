@@ -12,7 +12,7 @@
     <div class="container mt-4">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6">
-                <div class="card shadow">
+                <div class="card shadow" id="addBookmarkCard">
                     <div class="card-header bg-primary text-white">
                         <h4 class="mb-0"><i class="bi bi-bookmark-plus"></i> Add Bookmark to PathCurator</h4>
                     </div>
@@ -140,7 +140,7 @@
                     <div class="card-body">
                         <p>Drag this button to your bookmarks bar to quickly add any page to PathCurator:</p>
                         <div class="text-center">
-                            <a href="" id="bookmarkletLink" class="btn btn-lg btn-primary">
+                            <a href="" id="bookmarkletLink" class="btn btn-lg btn-primary" title="Add to PathCurator">
                                 <i class="bi bi-bookmark-plus"></i> Add to PathCurator
                             </a>
                         </div>
@@ -155,6 +155,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="chrome-polyfill-sync.js"></script>
+    <script type="module" src="chrome-storage-ready.js"></script>
     <script type="module" src="bookmarklet.js"></script>
 </body>
 </html>

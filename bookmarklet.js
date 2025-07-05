@@ -7,7 +7,17 @@ const bookmarkTitle = urlParams.get('title') || '';
 const bookmarkDescription = urlParams.get('description') || '';
 
 // Check if this is being used as bookmarklet handler
-const isBookmarkletHandler = bookmarkUrl || bookmarkTitle;
+// We check if there are ANY query parameters, not just if they have values
+const isBookmarkletHandler = urlParams.has('url') || urlParams.has('title') || urlParams.has('description');
+
+console.log('Bookmarklet page loaded with params:', {
+    bookmarkUrl,
+    bookmarkTitle,
+    bookmarkDescription,
+    isBookmarkletHandler,
+    hasUrlParam: urlParams.has('url'),
+    fullURL: window.location.href
+});
 
 // Generate the bookmarklet code
 function generateBookmarklet(baseUrl) {
@@ -15,32 +25,47 @@ function generateBookmarklet(baseUrl) {
     baseUrl = baseUrl.replace(/\/$/, '');
     
     // Bookmarklet code that will run on any page
-    const bookmarkletCode = `
-    (function() {
-        const url = encodeURIComponent(window.location.href);
-        const title = encodeURIComponent(document.title);
-        const description = encodeURIComponent(
-            document.querySelector('meta[name="description"]')?.content || 
-            document.querySelector('meta[property="og:description"]')?.content || 
-            ''
-        );
-        
-        // Open PathCurator bookmarklet handler in a new window
-        const width = 600;
-        const height = 700;
-        const left = (screen.width - width) / 2;
-        const top = (screen.height - height) / 2;
-        
-        window.open(
-            '${baseUrl}bookmarklet.html?url=' + url + '&title=' + title + '&description=' + description,
-            'PathCuratorBookmark',
-            'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',toolbar=no,menubar=no,scrollbars=yes'
-        );
-    })();
-    `.replace(/\s+/g, ' ').trim();
+    const bookmarkletCode = `(function() {
+        try {
+            var url = encodeURIComponent(window.location.href);
+            var title = encodeURIComponent(document.title);
+            var description = encodeURIComponent(
+                (document.querySelector('meta[name="description"]') && document.querySelector('meta[name="description"]').content) || 
+                (document.querySelector('meta[property="og:description"]') && document.querySelector('meta[property="og:description"]').content) || 
+                ''
+            );
+            
+            var bookmarkletUrl = '${baseUrl}/bookmarklet.html?url=' + url + '&title=' + title + '&description=' + description;
+            
+            var width = 600;
+            var height = 700;
+            var left = (screen.width - width) / 2;
+            var top = (screen.height - height) / 2;
+            
+            window.open(
+                bookmarkletUrl,
+                'PathCuratorBookmark',
+                'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',toolbar=no,menubar=no,scrollbars=yes'
+            );
+        } catch(e) {
+            alert('Bookmarklet error: ' + e.message);
+        }
+    })();`;
     
     return 'javascript:' + encodeURIComponent(bookmarkletCode);
 }
+
+// Always set up the bookmarklet link (whether used as handler or installation page)
+document.addEventListener('DOMContentLoaded', () => {
+    const bookmarkletLink = document.getElementById('bookmarkletLink');
+    if (bookmarkletLink) {
+        const baseUrl = window.location.origin + window.location.pathname.replace('bookmarklet.html', '');
+        const bookmarkletUrl = generateBookmarklet(baseUrl);
+        console.log('Generated bookmarklet URL:', bookmarkletUrl);
+        console.log('Base URL:', baseUrl);
+        bookmarkletLink.href = bookmarkletUrl;
+    }
+});
 
 // For standalone bookmarklet page functionality
 if (isBookmarkletHandler) {
@@ -53,12 +78,6 @@ if (isBookmarkletHandler) {
     const pathwaySelect = document.getElementById('pathway');
     const stepSelect = document.getElementById('step');
     const stepGroup = document.getElementById('stepGroup');
-
-    // Set up the bookmarklet link
-    if (document.getElementById('bookmarkletLink')) {
-        const baseUrl = window.location.origin + window.location.pathname.replace('bookmarklet.html', '');
-        document.getElementById('bookmarkletLink').href = generateBookmarklet(baseUrl);
-    }
 
     // Initialize the form
     async function init() {
@@ -338,13 +357,22 @@ if (isBookmarkletHandler) {
                 console.error('Init failed:', err);
                 showError(err.message);
             });
-        } else if (!bookmarkUrl && !bookmarkTitle) {
-            console.log('No URL params detected, showing bookmarklet installation page');
-            // This is the bookmarklet installation page
-            loading.classList.add('d-none');
         } else {
             console.error('Required elements not found:', { form, loading });
             showError('Page elements not found. Please refresh and try again.');
+        }
+    });
+}
+
+// Handle installation page display
+if (!isBookmarkletHandler) {
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('Bookmarklet installation page loaded');
+        const addBookmarkCard = document.getElementById('addBookmarkCard');
+        
+        // Hide the entire "Add Bookmark" card for installation page
+        if (addBookmarkCard) {
+            addBookmarkCard.classList.add('d-none');
         }
     });
 }
