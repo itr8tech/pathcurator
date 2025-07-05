@@ -1,6 +1,6 @@
 // Pathway Detail JS - Focused management of a single pathway
 import { updatePathwayVersion, formatVersion, formatTimestamp } from './version-utils.js';
-import { exportPathwayAsHTML, exportPathwayAsCSV, exportStepAsHTML, exportStepAsCSV } from './web-exports.js';
+import { exportPathwayAsHTML, exportPathwayAsCSV, exportPathwayAsHTMLWithRSS, generateRSS, exportStepAsHTML, exportStepAsCSV } from './web-exports.js';
 
 // Helpers
 const $ = s => document.querySelector(s);
@@ -856,6 +856,22 @@ function exportAsHtml() {
   });
 }
 
+function exportAsHtmlWithRss() {
+  const pathwayIndex = getPathwayIndex();
+  chrome.storage.local.get({ pathways: [] }, async ({ pathways }) => {
+    const pathway = pathways[pathwayIndex];
+    
+    if (pathway) {
+      const result = await exportPathwayAsHTMLWithRSS(pathway);
+      if (result.success && result.message) {
+        console.log(result.message);
+      }
+    } else {
+      alert('Pathway not found');
+    }
+  });
+}
+
 function exportAsCsv() {
   const pathwayIndex = getPathwayIndex();
   chrome.storage.local.get({ pathways: [] }, ({ pathways }) => {
@@ -1250,7 +1266,7 @@ async function publishPathwayToGitHub() {
         // Import the export utilities
         const ExportModule = await import('./export-utils.js');
         
-        // Generate all three formats
+        // Generate all formats
         
         // 1. JSON Format
         const pathwayWithSortOrder = JSON.parse(JSON.stringify(pathway));
@@ -1281,10 +1297,17 @@ async function publishPathwayToGitHub() {
         }
         const csv = await ExportModule.generateCSV(pathwayForCSV);
         
+        // 4. RSS Format - Generate RSS feed
+        const pathwayForRSS = JSON.parse(JSON.stringify(pathway));
+        if (!pathwayForRSS.createdBy) {
+          pathwayForRSS.createdBy = await ExportModule.getGitHubUsername();
+        }
+        const rss = generateRSS(pathwayForRSS);
+        
         // Create folder path based on pathway name
         const folderPath = `pathways/${pathwayName}`;
         
-        // Commit all three files in a single commit
+        // Commit all four files in a single commit
         showStatus(`Committing files to ${folderPath}...`);
         
         try {
@@ -1307,6 +1330,13 @@ async function publishPathwayToGitHub() {
             csv,
             commitMessage,
             `${folderPath}/${pathwayName}.csv`
+          );
+          
+          // RSS file
+          const rssResult = await GitHub.commitFile(
+            rss,
+            commitMessage,
+            `${folderPath}/${pathwayName}.rss`
           );
           
           // Show success message
@@ -1602,6 +1632,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#editPathway').addEventListener('click', editPathway);
   $('#addStep').addEventListener('click', addStep);
   $('#exportHtml').addEventListener('click', exportAsHtml);
+  $('#exportHtmlRss').addEventListener('click', exportAsHtmlWithRss);
   $('#exportCsv').addEventListener('click', exportAsCsv);
   $('#exportJson').addEventListener('click', exportAsJson);
   $('#commitToGithub').addEventListener('click', publishPathwayToGitHub);

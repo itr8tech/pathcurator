@@ -113,14 +113,21 @@
     <button id="auditLinks" class="btn btn-sm btn-outline-warning me-3" title="Check all links in this pathway">
       <i class="bi bi-link-45deg"></i> Check Links
     </button>
-    <div class="btn-group">
-      <button id="exportHtml" class="btn btn-outline-secondary btn-sm"><i class="bi bi-file-earmark-code"></i> HTML</button>
-      <button id="exportCsv" class="btn btn-outline-secondary btn-sm"><i class="bi bi-filetype-csv"></i> CSV</button>
-      <button id="exportJson" class="btn btn-outline-secondary btn-sm"><i class="bi bi-filetype-json"></i> JSON</button>
-      <button id="commitToGithub" class="btn btn-outline-primary btn-sm" title="Save changes to GitHub repository">
-        <i class="bi bi-github"></i> Publish to GitHub
+    <div class="btn-group dropdown">
+      <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-download"></i> Export
       </button>
+      <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="#" id="exportHtml"><i class="bi bi-file-earmark-code"></i> HTML</a></li>
+        <li><a class="dropdown-item" href="#" id="exportHtmlRss"><i class="bi bi-file-earmark-code"></i> HTML + RSS</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item" href="#" id="exportCsv"><i class="bi bi-filetype-csv"></i> CSV</a></li>
+        <li><a class="dropdown-item" href="#" id="exportJson"><i class="bi bi-filetype-json"></i> JSON</a></li>
+      </ul>
     </div>
+    <button id="commitToGithub" class="btn btn-outline-primary btn-sm ms-2" title="Save changes to GitHub repository">
+      <i class="bi bi-github"></i> Publish to GitHub
+    </button>
   </div>
 
   <div class="row mb-4">

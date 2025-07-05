@@ -1,6 +1,108 @@
 // Web-compatible export functions
 // Replaces chrome.runtime.sendMessage exports with direct client-side exports
 
+// Generate RSS feed for a pathway
+export function generateRSS(pathway) {
+    const esc = s => String(s || '').replace(/[&<>"']/g, c => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+    }[c]));
+    
+    const pubDate = new Date(pathway.lastUpdated || pathway.created || Date.now()).toUTCString();
+    const buildDate = new Date().toUTCString();
+    
+    let rss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+    <title>${esc(pathway.name)}</title>
+    <description>${esc(pathway.description || `Learning pathway: ${pathway.name}`)}</description>
+    <link>pathcurator://pathway/${esc(pathway.id || pathway.name)}</link>
+    <atom:link href="pathcurator://pathway/${esc(pathway.id || pathway.name)}/rss" rel="self" type="application/rss+xml" />
+    <lastBuildDate>${buildDate}</lastBuildDate>
+    <pubDate>${pubDate}</pubDate>
+    <generator>Path Curator Extension</generator>
+    <language>en-US</language>
+    <managingEditor>${esc(pathway.createdBy || 'Unknown')}</managingEditor>
+    <webMaster>${esc(pathway.modifiedBy || pathway.createdBy || 'Unknown')}</webMaster>`;
+    
+    // Add metadata as custom elements
+    if (pathway.contentWarning) {
+        rss += `
+    <contentWarning>${esc(pathway.contentWarning)}</contentWarning>`;
+    }
+    
+    if (pathway.acknowledgments) {
+        rss += `
+    <acknowledgments>${esc(pathway.acknowledgments)}</acknowledgments>`;
+    }
+    
+    // Collect all bookmarks with creation order and metadata
+    const allBookmarks = [];
+    if (pathway.steps && pathway.steps.length > 0) {
+        pathway.steps.forEach((step, stepIndex) => {
+            if (step.bookmarks && step.bookmarks.length > 0) {
+                step.bookmarks.forEach((bookmark, bookmarkIndex) => {
+                    allBookmarks.push({
+                        ...bookmark,
+                        stepName: step.name,
+                        stepIndex: stepIndex,
+                        bookmarkIndex: bookmarkIndex,
+                        stepObjective: step.objective,
+                        // Use bookmark creation time if available, otherwise step creation, otherwise pathway creation
+                        createdTimestamp: bookmark.created || step.created || pathway.created || Date.now()
+                    });
+                });
+            }
+        });
+    }
+    
+    // Sort bookmarks by creation time (oldest first)
+    allBookmarks.sort((a, b) => a.createdTimestamp - b.createdTimestamp);
+    
+    // Add each bookmark as an RSS item
+    allBookmarks.forEach((bookmark, index) => {
+        const bookmarkPubDate = new Date(bookmark.createdTimestamp).toUTCString();
+        const bookmarkGuid = `${pathway.id || pathway.name}-bookmark-${bookmark.stepIndex}-${bookmark.bookmarkIndex}`;
+        const pathwayUrl = `pathcurator://pathway/${esc(pathway.id || pathway.name)}`;
+        const stepUrl = `${pathwayUrl}/step/${bookmark.stepIndex}`;
+        
+        // Create description with context and step info
+        let description = '';
+        if (bookmark.description) {
+            description += `<p>${esc(bookmark.description)}</p>`;
+        }
+        if (bookmark.context) {
+            description += `<p><strong>Context:</strong> ${esc(bookmark.context)}</p>`;
+        }
+        if (bookmark.stepObjective) {
+            description += `<p><strong>Step Objective:</strong> ${esc(bookmark.stepObjective)}</p>`;
+        }
+        
+        const required = bookmark.required !== false ? 'Required' : 'Bonus';
+        const contentType = bookmark.contentType || 'Read';
+        
+        rss += `
+    <item>
+        <title>${esc(bookmark.title)}</title>
+        <description><![CDATA[${description}]]></description>
+        <link>${esc(bookmark.url)}</link>
+        <guid isPermaLink="false">${esc(bookmarkGuid)}</guid>
+        <pubDate>${bookmarkPubDate}</pubDate>
+        <category>${contentType}</category>
+        <pathwayUrl>${esc(pathwayUrl)}</pathwayUrl>
+        <stepName>${esc(bookmark.stepName)}</stepName>
+        <stepUrl>${esc(stepUrl)}</stepUrl>
+        <required>${required}</required>
+        <contentType>${contentType}</contentType>
+    </item>`;
+    });
+    
+    rss += `
+</channel>
+</rss>`;
+    
+    return rss;
+}
+
 // Standalone CSV generation to avoid background.js import chain
 function generateCSV(pathway) {
     const esc = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
@@ -772,6 +874,7 @@ body.dark-mode img:not([src*=".svg"]) {
   <title>${esc(pathway.name)}</title>
   <link href="${bs}" rel="stylesheet">
   <link href="${fa}" rel="stylesheet">
+  <link rel="alternate" type="application/rss+xml" title="${esc(pathway.name)} RSS Feed" href="${sanitize(pathway.name)}.rss">
   <style>
     ${curatorCss}
   </style>
@@ -1401,6 +1504,46 @@ export async function exportPathwayAsHTML(pathway) {
         return { success: true };
     } catch (error) {
         console.error('HTML export error:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// Export pathway as HTML with RSS feed
+export async function exportPathwayAsHTMLWithRSS(pathway) {
+    try {
+        console.log('Exporting pathway as HTML with RSS:', pathway.name);
+        
+        // Generate both HTML and RSS
+        const html = generateSophisticatedHTML(pathway);
+        const rss = generateRSS(pathway);
+        
+        // Download both files (HTML already includes RSS auto-discovery link)
+        const htmlFilename = `${sanitizeFilename(pathway.name)}.html`;
+        const rssFilename = `${sanitizeFilename(pathway.name)}.rss`;
+        downloadFile(html, htmlFilename, 'text/html');
+        
+        // Small delay to ensure downloads don't conflict
+        setTimeout(() => {
+            downloadFile(rss, rssFilename, 'application/rss+xml');
+        }, 100);
+        
+        return { success: true, message: 'Downloaded HTML and RSS files' };
+    } catch (error) {
+        console.error('HTML with RSS export error:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// Export pathway as RSS feed only
+export function exportPathwayAsRSS(pathway) {
+    try {
+        console.log('Exporting pathway as RSS:', pathway.name);
+        const rss = generateRSS(pathway);
+        const filename = `${sanitizeFilename(pathway.name)}.rss`;
+        downloadFile(rss, filename, 'application/rss+xml');
+        return { success: true };
+    } catch (error) {
+        console.error('RSS export error:', error);
         return { success: false, error: error.message };
     }
 }
