@@ -50,7 +50,7 @@ function generateCSV(pathway) {
 }
 
 // Sophisticated HTML generation for web environment (based on background.js generateHTML)
-function generateSophisticatedHTML(pathway) {
+export function generateSophisticatedHTML(pathway) {
     const esc = s => String(s || '').replace(/[&<>"']/g, c => ({
         '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
     }[c]));

@@ -18,18 +18,117 @@ async function saveAccessToken(token) {
 
 // Get GitHub configuration from storage
 async function getGitHubConfig() {
-  const data = await chrome.storage.local.get(GITHUB_CONFIG_KEY);
-  return data[GITHUB_CONFIG_KEY] || { 
-    username: null,
-    repository: null,
-    branch: 'main',
-    filepath: 'curator-pathways.json'
-  };
+  try {
+    // Check if chrome storage is available and working
+    if (!chrome || !chrome.storage || !chrome.storage.local) {
+      console.warn('Chrome storage API not available, falling back to direct storage manager');
+      
+      // Try to use storage manager directly
+      try {
+        const { storageManager } = await import('./storage-manager.js');
+        const config = await storageManager.getGitHubConfig();
+        return config || { 
+          username: null,
+          repository: null,
+          branch: 'main',
+          filepath: 'curator-pathways.json'
+        };
+      } catch (fallbackError) {
+        console.error('Fallback storage manager failed:', fallbackError);
+        return { 
+          username: null,
+          repository: null,
+          branch: 'main',
+          filepath: 'curator-pathways.json'
+        };
+      }
+    }
+    
+    // Use a proper Promise wrapper for chrome.storage.local.get
+    const data = await new Promise((resolve, reject) => {
+      try {
+        chrome.storage.local.get(GITHUB_CONFIG_KEY, (result) => {
+          if (chrome.runtime && chrome.runtime.lastError) {
+            reject(new Error(chrome.runtime.lastError.message));
+          } else {
+            resolve(result);
+          }
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+    console.log('Raw storage data for GitHub config:', data);
+    
+    // Handle cases where data is undefined or null
+    if (!data || typeof data !== 'object') {
+      console.warn('Chrome storage returned invalid data:', data);
+      return { 
+        username: null,
+        repository: null,
+        branch: 'main',
+        filepath: 'curator-pathways.json'
+      };
+    }
+    
+    return data[GITHUB_CONFIG_KEY] || { 
+      username: null,
+      repository: null,
+      branch: 'main',
+      filepath: 'curator-pathways.json'
+    };
+  } catch (error) {
+    console.error('Error getting GitHub config:', error);
+    return { 
+      username: null,
+      repository: null,
+      branch: 'main',
+      filepath: 'curator-pathways.json'
+    };
+  }
 }
 
 // Save GitHub configuration to storage
 async function saveGitHubConfig(config) {
-  return chrome.storage.local.set({ [GITHUB_CONFIG_KEY]: config });
+  try {
+    console.log('Saving GitHub config:', config);
+    
+    // Check if chrome storage is available and working
+    if (!chrome || !chrome.storage || !chrome.storage.local) {
+      console.warn('Chrome storage API not available, falling back to direct storage manager');
+      
+      // Try to use storage manager directly
+      try {
+        const { storageManager } = await import('./storage-manager.js');
+        const result = await storageManager.setGitHubConfig(config);
+        console.log('GitHub config save result (storage manager):', result);
+        return result;
+      } catch (fallbackError) {
+        console.error('Fallback storage manager save failed:', fallbackError);
+        throw fallbackError;
+      }
+    }
+    
+    // Use a proper Promise wrapper for chrome.storage.local.set
+    const result = await new Promise((resolve, reject) => {
+      try {
+        chrome.storage.local.set({ [GITHUB_CONFIG_KEY]: config }, () => {
+          if (chrome.runtime && chrome.runtime.lastError) {
+            reject(new Error(chrome.runtime.lastError.message));
+          } else {
+            resolve(true);
+          }
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+    console.log('GitHub config save result:', result);
+    return result;
+  } catch (error) {
+    console.error('Error saving GitHub config:', error);
+    throw error;
+  }
 }
 
 // Check if user is authenticated
@@ -109,9 +208,20 @@ async function authenticateWithToken(token) {
     
     // Get and save the user info
     const userInfo = await response.json();
+    console.log('GitHub user info received:', userInfo);
+    
     const config = await getGitHubConfig();
+    console.log('Current GitHub config before update:', config);
+    
     config.username = userInfo.login;
+    console.log('Updated GitHub config with username:', config);
+    
     await saveGitHubConfig(config);
+    console.log('GitHub config saved successfully');
+    
+    // Verify the save worked
+    const savedConfig = await getGitHubConfig();
+    console.log('Verified saved GitHub config:', savedConfig);
     
     return userInfo;
   } catch (error) {

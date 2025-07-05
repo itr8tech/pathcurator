@@ -144,6 +144,12 @@ async function loadBranches(repository) {
 async function loadCurrentConfig() {
   try {
     const config = await GitHub.getGitHubConfig();
+    console.log('Loaded GitHub config:', config);
+    
+    // Show debug info if username is missing
+    if (!config.username) {
+      console.warn('GitHub username is missing from config. This may indicate an incomplete authentication.');
+    }
     
     // Set repository if available
     if (config.repository) {
@@ -397,6 +403,36 @@ function toggleTokenVisibilityHandler() {
   toggleTokenVisibility.innerHTML = `<i class="bi bi-eye${isPassword ? '-slash' : ''}"></i>`;
 }
 
+// Debug function to check current configuration
+async function handleDebug() {
+  try {
+    const config = await GitHub.getGitHubConfig();
+    const isAuth = await GitHub.isAuthenticated();
+    
+    let userInfo = null;
+    if (isAuth) {
+      try {
+        userInfo = await GitHub.getUserInfo();
+      } catch (e) {
+        userInfo = { error: e.message };
+      }
+    }
+    
+    const debugInfo = {
+      isAuthenticated: isAuth,
+      config: config,
+      userInfo: userInfo,
+      timestamp: new Date().toISOString()
+    };
+    
+    document.getElementById('debug-config').textContent = JSON.stringify(debugInfo, null, 2);
+    document.getElementById('debug-output').classList.remove('d-none');
+  } catch (error) {
+    document.getElementById('debug-config').textContent = 'Error: ' + error.message;
+    document.getElementById('debug-output').classList.remove('d-none');
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // Initialize
   init();
@@ -413,4 +449,28 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Token visibility toggle
   toggleTokenVisibility.addEventListener('click', toggleTokenVisibilityHandler);
+  
+  // Debug button
+  const debugBtn = document.getElementById('btn-debug');
+  if (debugBtn) {
+    debugBtn.addEventListener('click', handleDebug);
+  }
+  
+  // Show debug section if there are authentication issues
+  // We'll check this after a short delay to allow initialization
+  setTimeout(async () => {
+    try {
+      const isAuth = await GitHub.isAuthenticated();
+      if (isAuth) {
+        const config = await GitHub.getGitHubConfig();
+        if (!config.username) {
+          // Username is missing, show debug section
+          document.getElementById('debug-section').classList.remove('d-none');
+        }
+      }
+    } catch (error) {
+      // Show debug section if there are errors
+      document.getElementById('debug-section').classList.remove('d-none');
+    }
+  }, 1000);
 });

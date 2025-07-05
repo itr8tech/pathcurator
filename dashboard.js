@@ -1197,8 +1197,14 @@ async function publishPathwayToGitHub(idx) {
         // Show status
         showStatus(`Publishing "${pathway.name}" to GitHub...`);
         
-        // Import the export utilities
+        // Import the export utilities and version utilities
+        console.log('Importing export utilities...');
         const ExportModule = await import('./export-utils.js');
+        console.log('Export utilities imported:', Object.keys(ExportModule));
+        
+        console.log('Importing version utilities...');
+        const VersionModule = await import('./version-utils.js');
+        console.log('Version utilities imported:', Object.keys(VersionModule));
         
         // Generate all three formats
         
@@ -1217,20 +1223,57 @@ async function publishPathwayToGitHub(idx) {
         
         // 2. HTML Format - Use the export utility function
         // Ensure pathway has updated version info and createdBy before generating HTML
-        const pathwayForHTML = await updatePathwayVersion(JSON.parse(JSON.stringify(pathway)));
+        let pathwayForHTML;
+        try {
+          pathwayForHTML = await VersionModule.updatePathwayVersion(JSON.parse(JSON.stringify(pathway)));
+        } catch (versionError) {
+          console.error('Error updating pathway version:', versionError);
+          // Fallback: use pathway as-is with timestamp
+          pathwayForHTML = JSON.parse(JSON.stringify(pathway));
+          pathwayForHTML.lastUpdated = Date.now();
+        }
+        
         // Add creator info if not already present
         if (!pathwayForHTML.createdBy) {
-          pathwayForHTML.createdBy = await ExportModule.getGitHubUsername();
+          try {
+            pathwayForHTML.createdBy = await ExportModule.getGitHubUsername();
+          } catch (usernameError) {
+            console.error('Error getting GitHub username:', usernameError);
+            pathwayForHTML.createdBy = 'Unknown';
+          }
         }
-        const html = await ExportModule.generateHTML(pathwayForHTML);
+        
+        let html;
+        try {
+          console.log('About to generate HTML for pathway:', pathwayForHTML.name);
+          console.log('ExportModule.generateHTML function:', typeof ExportModule.generateHTML);
+          html = await ExportModule.generateHTML(pathwayForHTML);
+          console.log('HTML generation completed, length:', html?.length);
+        } catch (htmlError) {
+          console.error('Error generating HTML:', htmlError);
+          console.error('HTML error stack:', htmlError.stack);
+          throw new Error(`Failed to generate HTML: ${htmlError.message}`);
+        }
 
         // 3. CSV Format - Use the export utility function
         // Make sure pathway has createdBy field
         const pathwayForCSV = JSON.parse(JSON.stringify(pathway));
         if (!pathwayForCSV.createdBy) {
-          pathwayForCSV.createdBy = await ExportModule.getGitHubUsername();
+          try {
+            pathwayForCSV.createdBy = await ExportModule.getGitHubUsername();
+          } catch (usernameError) {
+            console.error('Error getting GitHub username for CSV:', usernameError);
+            pathwayForCSV.createdBy = 'Unknown';
+          }
         }
-        const csv = await ExportModule.generateCSV(pathwayForCSV);
+        
+        let csv;
+        try {
+          csv = await ExportModule.generateCSV(pathwayForCSV);
+        } catch (csvError) {
+          console.error('Error generating CSV:', csvError);
+          throw new Error(`Failed to generate CSV: ${csvError.message}`);
+        }
         
         // Create folder path based on pathway name
         const folderPath = `pathways/${pathwayName}`;

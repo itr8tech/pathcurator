@@ -29,10 +29,15 @@ export async function getGitHubUsername() {
       return 'Unknown';
     }
 
+    // Debug logging to help troubleshoot
+    console.log('GitHub config data from storage:', data);
+
     // Safely access nested properties
     const username = data.github_config && typeof data.github_config === 'object'
       ? data.github_config.username || 'Unknown'
       : 'Unknown';
+
+    console.log('Extracted GitHub username:', username);
 
     // Ensure username is a string to prevent replace() errors
     return typeof username === 'string' ? username : 'Unknown';
@@ -121,10 +126,10 @@ export async function generateStepCSV(step, pathway = null) {
 // End CSV helpers
 // -----------------------------------------------------------------------------
 // -------------------------------------------------------------------------
-// Use the single generateHTML from background.js to avoid duplicates
+// Use the sophisticated HTML generator from web-exports.js for web compatibility
 // -------------------------------------------------------------------------
-import { generateHTML as bgGenerateHTML } from './background.js';
-export const generateHTML = bgGenerateHTML;
+import { generateSophisticatedHTML } from './web-exports.js';
+export const generateHTML = generateSophisticatedHTML;
 
 // For JSON export, include creator info
 export async function preparePathwayForExport(pathway) {

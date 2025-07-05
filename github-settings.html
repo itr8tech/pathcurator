@@ -50,6 +50,7 @@
         <div class="d-flex align-items-center">
           <div>
             <p class="mb-0">Connected to GitHub as: <strong id="github-username">username</strong></p>
+            <small class="text-muted">This username will be used as the creator/modifier for your pathways</small>
           </div>
           <button id="btn-logout" class="btn btn-outline-danger ms-auto">
             <i class="bi bi-box-arrow-right"></i> Disconnect
@@ -93,6 +94,23 @@
     </div>
   </div>
 
+  <!-- Debug Section (only visible if authentication issues occur) -->
+  <div id="debug-section" class="card mb-4 d-none">
+    <div class="card-body">
+      <h5 class="card-title text-warning">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>Troubleshooting
+      </h5>
+      <p>If you're experiencing issues with GitHub integration, click the button below to check your current configuration:</p>
+      <button id="btn-debug" class="btn btn-outline-secondary">Check Configuration</button>
+      <div id="debug-output" class="mt-3 d-none">
+        <div class="alert alert-light">
+          <h6>Current GitHub Configuration:</h6>
+          <pre id="debug-config" class="mb-0"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Help Card -->
   <div class="card">
     <div class="card-body">
@@ -109,6 +127,9 @@
       <div class="alert alert-success mt-3">
         <i class="bi bi-arrow-down-circle-fill me-2"></i> <strong>New: Import from GitHub</strong><br>
         If the specified JSON file already exists in your repository, you'll be offered the option to import it into your Curator extension. This allows you to easily sync pathways between different devices.
+      </div>
+      <div class="alert alert-warning mt-3">
+        <i class="bi bi-info-circle-fill me-2"></i> <strong>Note:</strong> Your GitHub username is automatically retrieved from your personal access token. You don't need to enter it manually - the system will fetch it from GitHub when you connect.
       </div>
     </div>
   </div>
