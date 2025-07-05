@@ -5,6 +5,14 @@
  * It should be loaded after the main application script.
  */
 
+// HTML escape function to prevent XSS
+const escapeHtml = (text) => {
+  if (text == null) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+};
+
 // Add skip link to all pages
 document.addEventListener('DOMContentLoaded', function() {
   // Only add if not already present
@@ -164,10 +172,11 @@ window.showAccessibleNotification = function(message, type = 'info') {
   notification.setAttribute('aria-live', 'assertive');
   notification.setAttribute('aria-atomic', 'true');
   
+  // SECURITY: Escape message content to prevent XSS
   notification.innerHTML = `
     <div class="d-flex">
       <div class="toast-body">
-        ${message}
+        ${escapeHtml(message)}
       </div>
       <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>

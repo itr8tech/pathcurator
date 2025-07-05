@@ -9,7 +9,7 @@ const esc = s=>{
   return str.replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#039;'}[c]));
 };
 
-// simple markdown with better error handling
+// safe markdown with HTML escaping first to prevent XSS
 function md(t=''){
   // Make sure t is a string
   if (t == null || typeof t !== 'string') t = '';
@@ -17,9 +17,12 @@ function md(t=''){
   // Early return for empty strings
   if(!t.trim()) return '';
 
-  // Process markdown
-  let h = t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-           .replace(/\*(.+?)\*/g,'<em>$1</em>');
+  // SECURITY: Escape HTML first to prevent XSS
+  let h = esc(t);
+  
+  // Process markdown on the escaped text
+  h = h.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+       .replace(/\*(.+?)\*/g,'<em>$1</em>');
 
   // Split and format paragraphs
   return h.split(/\n+/).map(l =>
@@ -193,11 +196,11 @@ function pathHTML(p,idx){
   const bookmarkCount = p.steps?.reduce((total, step) =>
     total + (step.bookmarks?.length || 0), 0) || 0;
 
-  // Format version info for display
-  const versionDisplay = p.version ? formatVersion(p.version) : 'No version';
-  const updatedDisplay = p.lastUpdated ? `Updated: ${formatTimestamp(p.lastUpdated)}` : '';
-  const creatorDisplay = p.createdBy ? `Created by: ${p.createdBy}` : '';
-  const modifierDisplay = p.modifiedBy && p.modifiedBy !== p.createdBy ? `Modified by: ${p.modifiedBy}` : '';
+  // Format version info for display - escape user-controlled content
+  const versionDisplay = p.version ? esc(formatVersion(p.version)) : 'No version';
+  const updatedDisplay = p.lastUpdated ? `Updated: ${esc(formatTimestamp(p.lastUpdated))}` : '';
+  const creatorDisplay = p.createdBy ? `Created by: ${esc(p.createdBy)}` : '';
+  const modifierDisplay = p.modifiedBy && p.modifiedBy !== p.createdBy ? `Modified by: ${esc(p.modifiedBy)}` : '';
 
   return `<li data-path="${idx}" class="mb-2">
     <div class="card">
@@ -1179,7 +1182,7 @@ async function publishPathwayToGitHub(idx) {
     
     // Update status message
     statusEl.className = `position-fixed top-0 start-0 end-0 ${bgColor} text-white p-3 text-center`;
-    statusEl.innerHTML = message;
+    statusEl.textContent = message; // SECURITY: Use textContent to prevent XSS
     
     // For success or error messages, set a timeout to remove the status
     if (type === 'success' || type === 'error') {
@@ -1418,7 +1421,7 @@ async function commitToGitHub() {
 
     // Update status message
     statusEl.className = `position-fixed top-0 start-0 end-0 ${bgColor} text-white p-3 text-center`;
-    statusEl.innerHTML = message;
+    statusEl.textContent = message; // SECURITY: Use textContent to prevent XSS
 
     // For success or error messages, set a timeout to remove the status
     if (type === 'success' || type === 'error') {
@@ -1684,7 +1687,7 @@ async function importFromGitHub() {
     
     // Update status message
     statusEl.className = `position-fixed top-0 start-0 end-0 ${bgColor} text-white p-3 text-center`;
-    statusEl.innerHTML = message;
+    statusEl.textContent = message; // SECURITY: Use textContent to prevent XSS
     
     // For success or error messages, set a timeout to remove the status
     if (type === 'success' || type === 'error' || type === 'warning') {

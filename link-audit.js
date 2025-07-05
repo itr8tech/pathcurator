@@ -284,12 +284,13 @@ function updateAuditTable() {
       tr.classList.add('table-info');
     }
     
+    // SECURITY: Escape user-controlled content to prevent XSS
     tr.innerHTML = `
-      <td>${item.bookmark.title}</td>
+      <td>${esc(item.bookmark.title)}</td>
       <td>
-        <a href="${item.bookmark.url}" target="_blank" class="text-truncate d-inline-block" style="max-width: 250px;">${item.bookmark.url}</a>
+        <a href="${esc(item.bookmark.url)}" target="_blank" class="text-truncate d-inline-block" style="max-width: 250px;">${esc(item.bookmark.url)}</a>
       </td>
-      <td>${item.pathway.name}</td>
+      <td>${esc(item.pathway.name)}</td>
       <td>${getStatusBadge(item.bookmark)}</td>
       <td>${formatRelativeTime(item.bookmark.lastChecked)}</td>
       <td>
@@ -1160,7 +1161,7 @@ async function addAuthDomain(domain, username, password, displayName = '') {
     // Show error message
     const errorAlert = document.createElement('div');
     errorAlert.className = 'alert alert-danger mt-3';
-    errorAlert.innerHTML = `<i class="bi bi-exclamation-triangle me-2"></i> Error saving domain: ${error.message}`;
+    errorAlert.innerHTML = `<i class="bi bi-exclamation-triangle me-2"></i> Error saving domain: ${esc(error.message)}`;
     
     // Insert before the form
     $('#addAuthDomainForm').before(errorAlert);

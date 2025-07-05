@@ -77,11 +77,19 @@ function loadSteps(selectedStepIndex) {
     if (!pathway) return;
     
     const stepSelect = $('#stepSelect');
-    stepSelect.innerHTML = pathway.steps.map((step, index) => 
-      `<option value="${index}" ${index === parseInt(selectedStepIndex) ? 'selected' : ''}>
-        ${step.name}
-      </option>`
-    ).join('');
+    // Clear existing options safely
+    stepSelect.innerHTML = '';
+    
+    // Add options using DOM methods to prevent XSS
+    pathway.steps.forEach((step, index) => {
+      const option = document.createElement('option');
+      option.value = index;
+      option.textContent = step.name; // Safe - uses textContent instead of innerHTML
+      if (index === parseInt(selectedStepIndex)) {
+        option.selected = true;
+      }
+      stepSelect.appendChild(option);
+    });
   });
 }
 
