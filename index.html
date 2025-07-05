@@ -11,81 +11,193 @@
     <link rel="stylesheet" href="dashboard-styles.css">
 </head>
 <body>
-    <div id="app">
-        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="#/">
+    <div class="container-fluid">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+            <div class="container">
+                <a class="navbar-brand" href="/">
                     <i class="bi bi-signpost-2"></i> PathCurator
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="#/" data-route="dashboard">Dashboard</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#/link-audit" data-route="link-audit">Link Audit</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#/github-settings" data-route="github-settings">GitHub Settings</a>
-                        </li>
-                    </ul>
-                    <button class="btn btn-outline-light" id="addBookmarkBtn">
-                        <i class="bi bi-bookmark-plus"></i> Add Bookmark
-                    </button>
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-link btn btn-outline-light" href="dashboard.html">
+                        Get Started <i class="bi bi-arrow-right"></i>
+                    </a>
                 </div>
             </div>
         </nav>
-        
-        <main id="main-content" class="container-fluid mt-3">
-            <!-- Content will be dynamically loaded here -->
-        </main>
-        
-        <!-- Add Bookmark Modal -->
-        <div class="modal fade" id="addBookmarkModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Add Bookmark</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+        <!-- Hero Section -->
+        <section class="hero-section bg-primary text-white" style="padding-top: 80px; min-height: 60vh;">
+            <div class="container py-5">
+                <div class="row align-items-center">
+                    <div class="col-lg-6">
+                        <h1 class="display-4 fw-bold mb-4">PathCurator</h1>
+                        <p class="lead mb-4">Create and manage structured learning pathways for guided educational experiences. Organize resources, track progress, and share your curated learning journeys.</p>
+                        <div class="d-flex gap-3">
+                            <a href="dashboard.html" class="btn btn-light btn-lg">
+                                <i class="bi bi-play-circle"></i> Get Started
+                            </a>
+                            <a href="#features" class="btn btn-outline-light btn-lg">
+                                Learn More
+                            </a>
+                        </div>
                     </div>
-                    <div class="modal-body">
-                        <form id="bookmarkForm">
-                            <div class="mb-3">
-                                <label for="bookmarkUrl" class="form-label">URL</label>
-                                <input type="url" class="form-control" id="bookmarkUrl" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="bookmarkTitle" class="form-label">Title</label>
-                                <input type="text" class="form-control" id="bookmarkTitle" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="bookmarkPathway" class="form-label">Pathway</label>
-                                <select class="form-select" id="bookmarkPathway" required>
-                                    <option value="">Select a pathway...</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="bookmarkStep" class="form-label">Step</label>
-                                <select class="form-select" id="bookmarkStep" required>
-                                    <option value="">Select a step...</option>
-                                </select>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" id="saveBookmarkBtn">Save Bookmark</button>
+                    <div class="col-lg-6 text-center">
+                        <i class="bi bi-diagram-3 display-1 opacity-75"></i>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="py-5 bg-light">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 text-center mb-5">
+                        <h2 class="display-5 fw-bold">Features</h2>
+                        <p class="lead">Everything you need to create effective learning pathways</p>
+                    </div>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="bi bi-diagram-2 text-primary display-4 mb-3"></i>
+                                <h5 class="card-title">Pathway Management</h5>
+                                <p class="card-text">Create, edit, and organize learning pathways with multiple steps and detailed progression.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="bi bi-bookmark text-primary display-4 mb-3"></i>
+                                <h5 class="card-title">Bookmark Integration</h5>
+                                <p class="card-text">Save and categorize important resources within your pathways for easy access.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="bi bi-download text-primary display-4 mb-3"></i>
+                                <h5 class="card-title">Export Options</h5>
+                                <p class="card-text">Export pathways in various formats including HTML, CSV, and JSON for sharing.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="bi bi-eye text-primary display-4 mb-3"></i>
+                                <h5 class="card-title">Link Tracking</h5>
+                                <p class="card-text">Track which links you've already visited and launched in your learning journey.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="bi bi-shield-check text-primary display-4 mb-3"></i>
+                                <h5 class="card-title">Link Auditing</h5>
+                                <p class="card-text">Verify the status of links in your pathways to ensure all resources are accessible.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="bi bi-github text-primary display-4 mb-3"></i>
+                                <h5 class="card-title">GitHub Integration</h5>
+                                <p class="card-text">Save and share pathways via GitHub repositories for collaboration and backup.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Getting Started Section -->
+        <section class="py-5">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 text-center mb-5">
+                        <h2 class="display-5 fw-bold">Getting Started</h2>
+                        <p class="lead">No installation required - just visit and start creating!</p>
+                    </div>
+                </div>
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="text-center bg-light p-5 rounded">
+                            <h4 class="mb-4">Ready to create your first learning pathway?</h4>
+                            <p class="mb-4">PathCurator runs entirely in your browser. Your data is stored locally and can be synced with GitHub for backup and sharing.</p>
+                            <a href="dashboard.html" class="btn btn-primary btn-lg">
+                                <i class="bi bi-rocket"></i> Launch PathCurator
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Usage Section -->
+        <section class="py-5 bg-light">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 text-center mb-5">
+                        <h2 class="display-5 fw-bold">How It Works</h2>
+                    </div>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <strong>1</strong>
+                            </div>
+                            <h5>Create a Pathway</h5>
+                            <p>Click "New Pathway" to start creating your learning path</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <strong>2</strong>
+                            </div>
+                            <h5>Add Steps</h5>
+                            <p>Use the "Add Step" button to create new steps in your pathway</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <strong>3</strong>
+                            </div>
+                            <h5>Add Bookmarks</h5>
+                            <p>Within each step, add bookmarks to relevant resources</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <strong>4</strong>
+                            </div>
+                            <h5>Export & Share</h5>
+                            <p>Export as HTML, CSV, or JSON files for sharing</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-dark text-white py-4 mt-5">
+            <div class="container text-center">
+                <p class="mb-0">&copy; 2024 PathCurator. Built with modern web technologies.</p>
+                <p class="small mt-2">HTML, CSS, JavaScript • Bootstrap 5 • Font Awesome</p>
+            </div>
+        </footer>
     </div>
-    
-    <script src="bootstrap.bundle.min.js"></script>
-    <script src="chrome-polyfill-sync.js"></script>
-    <script type="module" src="app.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
