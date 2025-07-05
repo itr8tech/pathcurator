@@ -118,6 +118,7 @@ function getStatusBadge(bookmark) {
 
 // Populate the audit results table
 function updateAuditTable() {
+  console.log('Updating audit table...');
   const tbody = $('#auditResults');
   tbody.innerHTML = '';
   
@@ -139,6 +140,11 @@ function updateAuditTable() {
       
       step.bookmarks.forEach((bookmark, bookmarkIndex) => {
         totalCount++;
+        
+        // Debug each bookmark
+        if (bookmark.lastChecked) {
+          console.log(`Processing checked bookmark: ${bookmark.title} - available: ${bookmark.available}, status: ${bookmark.status}`);
+        }
         
         // Count by status
         if (!bookmark.lastChecked) {
@@ -327,7 +333,74 @@ function updateAuditTable() {
 // Load pathways and populate filters
 function loadPathways() {
   chrome.storage.local.get({pathways: [], exemptDomains: []}, ({pathways, exemptDomains}) => {
+    console.log('Loading pathways for audit table...');
+    console.log('Found', pathways.length, 'pathways');
+    
+    // Debug: check if pathways have audit data
+    let totalBookmarks = 0;
+    let checkedBookmarks = 0;
+    pathways.forEach(pathway => {
+      if (pathway.steps) {
+        pathway.steps.forEach(step => {
+          if (step.bookmarks) {
+            totalBookmarks += step.bookmarks.length;
+            step.bookmarks.forEach(bookmark => {
+              if (bookmark.lastChecked) {
+                checkedBookmarks++;
+                console.log('Found checked bookmark:', bookmark.title, '- Status:', bookmark.status, '- Last checked:', new Date(bookmark.lastChecked).toLocaleString());
+              }
+            });
+          }
+        });
+      }
+    });
+    console.log(`Found ${checkedBookmarks} previously checked bookmarks out of ${totalBookmarks} total`);
+    
+    // Store original data for comparison
+    window.originalPathwaysData = JSON.parse(JSON.stringify(pathways));
+    
+    // Add a detailed audit data check
+    console.log('=== DETAILED AUDIT DATA CHECK ===');
+    pathways.forEach((pathway, pIdx) => {
+      if (pathway.steps) {
+        pathway.steps.forEach((step, sIdx) => {
+          if (step.bookmarks) {
+            step.bookmarks.forEach((bookmark, bIdx) => {
+              if (bookmark.lastChecked) {
+                console.log(`AUDIT DATA FOUND: P${pIdx}S${sIdx}B${bIdx} - ${bookmark.title}`, {
+                  lastChecked: bookmark.lastChecked,
+                  available: bookmark.available,
+                  status: bookmark.status,
+                  isValid: bookmark.isValid,
+                  checkError: bookmark.checkError
+                });
+              }
+            });
+          }
+        });
+      }
+    });
+    console.log('=== END DETAILED AUDIT DATA CHECK ===');
+    
     allPathways = pathways;
+    
+    // Log what we're setting allPathways to
+    console.log('Setting allPathways to:', allPathways.length, 'pathways');
+    if (allPathways.length > 0 && allPathways[0].steps) {
+      console.log('First pathway has', allPathways[0].steps.length, 'steps');
+      if (allPathways[0].steps[0] && allPathways[0].steps[0].bookmarks) {
+        console.log('First step has', allPathways[0].steps[0].bookmarks.length, 'bookmarks');
+        const firstBookmark = allPathways[0].steps[0].bookmarks[0];
+        if (firstBookmark) {
+          console.log('First bookmark audit data:', {
+            title: firstBookmark.title,
+            lastChecked: firstBookmark.lastChecked,
+            available: firstBookmark.available,
+            status: firstBookmark.status
+          });
+        }
+      }
+    }
     
     // Pre-process bookmarks to ensure exempt domains are properly marked
     pathways.forEach(pathway => {
@@ -451,7 +524,19 @@ function showLinkDetails(pathwayIndex, stepIndex, bookmarkIndex) {
   $('#editLinkBtn').href = `edit-bookmark.html?pathwayId=${pathwayIndex}&stepIndex=${stepIndex}&bookmarkIndex=${bookmarkIndex}`;
   
   // Show the modal
-  new bootstrap.Modal($('#linkDetailModal')).show();
+  try {
+    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+      new bootstrap.Modal($('#linkDetailModal')).show();
+    } else {
+      console.error('Bootstrap not available, falling back to element show');
+      const modal = $('#linkDetailModal');
+      modal.style.display = 'block';
+      modal.classList.add('show');
+    }
+  } catch (error) {
+    console.error('Error showing modal:', error);
+    alert('Error showing link details. Please check the console for details.');
+  }
 }
 
 // Check a single link
@@ -546,6 +631,165 @@ function viewInArchiveOrg() {
   window.open(archiveUrl, '_blank');
 }
 
+// Check all links directly in web app mode
+async function checkAllLinksDirectly() {
+  console.log('Starting direct link checking...');
+  
+  // Get all pathways from storage directly
+  const pathwaysData = await new Promise((resolve, reject) => {
+    chrome.storage.local.get('pathways', (data) => {
+      if (chrome.runtime && chrome.runtime.lastError) {
+        reject(new Error(chrome.runtime.lastError.message));
+      } else {
+        resolve(data.pathways || []);
+      }
+    });
+  });
+  
+  console.log('Loaded pathways for checking:', pathwaysData.length, 'pathways');
+  
+  if (pathwaysData.length === 0) {
+    console.log('No pathways found to check');
+    return;
+  }
+  
+  // Create a deep copy to avoid modifying the original
+  const pathways = JSON.parse(JSON.stringify(pathwaysData));
+  let totalChecked = 0;
+  let totalLinks = 0;
+  
+  // Count total links first
+  pathways.forEach(pathway => {
+    if (pathway.steps) {
+      pathway.steps.forEach(step => {
+        if (step.bookmarks) {
+          totalLinks += step.bookmarks.length;
+        }
+      });
+    }
+  });
+  
+  console.log(`Found ${totalLinks} links to check`);
+  
+  // Check each link
+  for (let pIdx = 0; pIdx < pathways.length; pIdx++) {
+    const pathway = pathways[pIdx];
+    if (!pathway.steps) continue;
+    
+    for (let sIdx = 0; sIdx < pathway.steps.length; sIdx++) {
+      const step = pathway.steps[sIdx];
+      if (!step.bookmarks) continue;
+      
+      for (let bIdx = 0; bIdx < step.bookmarks.length; bIdx++) {
+        const bookmark = step.bookmarks[bIdx];
+        console.log(`Checking link ${totalChecked + 1}/${totalLinks}: ${bookmark.title}`);
+        
+        try {
+          // Simple link check using fetch with no-cors mode
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+          
+          const response = await fetch(bookmark.url, {
+            method: 'HEAD',
+            mode: 'no-cors',
+            signal: controller.signal
+          });
+          
+          clearTimeout(timeoutId);
+          
+          // Update bookmark with check result
+          bookmark.lastChecked = Date.now();
+          bookmark.status = response.status || 'OK';
+          bookmark.isValid = true;
+          bookmark.available = true; // Mark as available for audit table
+          
+        } catch (error) {
+          console.log(`Error checking ${bookmark.url}:`, error.message);
+          bookmark.lastChecked = Date.now();
+          bookmark.status = error.name === 'AbortError' ? 'Timeout' : 'Error';
+          bookmark.checkError = error.message;
+          bookmark.isValid = false;
+          bookmark.available = false; // Mark as unavailable for audit table
+        }
+        
+        totalChecked++;
+      }
+    }
+  }
+  
+  // Save updated pathways back to storage
+  try {
+    // First get the current pathways from storage to make sure we have the latest data
+    const currentData = await new Promise((resolve, reject) => {
+      chrome.storage.local.get('pathways', (data) => {
+        if (chrome.runtime && chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+        } else {
+          resolve(data.pathways || []);
+        }
+      });
+    });
+    
+    console.log('Current pathways before save:', currentData.length, 'pathways');
+    console.log('Updated pathways to save:', pathways.length, 'pathways');
+    
+    // Make sure we're not saving empty data
+    if (pathways.length === 0 && currentData.length > 0) {
+      console.error('WARNING: Preventing save of empty pathways array!');
+      throw new Error('Refusing to save empty pathways - would lose all data');
+    }
+    
+    await new Promise((resolve, reject) => {
+      chrome.storage.local.set({ pathways }, () => {
+        if (chrome.runtime && chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+        } else {
+          resolve();
+        }
+      });
+    });
+    console.log(`Link checking complete. Checked ${totalChecked} links and saved data.`);
+    
+    // VERIFICATION: Re-read from storage to confirm data was saved
+    console.log('=== VERIFYING STORAGE SAVE ===');
+    const verificationData = await new Promise((resolve, reject) => {
+      chrome.storage.local.get('pathways', (data) => {
+        if (chrome.runtime && chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+        } else {
+          resolve(data.pathways || []);
+        }
+      });
+    });
+    
+    let verificationChecked = 0;
+    verificationData.forEach((pathway, pIdx) => {
+      if (pathway.steps) {
+        pathway.steps.forEach((step, sIdx) => {
+          if (step.bookmarks) {
+            step.bookmarks.forEach((bookmark, bIdx) => {
+              if (bookmark.lastChecked) {
+                verificationChecked++;
+                console.log(`VERIFIED IN STORAGE: P${pIdx}S${sIdx}B${bIdx} - ${bookmark.title}`, {
+                  lastChecked: bookmark.lastChecked,
+                  available: bookmark.available,
+                  status: bookmark.status
+                });
+              }
+            });
+          }
+        });
+      }
+    });
+    console.log(`VERIFICATION COMPLETE: Found ${verificationChecked} checked bookmarks in storage`);
+    console.log('=== END VERIFICATION ===');
+    
+  } catch (error) {
+    console.error('Error saving link check results:', error);
+    throw error; // Re-throw to prevent silent data loss
+  }
+}
+
 // Check all links
 async function checkAllLinks() {
   // Show loading state
@@ -553,31 +797,49 @@ async function checkAllLinks() {
   $('#checkAllLinksBtn').disabled = true;
 
   try {
-    // Check for host permissions first
+    // Check if we're in a browser extension context
     let hasPermission = false;
-    try {
-      hasPermission = await chrome.permissions.contains({
-        origins: ["http://*/*", "https://*/*"]
-      });
-    } catch (e) {
-      console.warn('Unable to check permissions:', e);
+    let isWebApp = false;
+    
+    if (typeof chrome !== 'undefined' && chrome.permissions) {
+      try {
+        hasPermission = await chrome.permissions.contains({
+          origins: ["http://*/*", "https://*/*"]
+        });
+      } catch (e) {
+        console.warn('Unable to check permissions:', e);
+        isWebApp = true;
+      }
+    } else {
+      // We're in a web app, not an extension
+      isWebApp = true;
+      console.log('Running in web app mode - using basic link checking');
     }
 
-    if (!hasPermission) {
-      // Show a message to the user about permissions needed
+    if (!hasPermission && !isWebApp) {
+      // Show a message to the user about permissions needed (extension mode only)
       const permissionResult = await showPermissionDialog();
       if (!permissionResult) {
         // User declined; show a warning that link checks will be limited
         showToast('Link audit will run with limited capabilities. Some links may show as valid without being checked.', 'warning');
       }
+    } else if (isWebApp) {
+      // Web app mode - inform user about limitations
+      showToast('Running in web app mode. Link checking will use basic methods due to browser security restrictions.', 'info');
     }
 
-    // Send message to background script to check all links
-    await new Promise(resolve => {
-      chrome.runtime.sendMessage({
-        type: 'auditAllLinks'
-      }, resolve);
-    });
+    // Check all links directly (web app mode) or via background script (extension mode)
+    if (isWebApp) {
+      // Web app mode - check links directly
+      await checkAllLinksDirectly();
+    } else {
+      // Extension mode - use background script
+      await new Promise(resolve => {
+        chrome.runtime.sendMessage({
+          type: 'auditAllLinks'
+        }, resolve);
+      });
+    }
 
     // Reload pathways and update table
     loadPathways();
@@ -594,7 +856,7 @@ async function checkAllLinks() {
 // Show permission dialog
 async function showPermissionDialog() {
   const result = await new Promise(resolve => {
-    const permissionModal = new bootstrap.Modal(document.getElementById('permissionModal'));
+    let permissionModal;
 
     // Create modal if doesn't exist
     if (!document.getElementById('permissionModal')) {
@@ -628,16 +890,35 @@ async function showPermissionDialog() {
       document.body.appendChild(modalDiv);
 
       // Create new modal instance
-      permissionModal = new bootstrap.Modal(modalDiv);
+      try {
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+          permissionModal = new bootstrap.Modal(modalDiv);
+        } else {
+          console.error('Bootstrap not available for modal creation');
+          resolve(false);
+          return;
+        }
+      } catch (error) {
+        console.error('Error creating permission modal:', error);
+        resolve(false);
+        return;
+      }
 
       // Add event handlers
       document.getElementById('permissionGrantBtn').addEventListener('click', async () => {
         try {
-          const granted = await chrome.permissions.request({
-            origins: ["http://*/*", "https://*/*"]
-          });
-          permissionModal.hide();
-          resolve(granted);
+          if (typeof chrome !== 'undefined' && chrome.permissions) {
+            const granted = await chrome.permissions.request({
+              origins: ["http://*/*", "https://*/*"]
+            });
+            permissionModal.hide();
+            resolve(granted);
+          } else {
+            // Web app mode - can't grant permissions
+            console.log('Web app mode - cannot grant browser extension permissions');
+            permissionModal.hide();
+            resolve(false);
+          }
         } catch (e) {
           console.error('Error requesting permissions:', e);
           permissionModal.hide();
@@ -650,7 +931,22 @@ async function showPermissionDialog() {
         resolve(false);
       });
     } else {
-      // Modal exists, add event handlers
+      // Modal exists, get existing modal instance
+      try {
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+          permissionModal = new bootstrap.Modal(document.getElementById('permissionModal'));
+        } else {
+          console.error('Bootstrap not available for existing modal');
+          resolve(false);
+          return;
+        }
+      } catch (error) {
+        console.error('Error creating modal instance for existing modal:', error);
+        resolve(false);
+        return;
+      }
+      
+      // Add event handlers
       const grantBtn = document.getElementById('permissionGrantBtn');
       const denyBtn = document.getElementById('permissionDenyBtn');
 
@@ -662,11 +958,18 @@ async function showPermissionDialog() {
 
       newGrantBtn.addEventListener('click', async () => {
         try {
-          const granted = await chrome.permissions.request({
-            origins: ["http://*/*", "https://*/*"]
-          });
-          permissionModal.hide();
-          resolve(granted);
+          if (typeof chrome !== 'undefined' && chrome.permissions) {
+            const granted = await chrome.permissions.request({
+              origins: ["http://*/*", "https://*/*"]
+            });
+            permissionModal.hide();
+            resolve(granted);
+          } else {
+            // Web app mode - can't grant permissions
+            console.log('Web app mode - cannot grant browser extension permissions');
+            permissionModal.hide();
+            resolve(false);
+          }
         } catch (e) {
           console.error('Error requesting permissions:', e);
           permissionModal.hide();
@@ -680,7 +983,12 @@ async function showPermissionDialog() {
       });
     }
 
-    permissionModal.show();
+    if (permissionModal) {
+      permissionModal.show();
+    } else {
+      console.error('Permission modal not available');
+      resolve(false);
+    }
   });
 
   return result;

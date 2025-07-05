@@ -85,7 +85,16 @@ const save = async (pathways, pathwayIndex, cb) => {
     if (pathwayIndex !== undefined && pathways[pathwayIndex]) {
       try {
         // Make a deep copy to avoid reference issues
-        const pathwayCopy = JSON.parse(JSON.stringify(pathways[pathwayIndex]));
+        // BUT preserve audit data fields that may exist on bookmarks
+        const pathwayCopy = JSON.parse(JSON.stringify(pathways[pathwayIndex], (key, value) => {
+          // Preserve all audit-related fields during JSON serialization
+          if (key === 'available' || key === 'status' || key === 'lastChecked' || 
+              key === 'error' || key === 'redirectUrl' || key === 'requiresAuth' || 
+              key === 'isExemptDomain' || key === 'checkDuration') {
+            return value;
+          }
+          return value;
+        }));
 
         // Try to update with the imported function
         let updatedPathway;

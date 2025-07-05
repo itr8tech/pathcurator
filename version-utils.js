@@ -120,7 +120,16 @@ export async function updatePathwayVersion(pathway, modifierUsername = null) {
 
   // Make a DEEP copy of the pathway to avoid modifying the original
   // Using JSON parse/stringify to ensure a complete deep clone of all nested objects
-  const updatedPathway = JSON.parse(JSON.stringify(pathway));
+  // BUT preserve audit data fields that may exist on bookmarks
+  const updatedPathway = JSON.parse(JSON.stringify(pathway, (key, value) => {
+    // Preserve all audit-related fields during JSON serialization
+    if (key === 'available' || key === 'status' || key === 'lastChecked' || 
+        key === 'error' || key === 'redirectUrl' || key === 'requiresAuth' || 
+        key === 'isExemptDomain' || key === 'checkDuration') {
+      return value;
+    }
+    return value;
+  }));
 
   // Initialize version history if it doesn't exist
   if (!updatedPathway.versionHistory) {

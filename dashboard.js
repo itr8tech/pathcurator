@@ -279,8 +279,10 @@ async function render(){
         });
       });
 
-      // Update existing pathways with version info if needed (now async)
-      const updatedPathwaysPromises = pathways.map(async pathway => {
+      // Only process pathways for version updates if they're missing critical version info
+      // This prevents stripping audit data on every render
+      let needsVersionUpdate = false;
+      const updatedPathways = pathways.map(pathway => {
         try {
           // Make sure the pathway is a valid object
           if (!pathway || typeof pathway !== 'object') {
@@ -288,30 +290,42 @@ async function render(){
             return pathway || {}; // Return original or empty object if null/undefined
           }
 
-          // If pathway doesn't have version info or modifiedBy, add it
-          if (!pathway.version || !pathway.lastUpdated || !pathway.modifiedBy) {
-            return await updatePathwayVersion(pathway);
+          // Check if pathway is missing essential version info
+          if (!pathway.version || !pathway.lastUpdated) {
+            needsVersionUpdate = true;
+            console.log('Pathway missing version info, will update:', pathway.name);
           }
-          return pathway;
+          
+          return pathway; // Return unchanged to preserve audit data
         } catch (pathwayError) {
-          console.error('Error updating individual pathway:', pathwayError);
+          console.error('Error checking pathway:', pathwayError);
           return pathway || {}; // Fall back to original or empty object
         }
       });
 
-      const updatedPathways = await Promise.all(updatedPathwaysPromises);
-
-      // Save if any pathways were updated
-      if (JSON.stringify(updatedPathways) !== JSON.stringify(pathways)) {
+      if (needsVersionUpdate) {
+        console.log('Some pathways need version updates, processing...');
+        // Only update the ones that actually need it
+        const versionUpdatePromises = updatedPathways.map(async pathway => {
+          if (!pathway.version || !pathway.lastUpdated) {
+            return await updatePathwayVersion(pathway);
+          }
+          return pathway; // Return unchanged
+        });
+        
+        const finalPathways = await Promise.all(versionUpdatePromises);
+        
         try {
-          chrome.storage.local.set({pathways: updatedPathways}, () => {
-            renderPathways(updatedPathways);
+          chrome.storage.local.set({pathways: finalPathways}, () => {
+            renderPathways(finalPathways);
           });
         } catch (storageError) {
           console.error('Error saving updated pathways:', storageError);
-          renderPathways(updatedPathways);
+          renderPathways(finalPathways);
         }
       } else {
+        // No version updates needed, render as-is (preserves audit data)
+        console.log('No version updates needed, preserving all data including audit results');
         renderPathways(updatedPathways);
       }
     } catch (error) {
@@ -1251,11 +1265,27 @@ async function publishPathwayToGitHub(idx) {
         // Ensure pathway has updated version info and createdBy before generating HTML
         let pathwayForHTML;
         try {
-          pathwayForHTML = await VersionModule.updatePathwayVersion(JSON.parse(JSON.stringify(pathway)));
+          pathwayForHTML = await VersionModule.updatePathwayVersion(JSON.parse(JSON.stringify(pathway, (key, value) => {
+            // Preserve all audit-related fields during JSON serialization
+            if (key === 'available' || key === 'status' || key === 'lastChecked' || 
+                key === 'error' || key === 'redirectUrl' || key === 'requiresAuth' || 
+                key === 'isExemptDomain' || key === 'checkDuration') {
+              return value;
+            }
+            return value;
+          })));
         } catch (versionError) {
           console.error('Error updating pathway version:', versionError);
           // Fallback: use pathway as-is with timestamp
-          pathwayForHTML = JSON.parse(JSON.stringify(pathway));
+          pathwayForHTML = JSON.parse(JSON.stringify(pathway, (key, value) => {
+            // Preserve all audit-related fields during JSON serialization
+            if (key === 'available' || key === 'status' || key === 'lastChecked' || 
+                key === 'error' || key === 'redirectUrl' || key === 'requiresAuth' || 
+                key === 'isExemptDomain' || key === 'checkDuration') {
+              return value;
+            }
+            return value;
+          }));
           pathwayForHTML.lastUpdated = Date.now();
         }
         
@@ -1525,7 +1555,15 @@ async function commitToGitHub() {
         if (!commitMessage) return; // Cancelled
 
         // Create a deep copy of pathways with sort order information
-        const pathwaysWithSortOrder = JSON.parse(JSON.stringify(pathways));
+        const pathwaysWithSortOrder = JSON.parse(JSON.stringify(pathways, (key, value) => {
+          // Preserve all audit-related fields during JSON serialization
+          if (key === 'available' || key === 'status' || key === 'lastChecked' || 
+              key === 'error' || key === 'redirectUrl' || key === 'requiresAuth' || 
+              key === 'isExemptDomain' || key === 'checkDuration') {
+            return value;
+          }
+          return value;
+        }));
 
         // Add sort order to each bookmark in each pathway's steps
         pathwaysWithSortOrder.forEach(pathway => {
