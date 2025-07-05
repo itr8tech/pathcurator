@@ -1,0 +1,176 @@
+.pathway-link:hover {
+  color: #0d6efd !important;
+  text-decoration: underline !important;
+}
+.card {
+  transition: all 0.2s ease;
+}
+.card:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Dark mode transitions */
+body {
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.card {
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.form-control, .form-select {
+  transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+}
+
+/* Diff UI Styles */
+.diff-container {
+  margin-bottom: 2rem;
+}
+
+.diff-details {
+  background-color: rgba(0,0,0,0.03);
+  border-radius: 0.375rem;
+  padding: 1.5rem;
+  transition: background-color 0.3s;
+}
+
+/* Highlight differences */
+.diff-highlight {
+  background-color: rgba(13,110,253,0.1);
+  border-left: 3px solid #0d6efd;
+  padding-left: 0.5rem;
+  transition: background-color 0.3s;
+}
+
+/* Dark mode overrides */
+/* Dark mode overrides for diff modal */
+[data-bs-theme="dark"] .diff-details {
+  background-color: rgba(255,255,255,0.05);
+}
+
+[data-bs-theme="dark"] .diff-highlight {
+  background-color: rgba(13,110,253,0.2);
+  border-left-color: #0d6efd;
+}
+
+[data-bs-theme="dark"] .modal-content {
+  background-color: #212529;
+  border-color: #495057;
+}
+
+[data-bs-theme="dark"] .modal-header,
+[data-bs-theme="dark"] .modal-footer {
+  border-color: #495057;
+}
+
+[data-bs-theme="dark"] .btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+[data-bs-theme="dark"] .btn-secondary {
+  background-color: #495057;
+  border-color: #343a40;
+}
+
+[data-bs-theme="dark"] .alert-warning {
+  background-color: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+  border-color: rgba(255, 193, 7, 0.4);
+}
+
+[data-bs-theme="dark"] .alert-info {
+  background-color: rgba(13, 202, 240, 0.15);
+  color: #0dcaf0;
+  border-color: rgba(13, 202, 240, 0.4);
+}
+
+[data-bs-theme="dark"] .form-check-input {
+  background-color: #343a40;
+  border-color: #6c757d;
+}
+
+[data-bs-theme="dark"] .form-check-input:checked {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+[data-bs-theme="dark"] .form-check-label {
+  color: #e9ecef;
+}
+
+[data-bs-theme="dark"] .list-group-item {
+  background-color: #2c3034;
+  border-color: #495057;
+}
+
+[data-bs-theme="dark"] .bg-warning-subtle {
+  background-color: rgba(255, 193, 7, 0.15) !important;
+}
+
+[data-bs-theme="dark"] .text-warning-emphasis {
+  color: #ffc107 !important;
+}
+
+[data-bs-theme="dark"] .bg-success-subtle {
+  background-color: rgba(25, 135, 84, 0.15) !important;
+}
+
+[data-bs-theme="dark"] .text-success-emphasis {
+  color: #20c997 !important;
+}
+
+/* Better contrast for bookmark diff text in dark mode */
+[data-bs-theme="dark"] .bookmark-diff-existing .text-primary,
+[data-bs-theme="dark"] .bookmark-diff-existing strong,
+[data-bs-theme="dark"] .text-primary {
+  color: #6ea8fe !important;
+}
+
+[data-bs-theme="dark"] .bookmark-diff-imported .text-success,
+[data-bs-theme="dark"] .bookmark-diff-imported strong,
+[data-bs-theme="dark"] .text-success {
+  color: #75b798 !important;
+}
+
+/* Responsive modal */
+@media (min-width: 1200px) {
+  .modal-xl {
+    max-width: 90%;
+  }
+}
+
+/* Custom modal styles (fallback if Bootstrap JS isn't loaded) */
+.modal.d-block {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1050;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  outline: 0;
+  display: block !important;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+.modal-dialog {
+  position: relative;
+  width: auto;
+  margin: 1.75rem auto;
+  max-width: 90%;
+}
+
+.modal-content {
+  position: relative;
+  background-color: #fff;
+  border-radius: 0.3rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Hide file input using a class instead of inline style */
+.hidden-file-input {
+  display: none;
+}

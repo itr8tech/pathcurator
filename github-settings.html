@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+<head>
+<meta charset="utf-8">
+<title>GitHub Settings - Curator</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="container py-4">
+  <div class="d-flex align-items-center mb-4">
+    <a href="dashboard.html" class="btn btn-outline-secondary btn-sm me-3">
+      <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+    <h1 class="h3 mb-0 flex-grow-1">GitHub Integration Settings</h1>
+  </div>
+
+  <!-- Auth Status Card -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title">GitHub Authentication</h5>
+      <div id="auth-status-loading" class="text-center py-3">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Checking authentication status...</p>
+      </div>
+      
+      <div id="auth-status-logged-out" class="d-none">
+        <p>Connect your GitHub account to save your pathway data directly to a repository.</p>
+        <p class="text-muted">You will need a <a href="https://github.com/settings/tokens" target="_blank">GitHub personal access token</a> with the <code>public_repo</code> scope.</p>
+        
+        <div class="mb-3">
+          <label for="github-token" class="form-label">GitHub Personal Access Token</label>
+          <div class="input-group">
+            <input type="password" class="form-control" id="github-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+            <button class="btn btn-outline-secondary" type="button" id="toggle-token-visibility">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
+          <div class="form-text">Create a token with the 'public_repo' scope at <a href="https://github.com/settings/tokens" target="_blank">GitHub Token Settings</a></div>
+        </div>
+        
+        <button id="btn-login" class="btn btn-primary">
+          <i class="bi bi-github"></i> Connect to GitHub
+        </button>
+      </div>
+      
+      <div id="auth-status-logged-in" class="d-none">
+        <div class="d-flex align-items-center">
+          <div>
+            <p class="mb-0">Connected to GitHub as: <strong id="github-username">username</strong></p>
+          </div>
+          <button id="btn-logout" class="btn btn-outline-danger ms-auto">
+            <i class="bi bi-box-arrow-right"></i> Disconnect
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Repository Settings Card -->
+  <div id="repo-settings-card" class="card mb-4 d-none">
+    <div class="card-body">
+      <h5 class="card-title">Repository Settings</h5>
+      
+      <div id="repo-settings-loading" class="text-center py-3 d-none">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading repositories...</p>
+      </div>
+      
+      <div id="repo-settings-form">
+        <div class="mb-3">
+          <label for="repository-select" class="form-label">Repository</label>
+          <select id="repository-select" class="form-select"></select>
+        </div>
+        
+        <div class="mb-3">
+          <label for="branch-select" class="form-label">Branch</label>
+          <select id="branch-select" class="form-select"></select>
+        </div>
+        
+        <div class="mb-3">
+          <label for="filepath-input" class="form-label">File Path</label>
+          <input type="text" class="form-control" id="filepath-input" placeholder="curator-pathways.json">
+          <div class="form-text">The path where your pathway data will be saved in the repository.</div>
+        </div>
+        
+        <button id="btn-save-settings" class="btn btn-primary">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help Card -->
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">How It Works</h5>
+      <ol>
+        <li>Connect your GitHub account using a personal access token</li>
+        <li>Select a repository where you want to store your pathway data</li>
+        <li>Choose a branch and file path for the JSON data</li>
+        <li>From the dashboard, you can now use the "Commit to GitHub" option to save your pathways</li>
+      </ol>
+      <div class="alert alert-info">
+        <i class="bi bi-info-circle-fill me-2"></i> Each commit will update the JSON file with your current pathway data. You can view the history of changes in your GitHub repository.
+      </div>
+      <div class="alert alert-success mt-3">
+        <i class="bi bi-arrow-down-circle-fill me-2"></i> <strong>New: Import from GitHub</strong><br>
+        If the specified JSON file already exists in your repository, you'll be offered the option to import it into your Curator extension. This allows you to easily sync pathways between different devices.
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="github-settings.js"></script>
+</body>
+</html>

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="auto">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Link Audit - Curator</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="container py-4">
+  <!-- Consistent header with dashboard -->
+  <div class="d-flex align-items-center border-bottom pb-2 mb-4">
+    <h1 class="h3 mb-0 flex-grow-1">
+      <i class="bi bi-collection me-2"></i>Curator Pathways
+    </h1>
+    <div class="d-flex gap-3 align-items-center">
+      <button id="theme-toggle" class="btn btn-sm btn-outline-secondary" title="Toggle Dark Mode">
+        <i class="bi bi-moon-stars-fill"></i>
+      </button>
+      <a href="github-settings.html" class="text-decoration-none text-muted small">
+        <i class="bi bi-github"></i> GitHub Settings
+      </a>
+      <a href="https://github.com/PSA-Corporate-Learning-Branch/curator-extension" target="_blank" class="text-decoration-none text-muted small">
+        <i class="bi bi-question-circle"></i> Help
+      </a>
+    </div>
+  </div>
+  
+  <!-- Tab navigation -->
+  <ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+      <a class="nav-link" href="dashboard.html">
+        <i class="bi bi-grid me-1"></i>Dashboard
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link active" href="link-audit.html">
+        <i class="bi bi-link-45deg me-1"></i>Audit
+      </a>
+    </li>
+  </ul>
+
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <div class="border p-3 rounded mb-3">
+        <h2 class="h5">Audit Summary</h2>
+        <div class="summary-stats mt-3">
+          <div class="d-flex justify-content-between mb-2">
+            <span>Total Links:</span>
+            <span id="totalLinks">-</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span>Healthy Links:</span>
+            <span id="healthyLinks" class="text-success">-</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span>Broken Links:</span>
+            <span id="brokenLinks" class="text-danger">-</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span>Redirected Links:</span>
+            <span id="redirectedLinks" class="text-warning">-</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span>Auth Required:</span>
+            <span id="authRequiredLinks" class="text-primary">-</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span>Exempt Domains:</span>
+            <span id="exemptLinks" class="text-success">-</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span>Not Checked:</span>
+            <span id="uncheckedLinks" class="text-secondary">-</span>
+          </div>
+        </div>
+        <div class="mt-3">
+          <button id="checkAllLinksBtn" class="btn btn-primary w-100 mb-2">
+            <i class="bi bi-arrow-repeat me-1"></i> Check All Links
+          </button>
+          <button id="manageAuthDomainsBtn" class="btn btn-outline-secondary w-100">
+            <i class="bi bi-shield-lock me-1"></i> Manage Auth Domains
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-8">
+      <div class="border p-3 rounded mb-3">
+        <h2 class="h5">Filter Links</h2>
+        <div class="row mt-3">
+          <div class="col-md-6">
+            <label for="pathwayFilter" class="form-label">Pathway</label>
+            <select id="pathwayFilter" class="form-select">
+              <option value="">All Pathways</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label for="statusFilter" class="form-label">Status</label>
+            <select id="statusFilter" class="form-select">
+              <option value="">All Statuses</option>
+              <option value="ok">Healthy (200 OK)</option>
+              <option value="redirect">Redirected</option>
+              <option value="auth">Auth Required</option>
+              <option value="exempt">Exempt Domains</option>
+              <option value="error">Broken</option>
+              <option value="unchecked">Not Checked</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h2 class="h5 mb-0">All Bookmarks</h2>
+      <span id="resultsCount" class="badge bg-secondary">0 results</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>URL</th>
+            <th>Pathway</th>
+            <th>Status</th>
+            <th>Last Checked</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="auditResults">
+          <!-- Results will be inserted here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Link Detail Modal -->
+  <div class="modal fade" id="linkDetailModal" tabindex="-1" aria-labelledby="linkDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="linkDetailModalLabel">Link Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row mb-3">
+            <div class="col-md-3">Title:</div>
+            <div class="col-md-9" id="modalTitle"></div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-3">URL:</div>
+            <div class="col-md-9">
+              <a href="#" id="modalUrl" target="_blank"></a>
+            </div>
+          </div>
+          <div class="row mb-3" id="modalRedirectRow">
+            <div class="col-md-3">Redirects To:</div>
+            <div class="col-md-9">
+              <a href="#" id="modalRedirectUrl" target="_blank"></a>
+              <button id="updateRedirectBtn" class="btn btn-sm btn-warning ms-2">Update to New URL</button>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-3">Status:</div>
+            <div class="col-md-9" id="modalStatus"></div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-3">Last Checked:</div>
+            <div class="col-md-9" id="modalLastChecked"></div>
+          </div>
+          <div class="row mb-3" id="modalErrorRow">
+            <div class="col-md-3">Error:</div>
+            <div class="col-md-9" id="modalError"></div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-3">Pathway:</div>
+            <div class="col-md-9" id="modalPathway"></div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-3">Step:</div>
+            <div class="col-md-9" id="modalStep"></div>
+          </div>
+          
+          <!-- Auth Domain Management (only shown for auth-required links) -->
+          <div id="authDomainSection" class="d-none border-top mt-3 pt-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="mb-0">Authentication Required</h6>
+              <button id="addToAuthListBtn" class="btn btn-sm btn-outline-primary">Add to Auth Allowlist</button>
+            </div>
+            <p class="small text-muted">This link requires authentication. You can add its domain to your allowlist to use credentials when checking links.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="recheckLinkBtn">Recheck Link</button>
+          <a id="editLinkBtn" href="#" class="btn btn-success">Edit Link</a>
+          <button type="button" class="btn btn-warning" id="archiveOrgBtn">View in Archive.org</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Auth Domain Allowlist Modal -->
+  <div class="modal fade" id="authDomainsModal" tabindex="-1" aria-labelledby="authDomainsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="authDomainsModalLabel">Authentication Allowlist</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <ul class="nav nav-tabs mb-3" id="domainsTab" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="auth-domains-tab" data-bs-toggle="tab" data-bs-target="#auth-domains" type="button" role="tab" aria-controls="auth-domains" aria-selected="true">
+                <i class="bi bi-key-fill me-1"></i> Auth Domains
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="exempt-domains-tab" data-bs-toggle="tab" data-bs-target="#exempt-domains" type="button" role="tab" aria-controls="exempt-domains" aria-selected="false">
+                <i class="bi bi-shield-check me-1"></i> Exempt Domains
+              </button>
+            </li>
+          </ul>
+          
+          <div class="tab-content" id="domainsTabContent">
+            <!-- Auth Domains Tab -->
+            <div class="tab-pane fade show active" id="auth-domains" role="tabpanel" aria-labelledby="auth-domains-tab">
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                Add domains that require authentication. Credentials will be used when checking links to these domains.
+              </div>
+              
+              <div class="alert alert-warning">
+                <i class="bi bi-shield-lock me-2"></i>
+                <strong>Security Notice:</strong> Credentials are stored encrypted, but you should still use caution:
+                <ul class="mb-0 mt-2">
+                  <li>Only add credentials for work-related sites that need verification</li>
+                  <li>Do not reuse passwords from your important accounts</li>
+                  <li>Consider using application-specific passwords when available</li>
+                </ul>
+              </div>
+              
+              <!-- Auth domains list -->
+              <div class="mb-3">
+                <div id="authDomainsList" class="list-group mb-3">
+                  <!-- Auth domains will be inserted here -->
+                  <div class="list-group-item text-center py-3 text-muted" id="emptyAuthDomainsMsg">
+                    No domains in your authentication allowlist yet
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Add new auth domain form -->
+              <form id="addAuthDomainForm" class="border rounded p-3 bg-light">
+                <h6>Add New Auth Domain</h6>
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label for="domainInput" class="form-label">Domain Name</label>
+                    <input type="text" class="form-control" id="domainInput" placeholder="example.com" required>
+                    <div class="form-text">Enter without http:// or https://</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="domainNameInput" class="form-label">Display Name</label>
+                    <input type="text" class="form-control" id="domainNameInput" placeholder="Example Site">
+                  </div>
+                </div>
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label for="usernameInput" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="usernameInput" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="passwordInput" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="passwordInput" required>
+                  </div>
+                </div>
+                <div class="d-flex justify-content-end">
+                  <button type="submit" class="btn btn-primary">Add Auth Domain</button>
+                </div>
+              </form>
+            </div>
+            
+            <!-- Exempt Domains Tab -->
+            <div class="tab-pane fade" id="exempt-domains" role="tabpanel" aria-labelledby="exempt-domains-tab">
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                Add domains that should be considered valid even if they return error codes. 
+                Some sites like Quora and Medium block automated requests but work fine in browsers.
+              </div>
+              
+              <!-- Exempt domains list -->
+              <div class="mb-3">
+                <div id="exemptDomainsList" class="list-group mb-3">
+                  <!-- Exempt domains will be inserted here -->
+                  <div class="list-group-item text-center py-3 text-muted" id="emptyExemptDomainsMsg">
+                    No domains in your exempt list yet
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Add new exempt domain form -->
+              <form id="addExemptDomainForm" class="border rounded p-3 bg-light">
+                <h6>Add New Exempt Domain</h6>
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label for="exemptDomainInput" class="form-label">Domain Name</label>
+                    <input type="text" class="form-control" id="exemptDomainInput" placeholder="example.com" required>
+                    <div class="form-text">Enter without http:// or https://</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="exemptReasonInput" class="form-label">Reason for Exemption</label>
+                    <input type="text" class="form-control" id="exemptReasonInput" placeholder="Blocks automated requests" required>
+                  </div>
+                </div>
+                <div class="d-flex justify-content-end">
+                  <button type="submit" class="btn btn-primary">Add Exempt Domain</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="bootstrap.bundle.min.js"></script>
+  <script type="module" src="link-audit.js"></script>
+</body>
+</html>

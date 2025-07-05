@@ -1,0 +1,360 @@
+/* Custom styles for Curator pathways in Moodle */
+/* Nori Sinclair, Corporate Learning branch, February 2025 */
+/* Based on existing Moodle styles with Bootstrap 4.7 and Font Awesome 6 */
+
+/* Everything must be wrapped in .moodlecurator class for Moodle specificity */
+
+.moodlecurator {
+    font-size: 1rem;
+}
+
+/* Palette */
+
+.moodlecurator {
+    --gov-primary-blue: #234075;
+    /* primary-blue and darkblue are the same colour */
+    --gov-primary-yellow: #e3a82b;
+    --sagegreen: #bfd5cf;
+    --sagedark: #29735E;
+    --bluegreen: #2F6173;
+}
+
+.moodlecurator .bg-blue {
+    background-color: var(--gov-primary-blue);
+}
+
+.moodlecurator .bg-sagegreen {
+    background-color: var(--sagegreen);
+}
+
+.moodlecurator .bg-sagedark {
+    background-color: var(--sagedark);
+}
+
+.moodlecurator .bg-bluegreen {
+    background-color: var(--bluegreen);
+}
+
+.moodlecurator .border-blue {
+    border-width: 2px;
+    border-color: var(--gov-primary-blue);
+    border-style: solid;
+}
+
+.moodlecurator .border-bluegreen {
+    border-width: .125rem;
+    border-color: var(--bluegreen);
+    border-style: solid;
+}
+
+.moodlecurator .border-sagedark {
+    border-width: .125rem;
+    border-color: var(--sagedark);
+    border-style: solid;
+}
+
+.moodlecurator .border-sagegreen {
+    border-width: .125rem;
+    border-color: var(--sagegreen);
+    border-style: solid;
+}
+
+.moodlecurator .text-sagedark {
+    color: var(--sagedark) !important;
+}
+
+.moodlecurator .text-bluegreen {
+    color: var(--bluegreen) !important;
+}
+
+.moodlecurator .btn-primary {
+    background-color: var(--gov-primary-blue);
+    border-color: var(--gov-primary-blue);
+}
+
+.moodlecurator .btn-primary:hover {
+    background-color: #4f6691;
+    border-color: #4f6691;
+    /*  hover is 20% tint */
+}
+
+.moodlecurator blockquote {
+    border-left: 3px solid #333;
+    margin: 1em;
+    padding-left: 1em;
+}
+
+.moodlecurator p+ul,
+.moodlecurator p+ol {
+    margin-top: -0.75rem;
+    /* stem for paragraph followed by list */
+}
+
+/* Revert all.css theme file changing bg-color */
+.moodlecurator .bg-white {
+    background-color: #fff !important;
+}
+
+/* Revert all.css theme file changing mr-1 to include padding */
+.moodlecurator .mr-1,
+.moodlecurator .mx-1 {
+    margin-right: 0.25rem !important;
+    padding-right: 0 !important;
+}
+
+/* add bootstrap 5 utility class */
+.moodlecurator .object-fit-contain {
+    object-fit: contain;
+}
+
+
+/* headers */
+
+.moodlecurator .header {
+    background-image: url(https://learningcurator.gww.gov.bc.ca/img/categories/1200w/Paradise_Meadows_Boardwalk-strathcona_Provincial-park-compressed_1200w.jpg);
+    background-position: center;
+    background-size: cover;
+    width: 100%;
+    height: 10rem;
+    background-color: var(--gov-secondary-blue);
+
+}
+
+
+
+/* Add icon to external link, code from https://christianoliff.com/blog/styling-external-links-with-an-icon-in-css/
+CSS generated content should be ignored by screen readers - see https://developer.mozilla.org/en-US/docs/Web/CSS/content#accessibility */
+
+.moodlecurator a[target="_blank"]:not(a[href$=".pdf"], a[href$=".doc"], a[href$=".docx"])::after {
+    content: "";
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-left: 0.2em;
+    /* spacing*/
+    padding-right: 0.75em;
+    /* sizing */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%230f6cbf' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z'/%3E%3Cpath fill-rule='evenodd' d='M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z'/%3E%3C/svg%3E");
+
+}
+
+.moodlecurator a[target="_blank"]:not([href$=".pdf"], [href$=".doc"], [href$=".docx"]).text-white::after {
+    content: "";
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-left: 0.2em;
+    /* spacing*/
+    padding-right: 0.75em;
+    /* sizing */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23ffffff' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z'/%3E%3Cpath fill-rule='evenodd' d='M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z'/%3E%3C/svg%3E");
+}
+
+.moodlecurator a[href$=".pdf"]:after {
+    content: "\00a0(PDF)";
+}
+
+.moodlecurator a[href$=".doc"]:after,
+.moodlecurator a[href$=".docx"]:after {
+    content: "\00a0(DOC)";
+}
+
+
+
+
+
+
+/* ----------------------------------------------------------------- */
+/* Styling for Moodle test site by course ID for without .moodlecurator div course-62 Anti-Racism Pathway */
+
+
+/* Adjust max-width to match main pages */
+.course-62 .main-inner {
+    max-width: 830px !important;
+}
+
+/* hide activities at the bottom of the homepage */
+/* .course-62 ul.section.d-block {
+    display: none !important;
+} */
+
+/* fix no-overflow style to overflow unset */
+.course-62 .no-overflow {
+    overflow: unset;
+}
+
+/* reduce margin on .datapreferences */
+.course-62 .datapreferences {
+    margin: 0 !important;
+}
+
+/* Hide sort options group */
+.course-62 form#options {
+    display: none;
+}
+
+/* Hide list/single view dropdown */
+.course-62 form#viewactionselect {
+    display: none;
+}
+
+/* Styling for completion info div that is moved to bottom of main content */
+.course-62 .activity-instruction {
+    margin-bottom: 0;
+    font-weight: bold;
+}
+
+.course-62 .completion-info-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+/* Hide two <hr> tags in options group */
+
+.course-62 .tertiary-navigation+hr {
+    display: none;
+}
+
+.course-62 .datapreferences hr {
+    display: none;
+}
+
+/* changed text alignment for activity navigation */
+.course-62 #prev-activity-link {
+    text-align: start;
+}
+
+.course-62 #next-activity-link {
+    text-align: end;
+}
+
+/* styling adjustments to completion requirements section */
+.course-62 .activity-header:not(:empty) {
+    background-color: unset;
+    margin-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    border-radius: 0;
+}
+
+.course-62 .activity-information .completion-info {
+    padding-top: 0;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+
+/* reduce padding around h3 page title, reduce weight, increase size to match h2 */
+
+.course-62 #maincontent+h3 {
+    margin-bottom: -8px;
+    font-size: 1.875rem;
+    font-weight: 600;
+}
+
+/* reduce weight of course title */
+
+.course-62 #page-header h1.h2 {
+    font-weight: 400;
+    color: #234075;
+}
+
+/* Styling for Moodle prod site by course ID for without .moodlecurator div course-XX  */
+
+/* Styling for Moodle test site by course ID for without .moodlecurator div course-63 Consultation and Cooperation in the BC Public Service */
+
+
+/* Adjust max-width to match main pages */
+.main-inner {
+    max-width: 830px !important;
+}
+
+/* hide activities at the bottom of the homepage */
+/* ul.section.d-block {
+    display: none !important;
+} */
+
+/* fix no-overflow style to overflow unset */
+.no-overflow {
+    overflow: unset;
+}
+
+/* reduce margin on .datapreferences */
+.datapreferences {
+    margin: 0 !important;
+}
+
+/* Hide sort options group */
+form#options {
+    display: none;
+}
+
+/* Hide list/single view dropdown */
+form#viewactionselect {
+    display: none;
+}
+
+/* Styling for completion info div that is moved to bottom of main content */
+.activity-instruction {
+    margin-bottom: 0;
+    font-weight: bold;
+}
+
+.completion-info-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+/* Hide two <hr> tags in options group */
+
+.tertiary-navigation+hr {
+    display: none;
+}
+
+.datapreferences hr {
+    display: none;
+}
+
+/* changed text alignment for activity navigation */
+#prev-activity-link {
+    text-align: start;
+}
+
+#next-activity-link {
+    text-align: end;
+}
+
+/* styling adjustments to completion requirements section */
+.activity-header:not(:empty) {
+    background-color: unset;
+    margin-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    border-radius: 0;
+}
+
+.activity-information .completion-info {
+    padding-top: 0;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+
+/* reduce padding around h3 page title, reduce weight, increase size to match h2 */
+
+#maincontent+h3 {
+    margin-bottom: -8px;
+    font-size: 1.875rem;
+    font-weight: 600;
+}
+
+/* reduce weight of course title */
+
+#page-header h1.h2 {
+    font-weight: 400;
+    color: #234075;
+}
