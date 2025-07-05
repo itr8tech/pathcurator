@@ -183,6 +183,20 @@ function loadPathwayData(openStates = null) {
     
     const pathway = pathways[pathwayIndex];
     console.log('- pathway found at index', pathwayIndex, ':', !!pathway);
+    
+    // Debug bookmark counts like dashboard does
+    if (pathway && pathway.steps) {
+      console.log('=== PATHWAY DETAIL BOOKMARK DEBUG ===');
+      pathway.steps.forEach((step, sIdx) => {
+        console.log(`Step ${sIdx} (${step.name}):`, step.bookmarks?.length || 0, 'bookmarks');
+        if (step.bookmarks && step.bookmarks.length > 0) {
+          step.bookmarks.forEach((bookmark, bIdx) => {
+            console.log(`  Bookmark ${bIdx}: "${bookmark.title}" (required: ${bookmark.required}, type: ${bookmark.type})`);
+          });
+        }
+      });
+      console.log('=== END BOOKMARK DEBUG ===');
+    }
     if (pathway) {
       console.log('- pathway details:', {
         name: pathway.name,
@@ -279,8 +293,8 @@ function loadPathwayData(openStates = null) {
 function renderSteps(pathway, pathwayId) {
   const stepsHtml = (pathway.steps || [])
     .map((step, index) => {
-      const required = (step.bookmarks || []).filter(b => !b.type || b.type === 'required' || b.type === 'Required');
-      const bonus = (step.bookmarks || []).filter(b => b.type === 'bonus' || b.type === 'Bonus');
+      const required = (step.bookmarks || []).filter(b => b.required !== false);
+      const bonus = (step.bookmarks || []).filter(b => b.required === false);
       
       return `
       <details class="card mb-3">
@@ -343,8 +357,9 @@ function renderBookmarks(bookmarks, stepIndex, pathwayId) {
     return '<div class="text-center text-muted py-3">No bookmarks yet</div>';
   }
   
-  const required = bookmarks.filter(b => !b.type || b.type === 'required' || b.type === 'Required');
-  const bonus = bookmarks.filter(b => b.type === 'bonus' || b.type === 'Bonus');
+  // Filter by required flag, not by type field
+  const required = bookmarks.filter(b => b.required !== false);
+  const bonus = bookmarks.filter(b => b.required === false);
   
   return `
     ${required.length > 0 ? `
@@ -365,7 +380,7 @@ function renderBookmarks(bookmarks, stepIndex, pathwayId) {
 
 // Render a single bookmark
 function renderBookmark(bookmark, stepIndex, pathwayId, bookmarkIndex) {
-  const isBonus = bookmark.type === 'bonus' || bookmark.type === 'Bonus';
+  const isBonus = bookmark.required === false;
   const badgeClass = isBonus ? 'text-bg-info' : 'text-bg-primary';
   const badgeText = isBonus ? 'BONUS' : 'REQUIRED';
   

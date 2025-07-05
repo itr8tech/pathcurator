@@ -258,10 +258,26 @@ function initSort(){
 
 // render dashboard
 async function render(){
+  console.log('Dashboard render() called');
   chrome.storage.local.get({pathways:[]}, async d => {
     try {
       // Make sure pathways is always an array
       const pathways = Array.isArray(d.pathways) ? d.pathways : [];
+      console.log('Dashboard loaded pathways:', pathways.length, 'pathways');
+      
+      // Debug: Log bookmark counts for each step
+      pathways.forEach((pathway, pIdx) => {
+        console.log(`Pathway ${pIdx} (${pathway.name}):`, pathway.steps?.length || 0, 'steps');
+        pathway.steps?.forEach((step, sIdx) => {
+          console.log(`  Step ${sIdx} (${step.name}):`, step.bookmarks?.length || 0, 'bookmarks');
+          // Log actual bookmark titles to verify content
+          if (step.bookmarks && step.bookmarks.length > 0) {
+            step.bookmarks.forEach((bookmark, bIdx) => {
+              console.log(`    Bookmark ${bIdx}: "${bookmark.title}" (required: ${bookmark.required}, type: ${bookmark.type})`);
+            });
+          }
+        });
+      });
 
       // Update existing pathways with version info if needed (now async)
       const updatedPathwaysPromises = pathways.map(async pathway => {
@@ -312,13 +328,23 @@ function renderPathways(pathways) {
     // Make sure pathways is always an array
     const validPathways = Array.isArray(pathways) ? pathways : [];
 
-    // Show/hide empty state
+    // Initialize bookmarklet links
+    initializeBookmarklet();
+
+    // Show/hide empty state and bookmarklet section
     if (validPathways.length === 0) {
       $('#emptyState').classList.remove('d-none');
       $('#pathwayList').classList.add('d-none');
+      $('#bookmarkletSection').classList.add('d-none');
     } else {
       $('#emptyState').classList.add('d-none');
       $('#pathwayList').classList.remove('d-none');
+      
+      // Show bookmarklet section if user hasn't hidden it
+      const bookmarkletHidden = localStorage.getItem('bookmarkletHidden') === 'true';
+      if (!bookmarkletHidden) {
+        $('#bookmarkletSection').classList.remove('d-none');
+      }
 
       // Use try-catch for each pathway HTML generation
       try {
@@ -1864,4 +1890,73 @@ document.addEventListener('DOMContentLoaded',()=>{
       });
     }
   });
+});
+
+// Initialize bookmarklet functionality
+function initializeBookmarklet() {
+  const baseUrl = window.location.origin + window.location.pathname.replace(/[^\/]*$/, '');
+  
+  // Generate bookmarklet code
+  const bookmarkletCode = `(function(){
+    const url=encodeURIComponent(window.location.href);
+    const title=encodeURIComponent(document.title);
+    const description=encodeURIComponent(document.querySelector('meta[name="description"]')?.content||document.querySelector('meta[property="og:description"]')?.content||'');
+    window.open('${baseUrl}bookmarklet.html?url='+url+'&title='+title+'&description='+description,'_blank');
+  })()`;
+  
+  const bookmarkletUrl = 'javascript:' + encodeURIComponent(bookmarkletCode);
+  
+  // Set bookmarklet links
+  const bookmarkletLink = document.getElementById('bookmarkletLink');
+  const emptyStateBookmarklet = document.getElementById('emptyStateBookmarklet');
+  
+  if (bookmarkletLink) {
+    bookmarkletLink.href = bookmarkletUrl;
+  }
+  if (emptyStateBookmarklet) {
+    emptyStateBookmarklet.href = bookmarkletUrl;
+  }
+  
+  // Handle bookmarklet toggle
+  const toggleBtn = document.getElementById('toggleBookmarklet');
+  if (toggleBtn && !toggleBtn.hasEventListener) {
+    toggleBtn.hasEventListener = true;
+    toggleBtn.addEventListener('click', () => {
+      const section = document.getElementById('bookmarkletSection');
+      if (section) {
+        section.classList.add('d-none');
+        localStorage.setItem('bookmarkletHidden', 'true');
+      }
+    });
+  }
+}
+
+// Add storage change listener for debugging
+if (chrome && chrome.storage && chrome.storage.onChanged) {
+  chrome.storage.onChanged.addListener((changes, namespace) => {
+    console.log('Storage changed:', namespace, changes);
+    if (changes.pathways) {
+      console.log('Pathways changed in storage, auto-refreshing dashboard...');
+      render();
+    }
+  });
+} else {
+  console.log('No storage change listener available');
+}
+
+// Listen for refresh requests from bookmarklet
+window.addEventListener('storage', (e) => {
+  if (e.key === 'pathcurator_refresh_needed') {
+    console.log('Bookmarklet requested dashboard refresh');
+    render();
+  }
+});
+
+// Also check for refresh request on page focus
+window.addEventListener('focus', () => {
+  if (localStorage.getItem('pathcurator_refresh_needed')) {
+    console.log('Dashboard focused, checking for refresh request');
+    render();
+    localStorage.removeItem('pathcurator_refresh_needed');
+  }
 });
