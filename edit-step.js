@@ -15,13 +15,23 @@ const getParams = () => {
 };
 
 // Save helper
-const save = (pathways, pathwayId, cb) => {
+const save = async (pathways, pathwayIndex, cb) => {
   // Update version and lastUpdated timestamp whenever saving
-  if (pathwayId !== undefined && pathways[pathwayId]) {
-    pathways[pathwayId] = updatePathwayVersion(pathways[pathwayId]);
+  if (pathwayIndex !== undefined && pathways[pathwayIndex]) {
+    pathways[pathwayIndex] = await updatePathwayVersion(pathways[pathwayIndex]);
   }
 
-  chrome.storage.local.set({pathways}, cb);
+  console.log('About to save pathways array:', pathways.length, 'items');
+  console.log('Updated pathway at index', pathwayIndex, ':', pathways[pathwayIndex]?.name);
+  
+  // Use Promise to wait for storage completion
+  return new Promise((resolve) => {
+    chrome.storage.local.set({pathways}, () => {
+      console.log('Storage save completed in edit-step');
+      if (cb) cb();
+      resolve();
+    });
+  });
 };
 
 // Theme handling functions
@@ -70,7 +80,9 @@ function loadStepData() {
   }
   
   chrome.storage.local.get({pathways: []}, ({pathways}) => {
-    const pathway = pathways[pathwayId];
+    // Convert pathwayId to number for array access
+    const pathwayIndex = parseInt(pathwayId);
+    const pathway = pathways[pathwayIndex];
     if (!pathway) {
       alert('Pathway not found');
       navigateBack();
@@ -92,7 +104,7 @@ function loadStepData() {
 }
 
 // Save step data
-function saveStep(e) {
+async function saveStep(e) {
   e.preventDefault();
   
   const name = $('#stepName').value.trim();
@@ -111,9 +123,15 @@ function saveStep(e) {
     return;
   }
   
-  chrome.storage.local.get({pathways: []}, ({pathways}) => {
-    const pathway = pathways[pathwayId];
+  chrome.storage.local.get({pathways: []}, async ({pathways}) => {
+    // Convert pathwayId to number for array access
+    const pathwayIndex = parseInt(pathwayId);
+    console.log('Saving step - pathwayId:', pathwayId, 'pathwayIndex:', pathwayIndex);
+    console.log('Pathways array length:', pathways.length);
+    
+    const pathway = pathways[pathwayIndex];
     if (!pathway) {
+      console.error('Pathway not found at index:', pathwayIndex);
       alert('Pathway not found');
       return;
     }
@@ -140,10 +158,14 @@ function saveStep(e) {
     }
 
     // Save changes with version update
-    save(pathways, pathwayId, () => {
-      // Navigate back to pathway detail
-      window.location.href = `pathway-detail.html?id=${pathwayId}`;
+    console.log('Saving step changes...');
+    await save(pathways, pathwayIndex, () => {
+      console.log('Step save callback executed');
     });
+    
+    console.log('Save completed, navigating back...');
+    // Navigate back to pathway detail
+    window.location.href = `pathway-detail.html?id=${pathwayId}`;
   });
 }
 

@@ -16,15 +16,15 @@ const getParams = () => {
 };
 
 // Save helper
-const save = async (pathways, pathwayId, cb) => {
+const save = async (pathways, pathwayIndex, cb) => {
   try {
     // Update version and lastUpdated timestamp whenever saving
-    if (pathwayId !== undefined && pathways[pathwayId]) {
+    if (pathwayIndex !== undefined && pathways[pathwayIndex]) {
       // First create a deep copy to ensure we don't lose any nested data
-      const pathwayCopy = JSON.parse(JSON.stringify(pathways[pathwayId]));
+      const pathwayCopy = JSON.parse(JSON.stringify(pathways[pathwayIndex]));
       // Then update the version
       const updatedPathway = await updatePathwayVersion(pathwayCopy);
-      pathways[pathwayId] = updatedPathway;
+      pathways[pathwayIndex] = updatedPathway;
     }
 
     chrome.storage.local.set({pathways}, cb);
@@ -73,7 +73,7 @@ function loadSteps(selectedStepIndex) {
   const { pathwayId } = getParams();
   
   chrome.storage.local.get({pathways: []}, ({pathways}) => {
-    const pathway = pathways[pathwayId];
+    const pathway = pathways[parseInt(pathwayId)];
     if (!pathway) return;
     
     const stepSelect = $('#stepSelect');
@@ -101,7 +101,7 @@ function loadBookmarkData() {
   }
   
   chrome.storage.local.get({pathways: []}, ({pathways}) => {
-    const pathway = pathways[pathwayId];
+    const pathway = pathways[parseInt(pathwayId)];
     if (!pathway) {
       alert('Pathway not found');
       navigateBack();
@@ -224,7 +224,7 @@ async function saveBookmark(e) {
       }
       
       // Save changes with version update
-      await save(pathwaysCopy, pathwayId, () => {
+      await save(pathwaysCopy, parseInt(pathwayId), () => {
         // Log success for debugging
         console.log('Bookmark saved successfully');
         

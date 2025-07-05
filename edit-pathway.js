@@ -1,6 +1,16 @@
 // Edit Pathway JS
 import { updatePathwayVersion } from './version-utils.js';
 
+// Check if chrome API is available
+if (!window.chrome) {
+    console.error('Chrome API not available!');
+} else if (!window.chrome.storage) {
+    console.error('Chrome storage API not available!');
+} else {
+    console.log('Chrome API ready:', typeof window.chrome.storage.local);
+    console.log('Storage enhanced:', window.chromeStorageEnhanced);
+}
+
 // Helpers
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
@@ -15,12 +25,13 @@ const getPathwayId = () => {
 const save = async (pathways, cb) => {
   // If editing an existing pathway, update its version info
   const pathwayId = getPathwayId();
-  if (pathwayId !== null && pathways[pathwayId]) {
+  if (pathwayId !== null && pathways[parseInt(pathwayId)]) {
+    const pathwayIndex = parseInt(pathwayId);
     // First create a deep copy to ensure we don't lose any nested data
-    const pathwayCopy = JSON.parse(JSON.stringify(pathways[pathwayId]));
+    const pathwayCopy = JSON.parse(JSON.stringify(pathways[pathwayIndex]));
     // Then update the version
     const updatedPathway = await updatePathwayVersion(pathwayCopy);
-    pathways[pathwayId] = updatedPathway;
+    pathways[pathwayIndex] = updatedPathway;
   }
 
   chrome.storage.local.set({pathways}, cb);
@@ -216,7 +227,7 @@ function loadPathwayData() {
   }
   
   chrome.storage.local.get({pathways: []}, ({pathways}) => {
-    const pathway = pathways[pathwayId];
+    const pathway = pathways[parseInt(pathwayId)];
     if (!pathway) {
       alert('Pathway not found');
       navigateBack();

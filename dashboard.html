@@ -82,6 +82,28 @@
   
   <script src="sortable.min.js"></script>
   <script src="bootstrap.bundle.min.js"></script>
+  <script src="chrome-polyfill-sync.js"></script>
+  <script type="module" src="chrome-storage-ready.js"></script>
+  <script>
+    // Override navigation for web app mode - must be before dashboard.js loads
+    function createNewPathway() {
+      window.location.href = 'edit-pathway.html';
+    }
+    
+    // Override pathway navigation functions
+    function viewPathway(idx) {
+      window.location.href = `pathway-detail.html?id=${idx}`;
+    }
+    
+    function editPathway(idx) {
+      window.location.href = `edit-pathway.html?id=${idx}`;
+    }
+    
+    // Make these available globally before dashboard.js loads
+    window.createNewPathway = createNewPathway;
+    window.viewPathway = viewPathway;
+    window.editPathway = editPathway;
+  </script>
   <script type="module" src="dashboard.js"></script>
   <script src="accessibility-fixes.js"></script>
 </body>

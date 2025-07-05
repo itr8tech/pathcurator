@@ -1,5 +1,6 @@
 // Pathway Detail JS - Focused management of a single pathway
 import { updatePathwayVersion, formatVersion, formatTimestamp } from './version-utils.js';
+import { exportPathwayAsHTML, exportPathwayAsCSV, exportStepAsHTML, exportStepAsCSV } from './web-exports.js';
 
 // Helpers
 const $ = s => document.querySelector(s);
@@ -57,6 +58,12 @@ const getPathwayId = () => {
   return params.get('id');
 };
 
+// Get pathway index as number
+const getPathwayIndex = () => {
+  const id = getPathwayId();
+  return id ? parseInt(id) : null;
+};
+
 // Format date
 const formatDate = (timestamp) => {
   if (!timestamp) return 'Unknown';
@@ -65,7 +72,7 @@ const formatDate = (timestamp) => {
 };
 
 // Save helper with version update and async error handling
-const save = async (pathways, pathwayId, cb) => {
+const save = async (pathways, pathwayIndex, cb) => {
   try {
     // Validate inputs
     if (!Array.isArray(pathways)) {
@@ -75,10 +82,10 @@ const save = async (pathways, pathwayId, cb) => {
     }
 
     // Update version and lastUpdated timestamp whenever saving
-    if (pathwayId !== undefined && pathways[pathwayId]) {
+    if (pathwayIndex !== undefined && pathways[pathwayIndex]) {
       try {
         // Make a deep copy to avoid reference issues
-        const pathwayCopy = JSON.parse(JSON.stringify(pathways[pathwayId]));
+        const pathwayCopy = JSON.parse(JSON.stringify(pathways[pathwayIndex]));
 
         // Try to update with the imported function
         let updatedPathway;
@@ -98,7 +105,7 @@ const save = async (pathways, pathwayId, cb) => {
 
         // Validate the result
         if (updatedPathway && typeof updatedPathway === 'object') {
-          pathways[pathwayId] = updatedPathway;
+          pathways[pathwayIndex] = updatedPathway;
         } else {
           console.error('Failed to update pathway version, using original');
         }
@@ -153,10 +160,38 @@ function loadPathwayData(openStates = null) {
     window.location.href = 'dashboard.html';
     return;
   }
+  
+  // Convert to numeric index
+  const pathwayIndex = parseInt(pathwayId);
 
   chrome.storage.local.get({pathways: []}, ({pathways}) => {
-    const pathway = pathways[pathwayId];
+    console.log('=== PATHWAY DETAIL LOADING ===');
+    console.log('- pathwayId (from URL):', pathwayId, typeof pathwayId);
+    console.log('- pathwayIndex (converted):', pathwayIndex, typeof pathwayIndex);
+    console.log('- pathways array length:', pathways.length);
+    console.log('- pathways array:', pathways);
+    
+    if (pathways.length > 0) {
+      pathways.forEach((p, i) => {
+        console.log(`  Pathway ${i}:`, {
+          name: p.name,
+          id: p.id,
+          stepsCount: p.steps?.length || 0
+        });
+      });
+    }
+    
+    const pathway = pathways[pathwayIndex];
+    console.log('- pathway found at index', pathwayIndex, ':', !!pathway);
+    if (pathway) {
+      console.log('- pathway details:', {
+        name: pathway.name,
+        stepsCount: pathway.steps?.length || 0
+      });
+    }
+    
     if (!pathway) {
+      console.error('Pathway not found at index', pathwayIndex);
       alert('Pathway not found');
       window.location.href = 'dashboard.html';
       return;
@@ -553,7 +588,8 @@ async function reorderSteps(pathway, pathwayId, newOrder) {
     const pathways = JSON.parse(JSON.stringify(pathwaysData.pathways));
 
     // Validate that we have the pathway and its steps
-    if (!pathways[pathwayId] || !pathways[pathwayId].steps) {
+    const pathwayIndex = getPathwayIndex();
+    if (!pathways[pathwayIndex] || !pathways[pathwayIndex].steps) {
       console.error('Cannot reorder steps: pathway or steps not found');
       loadPathwayData(openStates);
       return; // Exit without making changes
@@ -567,7 +603,7 @@ async function reorderSteps(pathway, pathwayId, newOrder) {
     }
 
     // Ensure we're working with a copy of the original steps
-    const originalSteps = [...pathways[pathwayId].steps];
+    const originalSteps = [...pathways[pathwayIndex].steps];
 
     // Create the reordered array with validation
     const reorderedSteps = [];
@@ -591,12 +627,12 @@ async function reorderSteps(pathway, pathwayId, newOrder) {
       });
 
       // Apply the changes
-      pathways[pathwayId].steps = reorderedSteps;
+      pathways[pathwayIndex].steps = reorderedSteps;
 
       // Use a promise for the save operation
       await new Promise(resolve => {
         // Save with proper error handling
-        save(pathways, pathwayId, () => {
+        save(pathways, pathwayIndex, () => {
           resolve();
         });
       });
@@ -639,14 +675,14 @@ async function reorderBookmarks(pathway, pathwayId, stepIndex, newOrder) {
     const pathways = JSON.parse(JSON.stringify(pathwaysData.pathways));
 
     // Validate that we have the pathway, step, and bookmarks
-    if (!pathways[pathwayId] || !pathways[pathwayId].steps ||
-        !pathways[pathwayId].steps[stepIndex]) {
+    if (!pathways[getPathwayIndex()] || !pathways[getPathwayIndex()].steps ||
+        !pathways[getPathwayIndex()].steps[stepIndex]) {
       console.error('Cannot reorder bookmarks: pathway or step not found');
       loadPathwayData(openStates);
       return; // Exit without making changes
     }
 
-    const step = pathways[pathwayId].steps[stepIndex];
+    const step = pathways[getPathwayIndex()].steps[stepIndex];
 
     // Validate that step has bookmarks
     if (!step.bookmarks || !Array.isArray(step.bookmarks)) {
@@ -692,7 +728,7 @@ async function reorderBookmarks(pathway, pathwayId, stepIndex, newOrder) {
       // Use a promise for the save operation
       await new Promise(resolve => {
         // Save with proper error handling
-        save(pathways, pathwayId, () => {
+        save(pathways, pathwayIndex, () => {
           resolve();
         });
       });
@@ -738,16 +774,16 @@ function deleteStep(stepIndex) {
   // Save open state
   const openStates = saveOpenState();
   
-  const pathwayId = getPathwayId();
+  const pathwayIndex = getPathwayIndex();
   chrome.storage.local.get({pathways: []}, ({pathways}) => {
     // Remove the step
-    pathways[pathwayId].steps.splice(stepIndex, 1);
+    pathways[pathwayIndex].steps.splice(stepIndex, 1);
     
     // Remove the corresponding open state
     openStates.splice(stepIndex, 1);
     
     // Save and reload
-    save(pathways, pathwayId, () => loadPathwayData(openStates));
+    save(pathways, pathwayIndex, () => loadPathwayData(openStates));
   });
 }
 
@@ -772,37 +808,47 @@ function deleteBookmark(stepIndex, bookmarkIndex) {
   // Save open state
   const openStates = saveOpenState();
   
-  const pathwayId = getPathwayId();
+  const pathwayIndex = getPathwayIndex();
   chrome.storage.local.get({pathways: []}, ({pathways}) => {
     // Remove the bookmark
-    pathways[pathwayId].steps[stepIndex].bookmarks.splice(bookmarkIndex, 1);
+    pathways[pathwayIndex].steps[stepIndex].bookmarks.splice(bookmarkIndex, 1);
     
     // Save and reload
-    save(pathways, pathwayId, () => loadPathwayData(openStates));
+    save(pathways, pathwayIndex, () => loadPathwayData(openStates));
   });
 }
 
 // Export functions
 function exportAsHtml() {
-  const pathwayId = getPathwayId();
-  chrome.runtime.sendMessage({
-    type: 'exportPathway',
-    index: pathwayId
+  const pathwayIndex = getPathwayIndex();
+  chrome.storage.local.get({ pathways: [] }, async ({ pathways }) => {
+    const pathway = pathways[pathwayIndex];
+    
+    if (pathway) {
+      await exportPathwayAsHTML(pathway);
+    } else {
+      alert('Pathway not found');
+    }
   });
 }
 
 function exportAsCsv() {
-  const pathwayId = getPathwayId();
-  chrome.runtime.sendMessage({
-    type: 'exportPathwayCSV',
-    index: pathwayId
+  const pathwayIndex = getPathwayIndex();
+  chrome.storage.local.get({ pathways: [] }, ({ pathways }) => {
+    const pathway = pathways[pathwayIndex];
+    
+    if (pathway) {
+      exportPathwayAsCSV(pathway);
+    } else {
+      alert('Pathway not found');
+    }
   });
 }
 
 function exportAsJson() {
-  const pathwayId = getPathwayId();
+  const pathwayIndex = getPathwayIndex();
   chrome.storage.local.get({pathways: []}, ({pathways}) => {
-    const pathway = pathways[pathwayId];
+    const pathway = pathways[pathwayIndex];
     if (!pathway) return;
     
     // Create a copy of the pathway with added sort orders
@@ -837,27 +883,35 @@ function exportAsJson() {
 
 // Step-level export functions
 function exportStepAsHtml(stepIndex) {
-  const pathwayId = getPathwayId();
-  chrome.runtime.sendMessage({
-    type: 'exportStepHTML',
-    index: pathwayId,
-    stepIndex: stepIndex
+  const pathwayIndex = getPathwayIndex();
+  chrome.storage.local.get({ pathways: [] }, async ({ pathways }) => {
+    const pathway = pathways[pathwayIndex];
+    
+    if (pathway) {
+      await exportStepAsHTML(pathway, stepIndex);
+    } else {
+      alert('Pathway not found');
+    }
   });
 }
 
 function exportStepAsCsv(stepIndex) {
-  const pathwayId = getPathwayId();
-  chrome.runtime.sendMessage({
-    type: 'exportStepCSV',
-    index: pathwayId,
-    stepIndex: stepIndex
+  const pathwayIndex = getPathwayIndex();
+  chrome.storage.local.get({ pathways: [] }, ({ pathways }) => {
+    const pathway = pathways[pathwayIndex];
+    
+    if (pathway) {
+      exportStepAsCSV(pathway, stepIndex);
+    } else {
+      alert('Pathway not found');
+    }
   });
 }
 
 function exportStepAsJson(stepIndex) {
-  const pathwayId = getPathwayId();
+  const pathwayIndex = getPathwayIndex();
   chrome.storage.local.get({pathways: []}, ({pathways}) => {
-    const pathway = pathways[pathwayId];
+    const pathway = pathways[pathwayIndex];
     if (!pathway || !pathway.steps || stepIndex >= pathway.steps.length) return;
     
     // Create a deep copy of the step
@@ -899,11 +953,11 @@ async function auditPathwayLinks() {
   statusDiv.style.zIndex = '9999';
   document.body.appendChild(statusDiv);
   
-  const pathwayId = getPathwayId();
+  const pathwayIndex = getPathwayIndex();
   try {
     // Get current pathway
     const { pathways } = await chrome.storage.local.get({ pathways: [] });
-    const pathway = pathways[pathwayId];
+    const pathway = pathways[pathwayIndex];
     
     if (!pathway || !pathway.steps) {
       throw new Error('Pathway not found');
@@ -1088,6 +1142,7 @@ function handleActionClick(e) {
 // Publish a pathway to GitHub in all formats (HTML, CSV, JSON)
 async function publishPathwayToGitHub() {
   const pathwayId = getPathwayId();
+  const pathwayIndex = getPathwayIndex();
   
   // Create a status element for user feedback
   let statusEl = null;
@@ -1151,7 +1206,7 @@ async function publishPathwayToGitHub() {
     // Get the pathway data
     chrome.storage.local.get({pathways: []}, async ({pathways}) => {
       try {
-        const pathway = pathways[pathwayId];
+        const pathway = pathways[pathwayIndex];
         if (!pathway) {
           alert('Pathway not found.');
           return;
