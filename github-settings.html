@@ -2,18 +2,86 @@
 <html lang="en" data-bs-theme="auto">
 <head>
 <meta charset="utf-8">
-<title>GitHub Settings - Curator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>GitHub Settings - PathCurator</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<style>
+  /* Branding consistency with home page */
+  .navbar-dark {
+    background: var(--bs-primary) !important;
+  }
+  
+  /* Dark mode navbar styling */
+  [data-bs-theme="dark"] .navbar-dark {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+  }
+  
+  /* Dark mode adjustments matching home page */
+  [data-bs-theme="dark"] .bg-light {
+    background-color: var(--bs-dark) !important;
+    color: var(--bs-light);
+  }
+  
+  [data-bs-theme="dark"] .card {
+    background-color: var(--bs-dark);
+    border-color: var(--bs-gray-700);
+  }
+  
+</style>
 </head>
-<body class="container py-4">
-  <div class="d-flex align-items-center mb-4">
-    <a href="dashboard.html" class="btn btn-outline-secondary btn-sm me-3">
-      <i class="bi bi-arrow-left"></i> Back to Dashboard
-    </a>
-    <h1 class="h3 mb-0 flex-grow-1">GitHub Integration Settings</h1>
-  </div>
+<body>
+  <!-- Skip link for keyboard users -->
+  <a href="#main-content" class="visually-hidden-focusable">Skip to main content</a>
+  
+  <!-- Navigation Bar matching home page -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">
+        <i class="bi bi-signpost-2"></i> PathCurator
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="dashboard.html">
+              <i class="bi bi-grid me-1"></i>Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="link-audit.html">
+              <i class="bi bi-link-45deg me-1"></i>Audit
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="github-settings.html" aria-current="page">
+              <i class="bi bi-github me-1"></i>GitHub Settings
+            </a>
+          </li>
+        </ul>
+        <div class="navbar-nav">
+          <button id="theme-toggle" class="btn btn-outline-light" title="Toggle Dark Mode" aria-label="Toggle Dark Mode">
+            <i class="bi bi-moon-stars-fill" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+  
+  <div class="container py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+      <div class="col">
+        <h1 class="h2 mb-0" id="main-content">
+          <i class="bi bi-github me-2" aria-hidden="true"></i>GitHub Settings
+        </h1>
+        <p class="text-muted mb-0">Connect and configure GitHub integration for pathway storage</p>
+      </div>
+    </div>
 
   <!-- Auth Status Card -->
   <div class="card mb-4">
@@ -134,7 +202,52 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="chrome-polyfill-sync.js"></script>
+  <script>
+    // Dark mode functionality
+    function getPreferredTheme() {
+      const storedTheme = localStorage.getItem('theme');
+      if (storedTheme) {
+        return storedTheme;
+      }
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-bs-theme', theme);
+      localStorage.setItem('theme', theme);
+      
+      const themeIcon = document.getElementById('theme-toggle').querySelector('i');
+      if (theme === 'dark') {
+        themeIcon.classList.remove('bi-moon-stars-fill');
+        themeIcon.classList.add('bi-sun-fill');
+        document.getElementById('theme-toggle').title = 'Switch to Light Mode';
+      } else {
+        themeIcon.classList.remove('bi-sun-fill');
+        themeIcon.classList.add('bi-moon-stars-fill');
+        document.getElementById('theme-toggle').title = 'Switch to Dark Mode';
+      }
+    }
+
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      setTheme(newTheme);
+    }
+
+    // Initialize theme on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      setTheme(getPreferredTheme());
+      document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+      
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+        if (!localStorage.getItem('theme')) {
+          setTheme(e.matches ? 'dark' : 'light');
+        }
+      });
+    });
+  </script>
   <script type="module" src="github-settings.js"></script>
 </body>
 </html>
