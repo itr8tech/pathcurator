@@ -234,16 +234,6 @@ function pathHTML(p,idx){
           ${creatorDisplay ? `<div class="me-3"><i class="bi bi-person-circle me-1"></i>${creatorDisplay}</div>` : ''}
           ${modifierDisplay ? `<div><i class="bi bi-pencil me-1"></i>${modifierDisplay}</div>` : ''}
         </div>
-        <div class="d-flex gap-2 mt-3 justify-content-between">
-          <button data-act="publish" data-idx="${idx}" class="btn btn-sm btn-outline-primary">
-            <i class="bi bi-github"></i> Publish to GitHub
-          </button>
-          <div>
-            <button data-act="html" data-idx="${idx}" class="btn btn-sm btn-outline-secondary">HTML</button>
-            <button data-act="csv" data-idx="${idx}" class="btn btn-sm btn-outline-secondary">CSV</button>
-            <button data-act="json" data-idx="${idx}" class="btn btn-sm btn-outline-secondary">JSON</button>
-          </div>
-        </div>
       </div>
     </div>
   </li>`;
@@ -1159,244 +1149,6 @@ function createNewPathway() {
   window.location.href = 'edit-pathway.html';
 }
 
-// Publish a single pathway to GitHub in all formats (HTML, CSV, JSON)
-async function publishPathwayToGitHub(idx) {
-  // Create a status element for user feedback
-  let statusEl = null;
-  
-  // Function to show status messages to the user
-  const showStatus = (message, type = 'info') => {
-    // Create status element if it doesn't exist
-    if (!statusEl) {
-      statusEl = document.createElement('div');
-      statusEl.style.zIndex = '9999';
-      statusEl.style.transition = 'all 0.3s ease';
-      document.body.appendChild(statusEl);
-    }
-    
-    // Set color based on status type
-    let bgColor = 'bg-dark';
-    if (type === 'success') bgColor = 'bg-success';
-    if (type === 'error') bgColor = 'bg-danger';
-    if (type === 'warning') bgColor = 'bg-warning text-dark';
-    
-    // Update status message
-    statusEl.className = `position-fixed top-0 start-0 end-0 ${bgColor} text-white p-3 text-center`;
-    statusEl.textContent = message; // SECURITY: Use textContent to prevent XSS
-    
-    // For success or error messages, set a timeout to remove the status
-    if (type === 'success' || type === 'error') {
-      setTimeout(() => {
-        if (statusEl && document.body.contains(statusEl)) {
-          document.body.removeChild(statusEl);
-          statusEl = null;
-        }
-      }, 5000); // Show for 5 seconds for better visibility
-    }
-  };
-  
-  try {
-    // Import the GitHub API module
-    const GitHubModule = await import('./github-api.js');
-    const GitHub = GitHubModule;
-    
-    // Check if authenticated and configured
-    const isAuthenticated = await GitHub.isAuthenticated();
-    if (!isAuthenticated) {
-      const connectNow = confirm('You need to connect to GitHub first. Go to GitHub Settings now?');
-      if (connectNow) {
-        window.location.href = 'github-settings.html';
-      }
-      return;
-    }
-    
-    // Get GitHub configuration
-    const config = await GitHub.getGitHubConfig();
-    if (!config.repository) {
-      const configureNow = confirm('You need to select a repository first. Go to GitHub Settings now?');
-      if (configureNow) {
-        window.location.href = 'github-settings.html';
-      }
-      return;
-    }
-    
-    // Get the pathway data
-    chrome.storage.local.get({pathways: []}, async ({pathways}) => {
-      try {
-        const pathway = pathways[idx];
-        if (!pathway) {
-          alert('Pathway not found.');
-          return;
-        }
-        
-        // Sanitize pathway name for filenames
-        const pathwayName = pathway.name.replace(/[^a-z0-9_-]+/gi, '_').toLowerCase();
-        
-        // Ask for commit message
-        const defaultMessage = `Publish pathway: ${pathway.name}`;
-        const commitMessage = prompt('Enter a commit message:', defaultMessage);
-        if (!commitMessage) return; // Cancelled
-        
-        // Show status
-        showStatus(`Publishing "${pathway.name}" to GitHub...`);
-        
-        // Import the export utilities and version utilities
-        console.log('Importing export utilities...');
-        const ExportModule = await import('./export-utils.js');
-        console.log('Export utilities imported:', Object.keys(ExportModule));
-        
-        console.log('Importing version utilities...');
-        const VersionModule = await import('./version-utils.js');
-        console.log('Version utilities imported:', Object.keys(VersionModule));
-        
-        // Generate all three formats
-        
-        // 1. JSON Format
-        const pathwayWithSortOrder = JSON.parse(JSON.stringify(pathway));
-        if (pathwayWithSortOrder.steps) {
-          pathwayWithSortOrder.steps.forEach(step => {
-            if (step.bookmarks) {
-              step.bookmarks.forEach((bookmark, index) => {
-                bookmark.sortOrder = index;
-              });
-            }
-          });
-        }
-        const jsonContent = JSON.stringify([pathwayWithSortOrder], null, 2);
-        
-        // 2. HTML Format - Use the export utility function
-        // Ensure pathway has updated version info and createdBy before generating HTML
-        let pathwayForHTML;
-        try {
-          pathwayForHTML = await VersionModule.updatePathwayVersion(JSON.parse(JSON.stringify(pathway, (key, value) => {
-            // Preserve all audit-related fields during JSON serialization
-            if (key === 'available' || key === 'status' || key === 'lastChecked' || 
-                key === 'error' || key === 'redirectUrl' || key === 'requiresAuth' || 
-                key === 'isExemptDomain' || key === 'checkDuration') {
-              return value;
-            }
-            return value;
-          })));
-        } catch (versionError) {
-          console.error('Error updating pathway version:', versionError);
-          // Fallback: use pathway as-is with timestamp
-          pathwayForHTML = JSON.parse(JSON.stringify(pathway, (key, value) => {
-            // Preserve all audit-related fields during JSON serialization
-            if (key === 'available' || key === 'status' || key === 'lastChecked' || 
-                key === 'error' || key === 'redirectUrl' || key === 'requiresAuth' || 
-                key === 'isExemptDomain' || key === 'checkDuration') {
-              return value;
-            }
-            return value;
-          }));
-          pathwayForHTML.lastUpdated = Date.now();
-        }
-        
-        // Add creator info if not already present
-        if (!pathwayForHTML.createdBy) {
-          try {
-            pathwayForHTML.createdBy = await ExportModule.getGitHubUsername();
-          } catch (usernameError) {
-            console.error('Error getting GitHub username:', usernameError);
-            pathwayForHTML.createdBy = 'Unknown';
-          }
-        }
-        
-        let html;
-        try {
-          console.log('About to generate HTML for pathway:', pathwayForHTML.name);
-          console.log('ExportModule.generateHTML function:', typeof ExportModule.generateHTML);
-          html = await ExportModule.generateHTML(pathwayForHTML);
-          console.log('HTML generation completed, length:', html?.length);
-        } catch (htmlError) {
-          console.error('Error generating HTML:', htmlError);
-          console.error('HTML error stack:', htmlError.stack);
-          throw new Error(`Failed to generate HTML: ${htmlError.message}`);
-        }
-
-        // 3. CSV Format - Use the export utility function
-        // Make sure pathway has createdBy field
-        const pathwayForCSV = JSON.parse(JSON.stringify(pathway));
-        if (!pathwayForCSV.createdBy) {
-          try {
-            pathwayForCSV.createdBy = await ExportModule.getGitHubUsername();
-          } catch (usernameError) {
-            console.error('Error getting GitHub username for CSV:', usernameError);
-            pathwayForCSV.createdBy = 'Unknown';
-          }
-        }
-        
-        let csv;
-        try {
-          csv = await ExportModule.generateCSV(pathwayForCSV);
-        } catch (csvError) {
-          console.error('Error generating CSV:', csvError);
-          throw new Error(`Failed to generate CSV: ${csvError.message}`);
-        }
-        
-        // Create folder path based on pathway name
-        const folderPath = `pathways/${pathwayName}`;
-        
-        // Commit all three files in a single commit
-        showStatus(`Committing files to ${folderPath}...`);
-        
-        try {
-          // JSON file
-          const jsonResult = await GitHub.commitFile(
-            jsonContent, 
-            commitMessage,
-            `${folderPath}/${pathwayName}.json`
-          );
-          
-          // HTML file
-          const htmlResult = await GitHub.commitFile(
-            html,
-            commitMessage,
-            `${folderPath}/${pathwayName}.html`
-          );
-          
-          // CSV file
-          const csvResult = await GitHub.commitFile(
-            csv,
-            commitMessage,
-            `${folderPath}/${pathwayName}.csv`
-          );
-          
-          // Show success message
-          const repoUrl = `https://github.com/${config.username}/${config.repository}/tree/main/${folderPath}`;
-          showStatus(
-            `Successfully published pathway to GitHub!<br>` +
-            `<small><a href="${repoUrl}" target="_blank" class="text-white">View in GitHub Repository</a></small>`,
-            'success'
-          );
-        } catch (error) {
-          console.error('Failed to publish pathway to GitHub:', error);
-          
-          let errorMessage = error.message;
-          
-          // Check for common error types
-          if (error.message.includes('401')) {
-            errorMessage = 'Authentication error. Your GitHub token may have expired. Please reconnect in GitHub Settings.';
-          } else if (error.message.includes('403')) {
-            errorMessage = 'Permission denied. Make sure your token has the "repo" scope.';
-          } else if (error.message.includes('404')) {
-            errorMessage = 'Repository not found. Check your repository settings.';
-          } else if (error.message.includes('network') || error.message.includes('fetch')) {
-            errorMessage = 'Network error. Check your internet connection and try again.';
-          }
-          
-          showStatus(`Failed to publish pathway: ${errorMessage}`, 'error');
-        }
-      } catch (error) {
-        console.error('Error preparing pathway for publishing:', error);
-        showStatus(`Error preparing pathway data: ${error.message}`, 'error');
-      }
-    });
-  } catch (error) {
-    console.error('Error loading GitHub module:', error);
-    alert('Failed to load GitHub integration: ' + error.message);
-  }
-}
 
 // Commit to GitHub (all pathways)
 async function commitToGitHub() {
@@ -1845,27 +1597,22 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('#theme-toggle').addEventListener('click', toggleTheme);
   
   // Handle file selection
-  $('#fileInput').addEventListener('change', event => {
-    const file = event.target.files[0];
-    if (file) {
-      importData(file);
-      // Reset file input so the same file can be selected again
-      event.target.value = '';
-    }
-  });
+  const fileInput = $('#fileInput');
+  if (fileInput) {
+    fileInput.addEventListener('change', event => {
+      const file = event.target.files[0];
+      if (file) {
+        importData(file);
+        // Reset file input so the same file can be selected again
+        event.target.value = '';
+      }
+    });
+  }
   $('#pathwayList').addEventListener('click',e=>{
     const btn=e.target.closest('button[data-act]'); if(!btn) return;
     e.stopPropagation();
     const act=btn.dataset.act; const idx=+btn.dataset.idx;
-    if(act === 'publish') {
-      publishPathwayToGitHub(idx);
-    } else if(act==='html'||act==='csv'||act==='json'){
-      if (act === 'json') {
-        exportSinglePathway(idx);
-      } else {
-        chrome.runtime.sendMessage({type:act==='html'?'exportPathway':'exportPathwayCSV',index:idx});
-      }
-    } else if(act==='view-detail'){
+    if(act==='view-detail'){
       window.location.href = `pathway-detail.html?id=${idx}`;
     } else if(act==='edit-path'){
       window.location.href = `edit-pathway.html?id=${idx}`;
