@@ -561,6 +561,11 @@ const AUTO_COMMIT_CONFIG_KEY = 'auto_commit_config';
 // Load auto-commit settings
 async function loadAutoCommitSettings() {
   try {
+    console.log('Loading auto-commit settings...');
+    
+    // Wait for storage to be ready
+    await waitForStorageReady();
+    
     let config;
     
     // Use localStorage in development mode
@@ -571,20 +576,24 @@ async function loadAutoCommitSettings() {
         interval: 15,
         messagePrefix: 'Auto-commit:'
       };
+      console.log('Auto-commit config from localStorage:', config);
     } else {
       // Use Chrome storage in extension mode
       config = await new Promise((resolve) => {
         chrome.storage.local.get(AUTO_COMMIT_CONFIG_KEY, (result) => {
-          resolve(result[AUTO_COMMIT_CONFIG_KEY] || {
+          const autoCommitConfig = result[AUTO_COMMIT_CONFIG_KEY] || {
             enabled: false,
             interval: 15,
             messagePrefix: 'Auto-commit:'
-          });
+          };
+          console.log('Auto-commit config from Chrome storage:', autoCommitConfig);
+          resolve(autoCommitConfig);
         });
       });
     }
     
     // Update UI
+    console.log('Updating auto-commit UI with config:', config);
     document.getElementById('auto-commit-enabled').checked = config.enabled;
     document.getElementById('auto-commit-interval').value = config.interval;
     document.getElementById('auto-commit-message').value = config.messagePrefix;
@@ -592,6 +601,9 @@ async function loadAutoCommitSettings() {
     // Show/hide options based on enabled state
     if (config.enabled) {
       document.getElementById('auto-commit-options').classList.remove('d-none');
+      console.log('Showing auto-commit options because enabled =', config.enabled);
+    } else {
+      console.log('Hiding auto-commit options because enabled =', config.enabled);
     }
   } catch (error) {
     console.error('Error loading auto-commit settings:', error);
@@ -669,7 +681,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('auto-commit-enabled').addEventListener('change', toggleAutoCommitOptions);
   document.getElementById('btn-save-auto-commit').addEventListener('click', saveAutoCommitSettings);
   
-  // Load auto-commit settings
+  // Load auto-commit settings (after storage is ready)
   loadAutoCommitSettings();
   
   // Debug button
