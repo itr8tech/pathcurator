@@ -115,6 +115,70 @@ function showAutoCommitNotification(message, type = 'success') {
   }, 4000);
 }
 
+// Function to update navigation status widget
+function updateNavigationWidget() {
+  const statusWidget = document.getElementById('auto-commit-status');
+  const countdownEl = document.getElementById('auto-commit-countdown');
+  const detailsEl = document.getElementById('auto-commit-details');
+  const iconEl = document.getElementById('auto-commit-icon');
+  
+  // Only update if widget exists on this page
+  if (!statusWidget) return;
+  
+  // Get current status
+  getAutoCommitConfig().then(config => {
+    if (!config.enabled) {
+      statusWidget.classList.add('d-none');
+      return;
+    }
+    
+    // Show widget
+    statusWidget.classList.remove('d-none');
+    
+    // Get timer data
+    getTimerData().then(timerData => {
+      if (!timerData.timerStart) {
+        countdownEl.textContent = `${config.interval}:00`;
+        detailsEl.textContent = 'Starting...';
+        iconEl.className = 'bi bi-clock-history me-2 text-white';
+        return;
+      }
+      
+      const elapsedMs = Date.now() - timerData.timerStart;
+      const intervalMs = config.interval * 60 * 1000;
+      const remainingMs = Math.max(0, intervalMs - elapsedMs);
+      
+      if (remainingMs === 0) {
+        countdownEl.textContent = '0:00';
+        detailsEl.textContent = 'Syncing...';
+        iconEl.className = 'bi bi-arrow-clockwise me-2 text-white';
+      } else {
+        const minutes = Math.floor(remainingMs / 60000);
+        const seconds = Math.floor((remainingMs % 60000) / 1000);
+        
+        countdownEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        iconEl.className = 'bi bi-clock-history me-2 text-white';
+        
+        // Show last sync time if available
+        if (timerData.lastCommitTime) {
+          const timeDiff = Date.now() - timerData.lastCommitTime;
+          const minutesAgo = Math.floor(timeDiff / 60000);
+          
+          if (minutesAgo < 1) {
+            detailsEl.textContent = 'Just synced';
+          } else if (minutesAgo < 60) {
+            detailsEl.textContent = `${minutesAgo}m ago`;
+          } else {
+            detailsEl.textContent = 'Last sync';
+          }
+        } else {
+          detailsEl.textContent = 'Next sync';
+        }
+      }
+    });
+  });
+}
+
 // Function to perform auto-commit
 async function performAutoCommit() {
   try {
@@ -257,7 +321,10 @@ async function startPersistentTimer() {
   await checkCommitInterval();
   
   // Then check every minute to see if interval has passed
-  autoCommitTimer = setInterval(checkCommitInterval, 60000); // Check every minute
+  autoCommitTimer = setInterval(() => {
+    checkCommitInterval();
+    updateNavigationWidget(); // Update the nav widget every minute
+  }, 60000);
   console.log('PWA Auto-commit: Timer checking every minute for interval completion');
 }
 
@@ -296,8 +363,24 @@ async function resetAutoCommitTimer() {
 function initializePWAAutoCommit() {
   console.log('PWA Auto-commit: Initializing...');
   
-  // Initialize timer
+  // Set up manual trigger button if it exists
+  const manualTriggerBtn = document.getElementById('auto-commit-manual-trigger');
+  if (manualTriggerBtn) {
+    manualTriggerBtn.addEventListener('click', async () => {
+      console.log('PWA Auto-commit: Manual trigger clicked');
+      await triggerAutoCommit();
+      // Reset timer after manual commit
+      await setTimerData(TIMER_START_KEY, Date.now());
+      updateNavigationWidget();
+    });
+  }
+  
+  // Initialize timer and widget
   resetAutoCommitTimer();
+  
+  // Update widget immediately and then every 5 seconds for real-time countdown
+  updateNavigationWidget();
+  setInterval(updateNavigationWidget, 5000);
   
   // Listen for storage changes (when settings are updated)
   window.addEventListener('storage', async (e) => {
@@ -306,6 +389,7 @@ function initializePWAAutoCommit() {
       // Config changed - this SHOULD reset the timer
       await setTimerData(TIMER_START_KEY, Date.now());
       resetAutoCommitTimer();
+      updateNavigationWidget();
     }
   });
   
@@ -379,7 +463,8 @@ export {
   getDataHash, 
   showAutoCommitNotification,
   triggerAutoCommit,
-  initializePWAAutoCommit
+  initializePWAAutoCommit,
+  updateNavigationWidget
 };
 
 // Also make available globally for debugging
@@ -390,5 +475,6 @@ window.pwaAutoCommit = {
   showAutoCommitNotification,
   triggerAutoCommit,
   initializePWAAutoCommit,
+  updateNavigationWidget,
   checkTimerStatus
 };

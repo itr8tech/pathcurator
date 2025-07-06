@@ -49,6 +49,20 @@
           </li>
         </ul>
         <div class="navbar-nav">
+          <!-- Auto-commit status widget -->
+          <div id="auto-commit-status" class="nav-item me-3 d-none">
+            <div class="d-flex align-items-center bg-white bg-opacity-10 rounded px-2 py-1">
+              <i id="auto-commit-icon" class="bi bi-clock-history me-2"></i>
+              <div>
+                <div id="auto-commit-countdown" class="small fw-semibold text-white">--:--</div>
+                <div id="auto-commit-details" class="small text-white-50" style="font-size: 0.7rem;">Next sync</div>
+              </div>
+              <button id="auto-commit-manual-trigger" class="btn btn-sm btn-outline-light ms-2 p-1" title="Sync now">
+                <i class="bi bi-arrow-clockwise small"></i>
+              </button>
+            </div>
+          </div>
+          
           <button id="theme-toggle" class="btn btn-outline-light" title="Toggle Dark Mode" aria-label="Toggle Dark Mode">
             <i class="bi bi-moon-stars-fill" aria-hidden="true"></i>
           </button>
@@ -90,18 +104,6 @@
     </div>
   </div>
   
-  <!-- Auto-commit status indicator -->
-  <div id="auto-commit-status" class="alert alert-info-subtle d-none mb-3">
-    <div class="d-flex align-items-center justify-content-between">
-      <div>
-        <i class="bi bi-clock-history me-2"></i>
-        <span id="auto-commit-message">Auto-commit is enabled</span>
-      </div>
-      <a href="github-settings.html" class="btn btn-sm btn-outline-primary">
-        <i class="bi bi-gear"></i> Configure
-      </a>
-    </div>
-  </div>
   
   <input type="file" id="fileInput" accept=".json" class="d-none" aria-label="Import JSON file" aria-describedby="importHelp">
   <div id="importHelp" class="visually-hidden">Select a JSON file to import pathway data</div>
