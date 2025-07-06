@@ -556,8 +556,7 @@ async function handleDebug() {
 }
 
 // Auto-commit settings
-const STORAGE_PREFIX = 'pathcurator_';
-const AUTO_COMMIT_CONFIG_KEY = STORAGE_PREFIX + 'auto_commit_config';
+const AUTO_COMMIT_CONFIG_KEY = 'auto_commit_config';
 
 // Load auto-commit settings
 async function loadAutoCommitSettings() {
@@ -569,29 +568,18 @@ async function loadAutoCommitSettings() {
     
     let config;
     
-    // Use localStorage in development mode
-    if (typeof window !== 'undefined' && window.location.protocol === 'http:') {
-      const stored = localStorage.getItem(AUTO_COMMIT_CONFIG_KEY);
-      config = stored ? JSON.parse(stored) : {
-        enabled: false,
-        interval: 15,
-        messagePrefix: 'Auto-commit:'
-      };
-      console.log('Auto-commit config from localStorage:', config);
-    } else {
-      // Use Chrome storage in extension mode
-      config = await new Promise((resolve) => {
-        chrome.storage.local.get(AUTO_COMMIT_CONFIG_KEY, (result) => {
-          const autoCommitConfig = result[AUTO_COMMIT_CONFIG_KEY] || {
-            enabled: false,
-            interval: 15,
-            messagePrefix: 'Auto-commit:'
-          };
-          console.log('Auto-commit config from Chrome storage:', autoCommitConfig);
-          resolve(autoCommitConfig);
-        });
+    // Use enhanced Chrome storage for PWA
+    config = await new Promise((resolve) => {
+      chrome.storage.local.get(AUTO_COMMIT_CONFIG_KEY, (result) => {
+        const autoCommitConfig = result[AUTO_COMMIT_CONFIG_KEY] || {
+          enabled: false,
+          interval: 15,
+          messagePrefix: 'Auto-commit:'
+        };
+        console.log('Auto-commit config from enhanced Chrome storage:', autoCommitConfig);
+        resolve(autoCommitConfig);
       });
-    }
+    });
     
     // Update UI
     console.log('Updating auto-commit UI with config:', config);
@@ -620,22 +608,16 @@ async function saveAutoCommitSettings() {
       messagePrefix: document.getElementById('auto-commit-message').value || 'Auto-commit:'
     };
     
-    // Save to storage
-    if (typeof window !== 'undefined' && window.location.protocol === 'http:') {
-      // Use localStorage in development mode
-      localStorage.setItem(AUTO_COMMIT_CONFIG_KEY, JSON.stringify(config));
-    } else {
-      // Use Chrome storage in extension mode
-      await new Promise((resolve, reject) => {
-        chrome.storage.local.set({ [AUTO_COMMIT_CONFIG_KEY]: config }, () => {
-          if (chrome.runtime.lastError) {
-            reject(chrome.runtime.lastError);
-          } else {
-            resolve();
-          }
-        });
+    // Save to enhanced Chrome storage
+    await new Promise((resolve, reject) => {
+      chrome.storage.local.set({ [AUTO_COMMIT_CONFIG_KEY]: config }, () => {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError);
+        } else {
+          resolve();
+        }
       });
-    }
+    });
     
     // Trigger storage event to notify auto-commit system
     window.dispatchEvent(new StorageEvent('storage', {

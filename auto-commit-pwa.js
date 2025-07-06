@@ -47,15 +47,21 @@ async function getPathwaysFromStorage() {
   }
 }
 
-// Function to get auto-commit config
-function getAutoCommitConfig() {
+// Function to get auto-commit config (using enhanced chrome storage)
+async function getAutoCommitConfig() {
   try {
-    const stored = localStorage.getItem(AUTO_COMMIT_CONFIG_KEY);
-    return stored ? JSON.parse(stored) : {
-      enabled: false,
-      interval: 15,
-      messagePrefix: 'Auto-commit:'
-    };
+    return new Promise((resolve) => {
+      chrome.storage.local.get('auto_commit_config', (result) => {
+        const config = result.auto_commit_config || {
+          enabled: false,
+          interval: 15,
+          messagePrefix: 'Auto-commit:'
+        };
+        
+        console.log('PWA Auto-commit: Retrieved config from enhanced storage:', config);
+        resolve(config);
+      });
+    });
   } catch (error) {
     console.error('Error getting auto-commit config:', error);
     return { enabled: false, interval: 15, messagePrefix: 'Auto-commit:' };
@@ -127,7 +133,7 @@ async function performAutoCommit() {
     }
     
     // Check auto-commit config
-    const config = getAutoCommitConfig();
+    const config = await getAutoCommitConfig();
     if (!config.enabled) {
       console.log('PWA Auto-commit: Disabled, skipping');
       return;
@@ -185,7 +191,7 @@ async function performAutoCommit() {
 }
 
 // Function to reset auto-commit timer
-function resetAutoCommitTimer() {
+async function resetAutoCommitTimer() {
   console.log('PWA Auto-commit: Resetting timer...');
   
   // Clear existing timer
@@ -195,7 +201,7 @@ function resetAutoCommitTimer() {
   }
   
   // Get config
-  const config = getAutoCommitConfig();
+  const config = await getAutoCommitConfig();
   console.log('PWA Auto-commit: Config:', config);
   
   if (config.enabled && config.interval > 0) {
