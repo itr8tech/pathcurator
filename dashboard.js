@@ -1748,3 +1748,75 @@ window.addEventListener('focus', () => {
     localStorage.removeItem('pathcurator_refresh_needed');
   }
 });
+
+// Web Share Target API Service Worker Registration
+async function registerShareServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    try {
+      const registration = await navigator.serviceWorker.register('/share-service-worker.js', {
+        scope: '/'
+      });
+      
+      console.log('Share service worker registered successfully:', registration);
+      
+      // Listen for messages from the service worker
+      navigator.serviceWorker.addEventListener('message', event => {
+        if (event.data.type === 'SHARE_RECEIVED') {
+          console.log('Received shared content:', event.data);
+          // Could trigger a UI update or notification here
+        }
+      });
+      
+    } catch (error) {
+      console.log('Share service worker registration failed:', error);
+    }
+  }
+}
+
+// Register Web Share Target support on page load
+document.addEventListener('DOMContentLoaded', () => {
+  registerShareServiceWorker();
+});
+
+// Add Web Share API functionality for sharing PathCurator itself
+function setupWebShareAPI() {
+  // Check if Web Share API is supported
+  if (navigator.share) {
+    console.log('Web Share API is supported');
+    
+    // Add a share button to the dashboard if it doesn't exist
+    const navbar = document.querySelector('.navbar-nav');
+    if (navbar && !document.getElementById('sharePathCuratorBtn')) {
+      const shareItem = document.createElement('li');
+      shareItem.className = 'nav-item';
+      shareItem.innerHTML = `
+        <button class="btn btn-link nav-link" id="sharePathCuratorBtn" title="Share PathCurator">
+          <i class="bi bi-share" aria-hidden="true"></i> Share
+        </button>
+      `;
+      
+      navbar.appendChild(shareItem);
+      
+      // Add click handler
+      document.getElementById('sharePathCuratorBtn').addEventListener('click', async () => {
+        try {
+          await navigator.share({
+            title: 'PathCurator - Organize Your Learning Pathways',
+            text: 'Check out PathCurator - a tool for organizing bookmarks into structured learning pathways!',
+            url: window.location.origin + '/dashboard.html'
+          });
+          console.log('PathCurator shared successfully');
+        } catch (error) {
+          console.log('Error sharing PathCurator:', error);
+        }
+      });
+    }
+  } else {
+    console.log('Web Share API is not supported');
+  }
+}
+
+// Initialize Web Share API on page load
+document.addEventListener('DOMContentLoaded', () => {
+  setupWebShareAPI();
+});
