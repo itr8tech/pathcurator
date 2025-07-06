@@ -9,37 +9,13 @@ const esc = s => s?.replace(/[&<>"']/g, c => ({
   '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
 }[c])) || '';
 
-// Theme handling functions
+// Theme handling functions - respect system preference only
 function getPreferredTheme() {
-  // Check if user has already set a preference
-  const storedTheme = localStorage.getItem('theme');
-  if (storedTheme) {
-    return storedTheme;
-  }
-  
-  // Otherwise, respect OS preference
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 function setTheme(theme) {
   document.documentElement.setAttribute('data-bs-theme', theme);
-  localStorage.setItem('theme', theme);
-  
-  // Update the icon
-  const themeIcon = document.getElementById('theme-toggle').querySelector('i');
-  if (theme === 'dark') {
-    themeIcon.classList.remove('bi-moon-stars-fill');
-    themeIcon.classList.add('bi-sun-fill');
-  } else {
-    themeIcon.classList.remove('bi-sun-fill');
-    themeIcon.classList.add('bi-moon-stars-fill');
-  }
-}
-
-function toggleTheme() {
-  const currentTheme = document.documentElement.getAttribute('data-bs-theme');
-  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-  setTheme(newTheme);
 }
 
 // Simple markdown
@@ -1623,8 +1599,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialize theme based on preference
   setTheme(getPreferredTheme());
   
-  // Add theme toggle handler
-  $('#theme-toggle').addEventListener('click', toggleTheme);
+  // Listen for system preference changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+    setTheme(e.matches ? 'dark' : 'light');
+  });
   
   loadPathwayData();
   
