@@ -1294,15 +1294,18 @@ body.dark-mode img:not([src*=".svg"]) {
       ${pathway.version ? `Version: ${pathway.version}` : ''}
     </div>
     ${pathway.contentWarning ? `
-    <details class="mb-4 p-3 bg-warning-subtle rounded-3">
-      <summary role="button" aria-expanded="false" tabindex="0" class="text-black">
-        <i class="fa fa-exclamation-triangle me-2" aria-hidden="true"></i> Before you proceed...
-      </summary>
-      <div class="p-3 prose-lg" id="content-warning-text">
-        <h3 id="content-warning-heading" class="h6 mb-2">Content Warning</h3>
-        <div class="prose">${markdownToHTML(pathway.contentWarning)}</div>
-      </div>
-    </details>` : ''}
+    <section class="mb-4 p-3 bg-warning-subtle rounded-3" role="region" aria-labelledby="content-warning-heading">
+      <details>
+        <summary role="button" aria-expanded="false" class="text-black" aria-describedby="content-warning-description">
+          <i class="fa fa-exclamation-triangle me-2" aria-hidden="true"></i> Before you proceed...
+        </summary>
+        <div id="content-warning-description" class="visually-hidden">Click to read important content warnings for this pathway</div>
+        <div class="p-3 prose-lg" id="content-warning-text">
+          <h2 id="content-warning-heading" class="h6 mb-2">Content Warning</h2>
+          <div class="prose">${markdownToHTML(pathway.contentWarning)}</div>
+        </div>
+      </details>
+    </section>` : ''}
   </header>
   
   <!-- Control bar container -->
@@ -1370,13 +1373,14 @@ body.dark-mode img:not([src*=".svg"]) {
       const requiredCount = step.bookmarks ? step.bookmarks.filter(b => b.required !== false).length : 0;
       
       html += `
-    <details class="step-container" id="${stepId}">
-      <summary class="fw-semibold">
+    <section class="step-container" id="${stepId}">
+      <details>
+        <summary class="fw-semibold" role="button" aria-expanded="false" aria-controls="${stepId}-content">
         <i class="fa fa-caret-right me-2 caret-icon" aria-hidden="true"></i>
         <div class="summary-content">
           <div class="d-flex justify-content-between align-items-start">
             <div class="flex-grow-1">
-              <h3 class="h5 mb-0">Step ${stepIndex + 1}: ${esc(step.name)}</h3>
+              <h2 class="h4 mb-0" id="${stepId}-heading">Step ${stepIndex + 1}: ${esc(step.name)}</h2>
               ${step.objective ? `<div class="step-summary">${esc(step.objective)}</div>` : ''}
             </div>
             <div class="ms-2 d-flex align-items-center">
@@ -1386,7 +1390,7 @@ body.dark-mode img:not([src*=".svg"]) {
           </div>
         </div>
       </summary>
-      <div class="step-content">
+      <div class="step-content" id="${stepId}-content" aria-labelledby="${stepId}-heading">
         ${step.objective ? `<div class="step-objective">${markdownToHTML(step.objective)}</div>` : ''}
         
         <div class="row">`;
@@ -1399,14 +1403,14 @@ body.dark-mode img:not([src*=".svg"]) {
           const bgClass = contentTypeIcons[contentType] ? contentTypeIcons[contentType].bgClass : 'bg-sagedark';
           
           html += `
-          <div class="col-md-12 mb-3">
+          <article class="col-md-12 mb-3">
             <div class="activity-container d-flex">
-              <div class="activity-icon-container ${bgClass}">
+              <div class="activity-icon-container ${bgClass}" aria-hidden="true">
                 <i class="fa ${icon} text-white" aria-hidden="true"></i>
               </div>
               <div class="flex-grow-1 p-3">
                 <div class="activity">
-                  <h4 class="h6 mb-2">${esc(bookmark.title)}</h4>
+                  <h3 class="h6 mb-2">${esc(bookmark.title)}</h3>
                   ${bookmark.description ? `<div class="mb-2">${markdownToHTML(bookmark.description)}</div>` : ''}
                   ${bookmark.context ? `<div class="curatorcontext"><blockquote class="mb-2">${markdownToHTML(bookmark.context)}</blockquote></div>` : ''}
                   
@@ -1417,14 +1421,15 @@ body.dark-mode img:not([src*=".svg"]) {
                       <span class="badge bg-success launched-badge d-none">Launched</span>
                     </div>
                     <a href="${esc(bookmark.url)}" target="_blank" rel="noopener noreferrer"
-                       class="btn btn-outline-primary btn-sm launch-btn">
+                       class="btn btn-outline-primary btn-sm launch-btn"
+                       aria-label="Launch ${esc(bookmark.title)} (opens in new tab)">
                       Launch <i class="fa fa-external-link-alt ms-1" aria-hidden="true"></i>
                     </a>
                   </div>
                 </div>
               </div>
             </div>
-          </div>`;
+          </article>`;
         });
       } else {
         html += `
@@ -1437,13 +1442,14 @@ body.dark-mode img:not([src*=".svg"]) {
         </div>
         
         ${step.pauseAndReflect ? `
-        <div class="pause-reflect-section">
-          <h4><i class="fa fa-pause me-2" aria-hidden="true"></i>Pause and Reflect</h4>
+        <section class="pause-reflect-section" role="region" aria-labelledby="pause-reflect-${stepIndex}">
+          <h3 id="pause-reflect-${stepIndex}" class="h4"><i class="fa fa-pause me-2" aria-hidden="true"></i>Pause and Reflect</h3>
           <div class="pause-reflect-content">${markdownToHTML(step.pauseAndReflect)}</div>
-        </div>
+        </section>
         ` : ''}
       </div>
-    </details>`;
+    </details>
+    </section>`;
     });
   } else {
     html += '<p class="text-muted">No steps in this pathway.</p>';
@@ -1452,11 +1458,17 @@ body.dark-mode img:not([src*=".svg"]) {
   html += `
   </main>
   
-  <footer class="mt-5 pt-4 border-top text-muted small">
-    ${pathway.acknowledgments ? `<div class="prose mb-3"><strong>Acknowledgments:</strong> ${markdownToHTML(pathway.acknowledgments)}</div>` : ''}
-    <p>Created by: ${esc(createdBy)}</p>
-    ${modifiedBy !== createdBy ? `<p>Modified by: ${esc(modifiedBy)}</p>` : ''}
-    <p>Generated on: ${new Date().toLocaleDateString()}</p>
+  <footer class="mt-5 pt-4 border-top text-muted small" role="contentinfo">
+    ${pathway.acknowledgments ? `
+    <section aria-labelledby="acknowledgments-heading">
+      <h2 id="acknowledgments-heading" class="h6 mb-3">Acknowledgments</h2>
+      <div class="prose mb-3">${markdownToHTML(pathway.acknowledgments)}</div>
+    </section>` : ''}
+    <div class="pathway-metadata">
+      <p>Created by: ${esc(createdBy)}</p>
+      ${modifiedBy !== createdBy ? `<p>Modified by: ${esc(modifiedBy)}</p>` : ''}
+      <p>Generated on: <time datetime="${new Date().toISOString()}">${new Date().toLocaleDateString()}</time></p>
+    </div>
   </footer>
 </div>
 </body>
