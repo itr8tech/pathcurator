@@ -11,7 +11,8 @@
     "contextMenus",
     "identity",
     "tabs",
-    "alarms"
+    "alarms",
+    "notifications"
   ],
   "host_permissions": [
     "https://api.github.com/*",

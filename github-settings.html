@@ -147,6 +147,48 @@
     </div>
   </div>
 
+  <!-- Auto-commit Settings Card -->
+  <div id="auto-commit-settings-card" class="card mb-4 d-none">
+    <div class="card-body">
+      <h5 class="card-title">Auto-commit Settings</h5>
+      <p class="text-muted">Automatically save your pathways to GitHub at regular intervals</p>
+      
+      <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" id="auto-commit-enabled">
+        <label class="form-check-label" for="auto-commit-enabled">
+          Enable Auto-commit
+        </label>
+      </div>
+      
+      <div id="auto-commit-options" class="d-none">
+        <div class="mb-3">
+          <label for="auto-commit-interval" class="form-label">Commit Interval</label>
+          <select id="auto-commit-interval" class="form-select">
+            <option value="5">Every 5 minutes</option>
+            <option value="10">Every 10 minutes</option>
+            <option value="15" selected>Every 15 minutes</option>
+            <option value="30">Every 30 minutes</option>
+            <option value="60">Every hour</option>
+          </select>
+          <div class="form-text">Changes will be automatically committed to GitHub at this interval</div>
+        </div>
+        
+        <div class="mb-3">
+          <label for="auto-commit-message" class="form-label">Commit Message Prefix</label>
+          <input type="text" class="form-control" id="auto-commit-message" placeholder="Auto-commit:" value="Auto-commit:">
+          <div class="form-text">This prefix will be added to auto-generated commit messages</div>
+        </div>
+        
+        <div class="alert alert-info-subtle">
+          <i class="bi bi-info-circle-fill me-2"></i>
+          <strong>Note:</strong> Auto-commits only occur when there are changes to save. The timer resets after each manual commit.
+        </div>
+      </div>
+      
+      <button id="btn-save-auto-commit" class="btn btn-primary">Save Auto-commit Settings</button>
+    </div>
+  </div>
+
   <!-- Debug Section (only visible if authentication issues occur) -->
   <div id="debug-section" class="card mb-4 d-none">
     <div class="card-body">
