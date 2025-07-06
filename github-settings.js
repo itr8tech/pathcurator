@@ -556,7 +556,8 @@ async function handleDebug() {
 }
 
 // Auto-commit settings
-const AUTO_COMMIT_CONFIG_KEY = 'auto_commit_config';
+const STORAGE_PREFIX = 'pathcurator_';
+const AUTO_COMMIT_CONFIG_KEY = STORAGE_PREFIX + 'auto_commit_config';
 
 // Load auto-commit settings
 async function loadAutoCommitSettings() {
@@ -636,9 +637,16 @@ async function saveAutoCommitSettings() {
       });
     }
     
-    // Notify background script to update timer
-    if (chrome.runtime && chrome.runtime.sendMessage) {
-      chrome.runtime.sendMessage({ type: 'updateAutoCommit', config });
+    // Trigger storage event to notify auto-commit system
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: AUTO_COMMIT_CONFIG_KEY,
+      newValue: JSON.stringify(config),
+      storageArea: localStorage
+    }));
+    
+    // Also notify via global function if available
+    if (window.pwaAutoCommit && window.pwaAutoCommit.resetAutoCommitTimer) {
+      window.pwaAutoCommit.resetAutoCommitTimer();
     }
     
     showSuccess('Auto-commit settings saved successfully');
