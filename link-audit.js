@@ -1587,12 +1587,23 @@ function addCurrentUrlToExemptList() {
 }
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   // Initialize theme based on preference
   setTheme(getPreferredTheme());
   
   // Add theme toggle handler
   $('#theme-toggle').addEventListener('click', toggleTheme);
+  
+  // Wait for storage to be ready before loading data
+  try {
+    if (window.storageReadyPromise) {
+      console.log('Waiting for storage to be ready...');
+      await window.storageReadyPromise;
+      console.log('Storage ready, loading audit data...');
+    }
+  } catch (error) {
+    console.error('Storage initialization error:', error);
+  }
   
   // Load pathways, auth domains, and exempt domains
   loadPathways();
