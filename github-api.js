@@ -11,15 +11,21 @@ async function getAccessToken() {
   // In development mode, use localStorage
   if (typeof window !== 'undefined' && window.location.protocol === 'http:') {
     console.log('Using localStorage for token (development mode)');
-    return localStorage.getItem(TOKEN_STORAGE_KEY);
+    const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+    console.log('Retrieved token from localStorage:', token ? 'EXISTS' : 'NULL');
+    return token;
   }
   
   try {
-    return await secureGet(TOKEN_STORAGE_KEY, null, true);
+    const token = await secureGet(TOKEN_STORAGE_KEY, null, true);
+    console.log('Retrieved token from secure storage:', token ? 'EXISTS' : 'NULL');
+    return token;
   } catch (error) {
     console.error('Error getting token from secure storage:', error);
     // Fallback to localStorage
-    return localStorage.getItem(TOKEN_STORAGE_KEY);
+    const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+    console.log('Fallback token from localStorage:', token ? 'EXISTS' : 'NULL');
+    return token;
   }
 }
 

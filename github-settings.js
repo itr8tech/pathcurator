@@ -27,6 +27,14 @@ const saveSettingsBtn = $('btn-save-settings');
 async function init() {
   try {
     console.log('Initializing GitHub settings page...');
+    console.log('Current protocol:', window.location.protocol);
+    console.log('Development mode:', window.location.protocol === 'http:');
+    
+    // Debug storage contents
+    if (window.location.protocol === 'http:') {
+      console.log('localStorage github_access_token:', localStorage.getItem('github_access_token'));
+      console.log('localStorage github_config:', localStorage.getItem('github_config'));
+    }
     
     // Check if the user is authenticated
     const isLoggedIn = await GitHub.isAuthenticated();
