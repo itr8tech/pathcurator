@@ -1400,29 +1400,12 @@ async function commitToGitHub() {
 
 // Theme handling functions
 function getPreferredTheme() {
-  // Check if user has already set a preference
-  const storedTheme = localStorage.getItem('theme');
-  if (storedTheme) {
-    return storedTheme;
-  }
-  
-  // Otherwise, respect OS preference
+  // Respect OS preference only
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 function setTheme(theme) {
   document.documentElement.setAttribute('data-bs-theme', theme);
-  localStorage.setItem('theme', theme);
-  
-  // Update the icon
-  const themeIcon = document.getElementById('theme-toggle').querySelector('i');
-  if (theme === 'dark') {
-    themeIcon.classList.remove('bi-moon-stars-fill');
-    themeIcon.classList.add('bi-sun-fill');
-  } else {
-    themeIcon.classList.remove('bi-sun-fill');
-    themeIcon.classList.add('bi-moon-stars-fill');
-  }
 }
 
 // Import from GitHub repository function
@@ -1570,11 +1553,6 @@ async function importFromGitHub() {
   }
 }
 
-function toggleTheme() {
-  const currentTheme = document.documentElement.getAttribute('data-bs-theme');
-  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-  setTheme(newTheme);
-}
 
 // Check and display auto-commit status
 async function checkAutoCommitStatus() {
@@ -1639,8 +1617,6 @@ document.addEventListener('DOMContentLoaded',()=>{
     $('#fileInput').click();
   });
   
-  // Theme toggle button
-  $('#theme-toggle').addEventListener('click', toggleTheme);
   
   // Handle file selection
   const fileInput = $('#fileInput');
