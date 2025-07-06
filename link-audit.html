@@ -7,30 +7,14 @@
   <title>Link Audit - PathCurator</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="styles.css">
-  <style>
-    /* Branding consistency with home page */
-    .navbar-dark {
-      background: var(--bs-primary) !important;
-    }
-    
-    /* Dark mode navbar styling */
-    [data-bs-theme="dark"] .navbar-dark {
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
-    }
-    
-    /* Dark mode adjustments matching home page */
-    [data-bs-theme="dark"] .bg-light {
-      background-color: var(--bs-dark) !important;
-      color: var(--bs-light);
-    }
-    
-    [data-bs-theme="dark"] .card {
-      background-color: var(--bs-dark);
-      border-color: var(--bs-gray-700);
-    }
-    
-  </style>
+  <script>
+    // Prevent flash of wrong theme by setting theme immediately
+    (function() {
+      const storedTheme = localStorage.getItem('theme');
+      const theme = storedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-bs-theme', theme);
+    })();
+  </script>
 </head>
 <body>
   <!-- Skip link for keyboard users -->
@@ -270,12 +254,12 @@
           <div class="tab-content" id="domainsTabContent">
             <!-- Auth Domains Tab -->
             <div class="tab-pane fade show active" id="auth-domains" role="tabpanel" aria-labelledby="auth-domains-tab">
-              <div class="alert alert-info">
+              <div class="alert alert-info-subtle">
                 <i class="bi bi-info-circle me-2"></i>
                 Add domains that require authentication. Credentials will be used when checking links to these domains.
               </div>
               
-              <div class="alert alert-warning">
+              <div class="alert alert-warning-subtle">
                 <i class="bi bi-shield-lock me-2"></i>
                 <strong>Security Notice:</strong> Credentials are stored encrypted, but you should still use caution:
                 <ul class="mb-0 mt-2">
@@ -296,7 +280,7 @@
               </div>
               
               <!-- Add new auth domain form -->
-              <form id="addAuthDomainForm" class="border rounded p-3 bg-light">
+              <form id="addAuthDomainForm" class="border rounded p-3 bg-body-secondary">
                 <h6>Add New Auth Domain</h6>
                 <div class="row mb-3">
                   <div class="col-md-6">
@@ -327,7 +311,7 @@
             
             <!-- Exempt Domains Tab -->
             <div class="tab-pane fade" id="exempt-domains" role="tabpanel" aria-labelledby="exempt-domains-tab">
-              <div class="alert alert-info">
+              <div class="alert alert-info-subtle">
                 <i class="bi bi-info-circle me-2"></i>
                 Add domains that should be considered valid even if they return error codes. 
                 Some sites like Quora and Medium block automated requests but work fine in browsers.
@@ -344,7 +328,7 @@
               </div>
               
               <!-- Add new exempt domain form -->
-              <form id="addExemptDomainForm" class="border rounded p-3 bg-light">
+              <form id="addExemptDomainForm" class="border rounded p-3 bg-body-secondary">
                 <h6>Add New Exempt Domain</h6>
                 <div class="row mb-3">
                   <div class="col-md-6">

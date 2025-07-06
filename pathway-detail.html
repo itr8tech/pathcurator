@@ -7,6 +7,44 @@
 <title>Pathway Detail - PathCurator</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<style>
+  /* Header image styles */
+  .header-image-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .pathway-header-image {
+    width: 100%;
+    height: 15rem;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    position: relative;
+  }
+  
+  .header-title-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 2rem;
+    background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%);
+    display: flex;
+    align-items: flex-end;
+    height: 100%;
+  }
+  
+  .text-shadow {
+    text-shadow: 0px 2px 4px rgba(0,0,0,0.5);
+  }
+  
+  /* Dark mode adjustments for header image */
+  [data-bs-theme="dark"] .pathway-header-image {
+    filter: brightness(0.9) contrast(1.1);
+  }
+</style>
 </head>
 <body>
   <!-- Skip link for keyboard users -->
@@ -54,14 +92,17 @@
     <div class="row mb-4" id="main-content">
       <div class="col">
         <h1 id="pathwayTitle" class="h2 mb-0"></h1>
-        <span id="pathwayTitleOverlay" class="d-none"></span>
         <p class="text-muted mb-0">View and manage pathway details</p>
       </div>
     </div>
 
-    <!-- Hidden elements for header image functionality -->
-    <div id="headerImageContainer" class="d-none">
-      <div id="pathwayHeaderImage"></div>
+    <!-- Header image container -->
+    <div id="headerImageContainer" class="header-image-container mb-4 rounded-5 shadow-sm d-none">
+      <div id="pathwayHeaderImage" class="pathway-header-image">
+        <div class="header-title-overlay">
+          <h1 id="pathwayTitleOverlay" class="display-5 text-white text-shadow fw-bold mb-0"></h1>
+        </div>
+      </div>
     </div>
 
   <div class="d-flex align-items-center mb-4">
