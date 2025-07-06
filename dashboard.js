@@ -1826,40 +1826,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Add Web Share API functionality for sharing PathCurator itself
 function setupWebShareAPI() {
-  // Check if Web Share API is supported
-  if (navigator.share) {
-    console.log('Web Share API is supported');
-    
-    // Add a share button to the dashboard if it doesn't exist
-    const navbar = document.querySelector('.navbar-nav');
-    if (navbar && !document.getElementById('sharePathCuratorBtn')) {
-      const shareItem = document.createElement('li');
-      shareItem.className = 'nav-item';
-      shareItem.innerHTML = `
-        <button class="btn btn-link nav-link" id="sharePathCuratorBtn" title="Share PathCurator">
-          <i class="bi bi-share" aria-hidden="true"></i> Share
-        </button>
-      `;
-      
-      navbar.appendChild(shareItem);
-      
-      // Add click handler
-      document.getElementById('sharePathCuratorBtn').addEventListener('click', async () => {
-        try {
-          await navigator.share({
-            title: 'PathCurator - Organize Your Learning Pathways',
-            text: 'Check out PathCurator - a tool for organizing bookmarks into structured learning pathways!',
-            url: window.location.origin + '/dashboard.html'
-          });
-          console.log('PathCurator shared successfully');
-        } catch (error) {
-          console.log('Error sharing PathCurator:', error);
-        }
-      });
-    }
-  } else {
-    console.log('Web Share API is not supported');
-  }
+  // Web Share API support disabled for cleaner navigation
+  console.log('Web Share API functionality disabled');
 }
 
 // Initialize Web Share API on page load
