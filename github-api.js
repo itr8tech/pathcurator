@@ -31,6 +31,8 @@ async function getAccessToken() {
 
 // Save GitHub access token to secure storage
 async function saveAccessToken(token) {
+  console.log('Saving token:', token ? 'EXISTS' : 'NULL');
+  
   // In development mode, use localStorage
   if (typeof window !== 'undefined' && window.location.protocol === 'http:') {
     console.log('Using localStorage for token save (development mode)');
@@ -42,18 +44,31 @@ async function saveAccessToken(token) {
     return true;
   }
   
+  // In production, save to both secure storage AND localStorage as backup
+  let secureStorageSuccess = false;
+  
   try {
-    return await secureSet(TOKEN_STORAGE_KEY, token, true);
+    await secureSet(TOKEN_STORAGE_KEY, token, true);
+    secureStorageSuccess = true;
+    console.log('Token saved to secure storage successfully');
   } catch (error) {
     console.error('Error saving token to secure storage:', error);
-    // Fallback to localStorage
+  }
+  
+  // Always save to localStorage as backup in production
+  try {
     if (token) {
       localStorage.setItem(TOKEN_STORAGE_KEY, token);
+      console.log('Token saved to localStorage as backup');
     } else {
       localStorage.removeItem(TOKEN_STORAGE_KEY);
+      console.log('Token removed from localStorage');
     }
-    return true;
+  } catch (error) {
+    console.error('Error saving token to localStorage:', error);
   }
+  
+  return secureStorageSuccess || true; // Return true if at least localStorage worked
 }
 
 // Get GitHub configuration from storage

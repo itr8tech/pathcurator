@@ -34,6 +34,19 @@ async function init() {
     if (window.location.protocol === 'http:') {
       console.log('localStorage github_access_token:', localStorage.getItem('github_access_token'));
       console.log('localStorage github_config:', localStorage.getItem('github_config'));
+    } else {
+      // In production, check both Chrome storage and localStorage
+      console.log('Checking Chrome storage availability:', !!chrome?.storage?.local);
+      console.log('localStorage github_access_token:', localStorage.getItem('github_access_token'));
+      console.log('localStorage github_config:', localStorage.getItem('github_config'));
+      
+      // Try to get from Chrome storage
+      if (chrome?.storage?.local) {
+        chrome.storage.local.get(['github_access_token', 'github_config'], (result) => {
+          console.log('Chrome storage github_access_token:', result.github_access_token ? 'EXISTS' : 'NULL');
+          console.log('Chrome storage github_config:', result.github_config);
+        });
+      }
     }
     
     // Check if the user is authenticated
