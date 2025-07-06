@@ -1,0 +1,29 @@
+{
+  "name": "pathcurator",
+  "version": "1.0.0",
+  "description": "PathCurator - Learning Pathway Manager",
+  "scripts": {
+    "test": "playwright test",
+    "test:accessibility": "playwright test tests/accessibility.spec.js",
+    "test:lighthouse": "playwright test tests/lighthouse.spec.js",
+    "test:all": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "test:axe-node": "node test-axe-accessibility.js",
+    "test:lighthouse-node": "node test-accessibility.js",
+    "serve": "python -m http.server 8080",
+    "playwright:install": "npx playwright install"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@axe-core/playwright": "^4.8.0",
+    "playwright-lighthouse": "^3.0.0",
+    "lighthouse": "^11.0.0",
+    "chrome-launcher": "^1.1.0",
+    "puppeteer": "^21.0.0",
+    "@axe-core/puppeteer": "^4.8.0"
+  },
+  "author": "",
+  "license": "MIT"
+}
