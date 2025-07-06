@@ -1352,8 +1352,18 @@ async function commitToGitHub() {
               `Commit: <a href="${result.commit.html_url}" target="_blank" class="text-white">${result.commit.sha.substring(0, 7)}</a></small>`,
               'success'
             );
+            
+            // Notify background script to reset auto-commit timer
+            if (chrome.runtime && chrome.runtime.sendMessage) {
+              chrome.runtime.sendMessage({ type: 'manualCommit' });
+            }
           } else {
             showStatus('Commit completed, but could not verify details.', 'success');
+            
+            // Notify background script to reset auto-commit timer
+            if (chrome.runtime && chrome.runtime.sendMessage) {
+              chrome.runtime.sendMessage({ type: 'manualCommit' });
+            }
           }
         } catch (error) {
           // Handle specific GitHub API errors
@@ -1566,12 +1576,48 @@ function toggleTheme() {
   setTheme(newTheme);
 }
 
+// Check and display auto-commit status
+async function checkAutoCommitStatus() {
+  try {
+    // Get auto-commit config
+    chrome.storage.local.get('auto_commit_config', (result) => {
+      const config = result.auto_commit_config || { enabled: false, interval: 15 };
+      const statusDiv = document.getElementById('auto-commit-status');
+      const messageSpan = document.getElementById('auto-commit-message');
+      
+      if (config.enabled) {
+        // Check if GitHub is configured
+        chrome.storage.local.get('github_config', (githubResult) => {
+          const githubConfig = githubResult.github_config || {};
+          
+          if (githubConfig.repository) {
+            statusDiv.classList.remove('d-none');
+            messageSpan.textContent = `Auto-commit enabled: Every ${config.interval} minutes to ${githubConfig.repository}`;
+          } else {
+            statusDiv.classList.remove('d-none');
+            statusDiv.classList.remove('alert-info-subtle');
+            statusDiv.classList.add('alert-warning-subtle');
+            messageSpan.textContent = 'Auto-commit enabled but GitHub repository not configured';
+          }
+        });
+      } else {
+        statusDiv.classList.add('d-none');
+      }
+    });
+  } catch (error) {
+    console.error('Error checking auto-commit status:', error);
+  }
+}
+
 // events
 document.addEventListener('DOMContentLoaded',()=>{
   // Initialize theme based on preference
   setTheme(getPreferredTheme());
   
   render();
+  
+  // Check auto-commit status
+  checkAutoCommitStatus();
   
   // Add Pathway button
   $('#addPathway').addEventListener('click', createNewPathway);

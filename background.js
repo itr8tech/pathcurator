@@ -2611,9 +2611,156 @@ chrome.runtime.onInstalled.addListener(() => {
   scheduleAudits();
 });
 
+// Auto-commit functionality
+let autoCommitTimer = null;
+let lastCommitHash = null;
+
+// Function to get current data hash
+async function getDataHash() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get({pathways: []}, (data) => {
+      const jsonString = JSON.stringify(data.pathways);
+      // Simple hash function for comparison
+      let hash = 0;
+      for (let i = 0; i < jsonString.length; i++) {
+        const char = jsonString.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+      }
+      resolve(hash.toString());
+    });
+  });
+}
+
+// Function to perform auto-commit
+async function performAutoCommit() {
+  try {
+    // Check if data has changed
+    const currentHash = await getDataHash();
+    if (currentHash === lastCommitHash) {
+      console.log('No changes detected, skipping auto-commit');
+      return;
+    }
+    
+    // Import GitHub API module
+    const GitHubModule = await import('./github-api.js');
+    const GitHub = GitHubModule;
+    
+    // Check if authenticated and configured
+    const isAuthenticated = await GitHub.isAuthenticated();
+    if (!isAuthenticated) {
+      console.log('Not authenticated, skipping auto-commit');
+      return;
+    }
+    
+    const config = await GitHub.getGitHubConfig();
+    if (!config.repository) {
+      console.log('No repository configured, skipping auto-commit');
+      return;
+    }
+    
+    // Get auto-commit config
+    const autoCommitConfig = await new Promise((resolve) => {
+      chrome.storage.local.get('auto_commit_config', (result) => {
+        resolve(result.auto_commit_config || { enabled: false });
+      });
+    });
+    
+    if (!autoCommitConfig.enabled) {
+      console.log('Auto-commit disabled, skipping');
+      return;
+    }
+    
+    // Get pathways data
+    const pathwaysData = await new Promise((resolve) => {
+      chrome.storage.local.get({pathways: []}, (data) => {
+        resolve(data.pathways);
+      });
+    });
+    
+    // Generate commit message
+    const timestamp = new Date().toLocaleString();
+    const commitMessage = `${autoCommitConfig.messagePrefix} ${timestamp}`;
+    
+    // Commit to GitHub
+    await GitHub.commitFile(
+      JSON.stringify(pathwaysData, null, 2),
+      commitMessage
+    );
+    
+    // Update last commit hash
+    lastCommitHash = currentHash;
+    
+    console.log('Auto-commit completed successfully');
+    
+    // Notify user (optional - you might want to make this configurable)
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icons/128.png',
+      title: 'PathCurator Auto-commit',
+      message: 'Changes saved to GitHub automatically'
+    });
+    
+  } catch (error) {
+    console.error('Auto-commit failed:', error);
+    // Don't notify user of failures to avoid spam
+  }
+}
+
+// Function to reset auto-commit timer
+function resetAutoCommitTimer() {
+  // Clear existing timer
+  if (autoCommitTimer) {
+    clearInterval(autoCommitTimer);
+    autoCommitTimer = null;
+  }
+  
+  // Get auto-commit config and set new timer
+  chrome.storage.local.get('auto_commit_config', (result) => {
+    const config = result.auto_commit_config || { enabled: false, interval: 15 };
+    
+    if (config.enabled) {
+      const intervalMs = config.interval * 60 * 1000; // Convert minutes to milliseconds
+      autoCommitTimer = setInterval(performAutoCommit, intervalMs);
+      console.log(`Auto-commit timer set for ${config.interval} minutes`);
+    }
+  });
+}
+
+// Initialize auto-commit on startup
+resetAutoCommitTimer();
+
+// Listen for storage changes to reset timer when data changes
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && changes.pathways) {
+    // Data changed, reset the timer
+    resetAutoCommitTimer();
+  }
+});
+
 // The primary message listener for the extension
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   console.log('Received message:', msg.type);
+  
+  // Handle auto-commit update message
+  if (msg.type === 'updateAutoCommit' && msg.config) {
+    chrome.storage.local.set({ auto_commit_config: msg.config }, () => {
+      resetAutoCommitTimer();
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+  
+  // Handle manual commit notification to reset timer
+  if (msg.type === 'manualCommit') {
+    // Update last commit hash and reset timer
+    getDataHash().then(hash => {
+      lastCommitHash = hash;
+      resetAutoCommitTimer();
+      sendResponse({ success: true });
+    });
+    return true;
+  }
   
   // Handle export-related messages
   if (['exportPathway', 'exportPathwayCSV', 'exportStepHTML', 'exportStepCSV'].includes(msg.type)) {

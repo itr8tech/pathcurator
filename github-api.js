@@ -8,17 +8,70 @@ const GITHUB_CONFIG_KEY = 'github_config';
 
 // Get GitHub access token from secure storage
 async function getAccessToken() {
-  return await secureGet(TOKEN_STORAGE_KEY, null, true);
+  // In development mode, use localStorage
+  if (typeof window !== 'undefined' && window.location.protocol === 'http:') {
+    console.log('Using localStorage for token (development mode)');
+    return localStorage.getItem(TOKEN_STORAGE_KEY);
+  }
+  
+  try {
+    return await secureGet(TOKEN_STORAGE_KEY, null, true);
+  } catch (error) {
+    console.error('Error getting token from secure storage:', error);
+    // Fallback to localStorage
+    return localStorage.getItem(TOKEN_STORAGE_KEY);
+  }
 }
 
 // Save GitHub access token to secure storage
 async function saveAccessToken(token) {
-  return await secureSet(TOKEN_STORAGE_KEY, token, true);
+  // In development mode, use localStorage
+  if (typeof window !== 'undefined' && window.location.protocol === 'http:') {
+    console.log('Using localStorage for token save (development mode)');
+    if (token) {
+      localStorage.setItem(TOKEN_STORAGE_KEY, token);
+    } else {
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
+    }
+    return true;
+  }
+  
+  try {
+    return await secureSet(TOKEN_STORAGE_KEY, token, true);
+  } catch (error) {
+    console.error('Error saving token to secure storage:', error);
+    // Fallback to localStorage
+    if (token) {
+      localStorage.setItem(TOKEN_STORAGE_KEY, token);
+    } else {
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
+    }
+    return true;
+  }
 }
 
 // Get GitHub configuration from storage
 async function getGitHubConfig() {
   try {
+    // First try localStorage for development
+    if (typeof window !== 'undefined' && window.location.protocol === 'http:') {
+      console.log('Using localStorage for GitHub config (development mode)');
+      const storedConfig = localStorage.getItem(GITHUB_CONFIG_KEY);
+      if (storedConfig) {
+        try {
+          return JSON.parse(storedConfig);
+        } catch (e) {
+          console.error('Error parsing stored config:', e);
+        }
+      }
+      return { 
+        username: null,
+        repository: null,
+        branch: 'main',
+        filepath: 'curator-pathways.json'
+      };
+    }
+    
     // Check if chrome storage is available and working
     if (!chrome || !chrome.storage || !chrome.storage.local) {
       console.warn('Chrome storage API not available, falling back to direct storage manager');
@@ -93,6 +146,13 @@ async function saveGitHubConfig(config) {
   try {
     console.log('Saving GitHub config:', config);
     
+    // First try localStorage for development
+    if (typeof window !== 'undefined' && window.location.protocol === 'http:') {
+      console.log('Using localStorage for GitHub config save (development mode)');
+      localStorage.setItem(GITHUB_CONFIG_KEY, JSON.stringify(config));
+      return true;
+    }
+    
     // Check if chrome storage is available and working
     if (!chrome || !chrome.storage || !chrome.storage.local) {
       console.warn('Chrome storage API not available, falling back to direct storage manager');
@@ -133,8 +193,26 @@ async function saveGitHubConfig(config) {
 
 // Check if user is authenticated
 async function isAuthenticated() {
-  const token = await getAccessToken();
-  return !!token;
+  try {
+    const token = await getAccessToken();
+    if (token) {
+      return true;
+    }
+    
+    // Fallback: check if we have a username in config
+    const config = await getGitHubConfig();
+    return !!(config && config.username);
+  } catch (error) {
+    console.error('Error checking authentication:', error);
+    
+    // Last resort: check localStorage directly
+    try {
+      const storedToken = localStorage.getItem('github_token_backup');
+      return !!storedToken;
+    } catch (e) {
+      return false;
+    }
+  }
 }
 
 // Get user information
@@ -205,6 +283,13 @@ async function authenticateWithToken(token) {
     
     // Token is valid, save it securely
     await saveAccessToken(token);
+    
+    // Also save a backup in localStorage for fallback
+    try {
+      localStorage.setItem('github_token_backup', 'authenticated');
+    } catch (e) {
+      console.warn('Could not save backup auth state');
+    }
     
     // Get and save the user info
     const userInfo = await response.json();
@@ -369,6 +454,13 @@ async function logout() {
   try {
     // Clear the token securely
     await saveAccessToken(null);
+    
+    // Clear the backup
+    try {
+      localStorage.removeItem('github_token_backup');
+    } catch (e) {
+      console.warn('Could not clear backup auth state');
+    }
     
     // Reset the config except for filepath
     const config = await getGitHubConfig();

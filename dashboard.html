@@ -90,6 +90,19 @@
     </div>
   </div>
   
+  <!-- Auto-commit status indicator -->
+  <div id="auto-commit-status" class="alert alert-info-subtle d-none mb-3">
+    <div class="d-flex align-items-center justify-content-between">
+      <div>
+        <i class="bi bi-clock-history me-2"></i>
+        <span id="auto-commit-message">Auto-commit is enabled</span>
+      </div>
+      <a href="github-settings.html" class="btn btn-sm btn-outline-primary">
+        <i class="bi bi-gear"></i> Configure
+      </a>
+    </div>
+  </div>
+  
   <input type="file" id="fileInput" accept=".json" class="d-none" aria-label="Import JSON file" aria-describedby="importHelp">
   <div id="importHelp" class="visually-hidden">Select a JSON file to import pathway data</div>
   

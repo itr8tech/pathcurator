@@ -26,41 +26,95 @@ const saveSettingsBtn = $('btn-save-settings');
 // Initialize the page
 async function init() {
   try {
+    console.log('Initializing GitHub settings page...');
+    
     // Check if the user is authenticated
     const isLoggedIn = await GitHub.isAuthenticated();
+    console.log('Authentication check result:', isLoggedIn);
     
     // Hide loading UI
     hideElement('auth-status-loading');
     
     if (isLoggedIn) {
+      console.log('User is authenticated, loading user state...');
       // User is logged in
       await handleLoggedInState();
     } else {
+      console.log('User is not authenticated, showing login UI');
       // User is logged out
       showElement('auth-status-logged-out');
     }
   } catch (error) {
     console.error('Initialization error:', error);
-    showError('Failed to initialize: ' + error.message);
+    
+    // Try to check the GitHub config as a fallback
+    try {
+      const config = await GitHub.getGitHubConfig();
+      console.log('GitHub config check:', config);
+      
+      if (config && config.username) {
+        // We have a username, so user might be logged in
+        console.log('Found username in config, attempting to verify authentication...');
+        await handleLoggedInState();
+        return;
+      }
+    } catch (configError) {
+      console.error('Config check error:', configError);
+    }
     
     // Show logged out state as fallback
     hideElement('auth-status-loading');
     showElement('auth-status-logged-out');
+    
+    // Don't show error message for expected initialization issues
+    if (!error.message.includes('storage') && !error.message.includes('chrome')) {
+      showError('Failed to initialize: ' + error.message);
+    }
   }
 }
 
 // Handle the logged in state
 async function handleLoggedInState() {
   try {
-    // Show logged in UI
+    console.log('Handling logged in state...');
+    
+    // Show logged in UI first
     showElement('auth-status-logged-in');
     
-    // Get user info
-    const userInfo = await GitHub.getUserInfo();
-    githubUsername.textContent = userInfo.login;
+    // Try to get user info
+    let userInfo;
+    try {
+      userInfo = await GitHub.getUserInfo();
+      console.log('Got user info:', userInfo.login);
+      githubUsername.textContent = userInfo.login;
+    } catch (userError) {
+      console.error('Error getting user info:', userError);
+      
+      // Check if it's an auth error
+      if (userError.message.includes('401') || userError.message.includes('authentication')) {
+        // Token is invalid
+        hideElement('auth-status-logged-in');
+        showElement('auth-status-logged-out');
+        hideElement('repo-settings-card');
+        hideElement('auto-commit-settings-card');
+        return;
+      }
+      
+      // Try to get username from config as fallback
+      const config = await GitHub.getGitHubConfig();
+      if (config && config.username) {
+        githubUsername.textContent = config.username;
+      } else {
+        githubUsername.textContent = 'Unknown User';
+      }
+    }
     
     // Show repository settings
     showElement('repo-settings-card');
+    
+    // Show auto-commit settings
+    console.log('Showing auto-commit settings card');
+    showElement('auto-commit-settings-card');
     
     // Load repositories
     await loadRepositories();
@@ -69,13 +123,18 @@ async function handleLoggedInState() {
     await loadCurrentConfig();
   } catch (error) {
     console.error('Error handling logged in state:', error);
-    showError('Failed to load user data: ' + error.message);
+    
+    // Only show error if it's not a storage/chrome error
+    if (!error.message.includes('storage') && !error.message.includes('chrome')) {
+      showError('Failed to load user data: ' + error.message);
+    }
     
     // If the error is due to authentication, show logged out state
-    if (error.message.includes('authentication')) {
+    if (error.message.includes('authentication') || error.message.includes('401')) {
       hideElement('auth-status-logged-in');
       showElement('auth-status-logged-out');
       hideElement('repo-settings-card');
+      hideElement('auto-commit-settings-card');
     }
   }
 }
@@ -279,6 +338,7 @@ async function handleLogout() {
     // Hide logged in UI
     hideElement('auth-status-logged-in');
     hideElement('repo-settings-card');
+    hideElement('auto-commit-settings-card');
     
     // Show logged out UI
     showElement('auth-status-logged-out');
@@ -433,6 +493,99 @@ async function handleDebug() {
   }
 }
 
+// Auto-commit settings
+const AUTO_COMMIT_CONFIG_KEY = 'auto_commit_config';
+
+// Load auto-commit settings
+async function loadAutoCommitSettings() {
+  try {
+    let config;
+    
+    // Use localStorage in development mode
+    if (typeof window !== 'undefined' && window.location.protocol === 'http:') {
+      const stored = localStorage.getItem(AUTO_COMMIT_CONFIG_KEY);
+      config = stored ? JSON.parse(stored) : {
+        enabled: false,
+        interval: 15,
+        messagePrefix: 'Auto-commit:'
+      };
+    } else {
+      // Use Chrome storage in extension mode
+      config = await new Promise((resolve) => {
+        chrome.storage.local.get(AUTO_COMMIT_CONFIG_KEY, (result) => {
+          resolve(result[AUTO_COMMIT_CONFIG_KEY] || {
+            enabled: false,
+            interval: 15,
+            messagePrefix: 'Auto-commit:'
+          });
+        });
+      });
+    }
+    
+    // Update UI
+    document.getElementById('auto-commit-enabled').checked = config.enabled;
+    document.getElementById('auto-commit-interval').value = config.interval;
+    document.getElementById('auto-commit-message').value = config.messagePrefix;
+    
+    // Show/hide options based on enabled state
+    if (config.enabled) {
+      document.getElementById('auto-commit-options').classList.remove('d-none');
+    }
+  } catch (error) {
+    console.error('Error loading auto-commit settings:', error);
+  }
+}
+
+// Save auto-commit settings
+async function saveAutoCommitSettings() {
+  try {
+    const config = {
+      enabled: document.getElementById('auto-commit-enabled').checked,
+      interval: parseInt(document.getElementById('auto-commit-interval').value),
+      messagePrefix: document.getElementById('auto-commit-message').value || 'Auto-commit:'
+    };
+    
+    // Save to storage
+    if (typeof window !== 'undefined' && window.location.protocol === 'http:') {
+      // Use localStorage in development mode
+      localStorage.setItem(AUTO_COMMIT_CONFIG_KEY, JSON.stringify(config));
+    } else {
+      // Use Chrome storage in extension mode
+      await new Promise((resolve, reject) => {
+        chrome.storage.local.set({ [AUTO_COMMIT_CONFIG_KEY]: config }, () => {
+          if (chrome.runtime.lastError) {
+            reject(chrome.runtime.lastError);
+          } else {
+            resolve();
+          }
+        });
+      });
+    }
+    
+    // Notify background script to update timer
+    if (chrome.runtime && chrome.runtime.sendMessage) {
+      chrome.runtime.sendMessage({ type: 'updateAutoCommit', config });
+    }
+    
+    showSuccess('Auto-commit settings saved successfully');
+  } catch (error) {
+    console.error('Error saving auto-commit settings:', error);
+    showError('Failed to save auto-commit settings: ' + error.message);
+  }
+}
+
+// Toggle auto-commit options visibility
+function toggleAutoCommitOptions() {
+  const enabled = document.getElementById('auto-commit-enabled').checked;
+  const options = document.getElementById('auto-commit-options');
+  
+  if (enabled) {
+    options.classList.remove('d-none');
+  } else {
+    options.classList.add('d-none');
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // Initialize
   init();
@@ -449,6 +602,13 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Token visibility toggle
   toggleTokenVisibility.addEventListener('click', toggleTokenVisibilityHandler);
+  
+  // Auto-commit settings
+  document.getElementById('auto-commit-enabled').addEventListener('change', toggleAutoCommitOptions);
+  document.getElementById('btn-save-auto-commit').addEventListener('click', saveAutoCommitSettings);
+  
+  // Load auto-commit settings
+  loadAutoCommitSettings();
   
   // Debug button
   const debugBtn = document.getElementById('btn-debug');
