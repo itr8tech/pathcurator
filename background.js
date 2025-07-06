@@ -2709,25 +2709,32 @@ async function performAutoCommit() {
 
 // Function to reset auto-commit timer
 function resetAutoCommitTimer() {
+  console.log('Resetting auto-commit timer...');
+  
   // Clear existing timer
   if (autoCommitTimer) {
     clearInterval(autoCommitTimer);
     autoCommitTimer = null;
+    console.log('Cleared existing auto-commit timer');
   }
   
   // Get auto-commit config and set new timer
   chrome.storage.local.get('auto_commit_config', (result) => {
     const config = result.auto_commit_config || { enabled: false, interval: 15 };
+    console.log('Auto-commit config:', config);
     
     if (config.enabled) {
       const intervalMs = config.interval * 60 * 1000; // Convert minutes to milliseconds
       autoCommitTimer = setInterval(performAutoCommit, intervalMs);
-      console.log(`Auto-commit timer set for ${config.interval} minutes`);
+      console.log(`Auto-commit timer set for ${config.interval} minutes (${intervalMs}ms)`);
+    } else {
+      console.log('Auto-commit is disabled');
     }
   });
 }
 
 // Initialize auto-commit on startup
+console.log('Background script initializing auto-commit...');
 resetAutoCommitTimer();
 
 // Listen for storage changes to reset timer when data changes
