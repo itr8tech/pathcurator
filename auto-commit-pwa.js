@@ -10,9 +10,11 @@ const LAST_COMMIT_HASH_KEY = STORAGE_PREFIX + 'last_commit_hash';
 // Function to get current data hash
 async function getDataHash() {
   try {
-    // Get pathways from localStorage (PWA storage)
-    const pathwaysData = localStorage.getItem('pathways');
-    if (!pathwaysData) return null;
+    // Get pathways from enhanced storage
+    const pathways = await getPathwaysFromStorage();
+    if (!pathways || pathways.length === 0) return null;
+    
+    const pathwaysData = JSON.stringify(pathways);
     
     // Simple hash function for comparison
     let hash = 0;
@@ -28,11 +30,17 @@ async function getDataHash() {
   }
 }
 
-// Function to get pathways from storage
-function getPathwaysFromStorage() {
+// Function to get pathways from storage (using enhanced chrome storage)
+async function getPathwaysFromStorage() {
   try {
-    const stored = localStorage.getItem('pathways');
-    return stored ? JSON.parse(stored) : [];
+    // Use the enhanced chrome.storage.local that's been polyfilled
+    return new Promise((resolve) => {
+      chrome.storage.local.get({pathways: []}, (result) => {
+        const pathways = Array.isArray(result.pathways) ? result.pathways : [];
+        console.log('PWA Auto-commit: Retrieved pathways from storage:', pathways.length, 'pathways');
+        resolve(pathways);
+      });
+    });
   } catch (error) {
     console.error('Error getting pathways from storage:', error);
     return [];
@@ -143,7 +151,7 @@ async function performAutoCommit() {
     }
     
     // Get pathways data
-    const pathwaysData = getPathwaysFromStorage();
+    const pathwaysData = await getPathwaysFromStorage();
     if (!pathwaysData || pathwaysData.length === 0) {
       console.log('PWA Auto-commit: No pathways to commit, skipping');
       return;
