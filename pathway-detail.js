@@ -752,7 +752,7 @@ async function reorderBookmarks(pathway, pathwayId, stepIndex, newOrder) {
       // Use a promise for the save operation
       await new Promise(resolve => {
         // Save with proper error handling
-        save(pathways, pathwayIndex, () => {
+        save(pathways, getPathwayIndex(), () => {
           resolve();
         });
       });

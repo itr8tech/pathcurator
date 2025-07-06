@@ -7,44 +7,14 @@
 <meta name="color-scheme" content="light dark">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="dashboard-styles.css">
-<style>
-  /* Branding consistency with home page */
-  .navbar-dark {
-    background: var(--bs-primary) !important;
-  }
-  
-  /* Dark mode navbar styling */
-  [data-bs-theme="dark"] .navbar-dark {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
-  }
-  
-  /* Dark mode adjustments matching home page */
-  [data-bs-theme="dark"] .bg-light {
-    background-color: var(--bs-dark) !important;
-    color: var(--bs-light);
-  }
-  
-  [data-bs-theme="dark"] .card {
-    background-color: var(--bs-dark);
-    border-color: var(--bs-gray-700);
-  }
-  
-  
-  /* Page header styling */
-  .page-header {
-    background: linear-gradient(135deg, #234075 0%, #2c5aa0 100%);
-    color: white;
-    padding: 2rem 0;
-    margin: -1rem -12px 2rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
-  
-  [data-bs-theme="dark"] .page-header {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  }
-</style>
+<script>
+  // Prevent flash of wrong theme by setting theme immediately
+  (function() {
+    const storedTheme = localStorage.getItem('theme');
+    const theme = storedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-bs-theme', theme);
+  })();
+</script>
 </head>
 <body>
   <!-- Skip link for keyboard users -->
@@ -122,7 +92,7 @@
   <input type="file" id="fileInput" accept=".json" class="hidden-file-input" aria-label="Import JSON file">
   
   <!-- Bookmarklet section for when pathways exist -->
-  <div id="bookmarkletSection" class="alert alert-info d-none">
+  <div id="bookmarkletSection" class="alert alert-info-subtle d-none">
     <div class="row align-items-center">
       <div class="col-md-8">
         <h6 class="alert-heading mb-1"><i class="bi bi-bookmark-star"></i> Quick Bookmark Addition</h6>
