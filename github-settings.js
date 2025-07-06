@@ -23,12 +23,53 @@ const loginBtn = $('btn-login');
 const logoutBtn = $('btn-logout');
 const saveSettingsBtn = $('btn-save-settings');
 
+// Wait for storage to be ready
+async function waitForStorageReady() {
+  return new Promise((resolve) => {
+    // If in development mode, storage is ready immediately
+    if (window.location.protocol === 'http:') {
+      resolve();
+      return;
+    }
+    
+    // In production, wait a bit for the storage manager to initialize
+    // Look for specific indicators that storage is enhanced
+    let attempts = 0;
+    const maxAttempts = 50; // 5 seconds max
+    
+    const checkStorageReady = () => {
+      attempts++;
+      
+      // Check various indicators that storage might be ready
+      const storageReady = (
+        window.storageManagerReady || 
+        (chrome?.storage?.local && chrome.storage.local.enhanced) ||
+        attempts >= maxAttempts
+      );
+      
+      if (storageReady) {
+        console.log('Storage is ready (attempts:', attempts, ')');
+        resolve();
+      } else {
+        console.log('Waiting for storage to be ready... (attempt', attempts, ')');
+        setTimeout(checkStorageReady, 100);
+      }
+    };
+    
+    // Start checking after a small delay to let polyfill load
+    setTimeout(checkStorageReady, 200);
+  });
+}
+
 // Initialize the page
 async function init() {
   try {
     console.log('Initializing GitHub settings page...');
     console.log('Current protocol:', window.location.protocol);
     console.log('Development mode:', window.location.protocol === 'http:');
+    
+    // Wait for storage to be ready
+    await waitForStorageReady();
     
     // Debug storage contents
     if (window.location.protocol === 'http:') {
