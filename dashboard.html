@@ -24,7 +24,7 @@
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container">
       <a class="navbar-brand" href="index.html">
-        <i class="bi bi-signpost-2"></i> PathCurator
+        <i class="bi bi-signpost-2" aria-hidden="true"></i> PathCurator
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -33,17 +33,17 @@
         <ul class="navbar-nav me-auto">
           <li class="nav-item">
             <a class="nav-link active" href="dashboard.html" aria-current="page">
-              <i class="bi bi-grid me-1"></i>Dashboard
+              <i class="bi bi-grid me-1" aria-hidden="true"></i>Dashboard
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="link-audit.html">
-              <i class="bi bi-link-45deg me-1"></i>Audit
+              <i class="bi bi-link-45deg me-1" aria-hidden="true"></i>Audit
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="github-settings.html">
-              <i class="bi bi-github me-1"></i>GitHub Settings
+              <i class="bi bi-github me-1" aria-hidden="true"></i>GitHub Settings
             </a>
           </li>
         </ul>
@@ -58,7 +58,7 @@
   
   <div class="container py-4">
     <!-- Page Header -->
-    <div class="row mb-4">
+    <div class="row mb-4" id="main-content">
       <div class="col">
         <h1 class="h2 mb-0">
           <i class="bi bi-grid me-2" aria-hidden="true"></i>My Pathways
@@ -89,21 +89,22 @@
     </div>
   </div>
   
-  <input type="file" id="fileInput" accept=".json" class="d-none" aria-label="Import JSON file">
+  <input type="file" id="fileInput" accept=".json" class="d-none" aria-label="Import JSON file" aria-describedby="importHelp">
+  <div id="importHelp" class="visually-hidden">Select a JSON file to import pathway data</div>
   
   <!-- Bookmarklet section for when pathways exist -->
   <div id="bookmarkletSection" class="alert bg-dark-subtle d-none">
     <div class="row align-items-center">
       <div class="col-md-8">
-        <h6 class="alert-heading mb-1"><i class="bi bi-bookmark-star"></i> Quick Bookmark Addition</h6>
+        <h6 class="alert-heading mb-1"><i class="bi bi-bookmark-star" aria-hidden="true"></i> Quick Bookmark Addition</h6>
         <p class="mb-0 small">Drag the button to your bookmarks bar to quickly add any webpage to your pathways:</p>
       </div>
       <div class="col-md-4 text-md-end mt-2 mt-md-0">
         <a href="" id="bookmarkletLink" class="btn btn-sm btn-primary" title="Drag to bookmarks bar to install" onclick="alert('Drag this button to your bookmarks bar!'); return false;">
-          <i class="bi bi-bookmark-plus"></i> Add to PathCurator
+          <i class="bi bi-bookmark-plus" aria-hidden="true"></i> Add to PathCurator
         </a>
         <button id="toggleBookmarklet" class="btn btn-sm btn-outline-secondary ms-1" title="Hide bookmarklet">
-          <i class="bi bi-x"></i>
+          <i class="bi bi-x" aria-hidden="true"></i>
         </button>
       </div>
     </div>
@@ -130,7 +131,7 @@
     </div>
   </div>
   
-  <ul id="pathwayList" class="list-unstyled" role="list" aria-label="Pathways" id="main-content"></ul>
+  <ul id="pathwayList" class="list-unstyled" role="list" aria-label="Pathways"></ul>
   
   <script src="sortable.min.js"></script>
   <script src="bootstrap.bundle.min.js"></script>

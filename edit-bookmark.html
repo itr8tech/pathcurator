@@ -86,51 +86,57 @@
     </div>
     <div class="card-body">
       <form id="bookmarkForm">
-        <div class="mb-3">
-          <label for="bookmarkTitle" class="form-label">Title</label>
-          <input type="text" class="form-control" id="bookmarkTitle" required>
-        </div>
-        <div class="mb-3">
-          <label for="bookmarkUrl" class="form-label">URL</label>
-          <input type="url" class="form-control" id="bookmarkUrl" required>
-        </div>
-        <div class="mb-3">
-          <label for="bookmarkDescription" class="form-label">Description</label>
-          <textarea class="form-control" id="bookmarkDescription" rows="3"></textarea>
-        </div>
-        <div class="mb-3">
-          <label for="bookmarkContext" class="form-label">Context</label>
-          <textarea class="form-control" id="bookmarkContext" rows="3"></textarea>
-        </div>
+        <fieldset class="mb-4">
+          <legend class="h5 mb-3">Basic Information</legend>
+          <div class="mb-3">
+            <label for="bookmarkTitle" class="form-label">Title</label>
+            <input type="text" class="form-control" id="bookmarkTitle" required>
+          </div>
+          <div class="mb-3">
+            <label for="bookmarkUrl" class="form-label">URL</label>
+            <input type="url" class="form-control" id="bookmarkUrl" required>
+          </div>
+          <div class="mb-3">
+            <label for="bookmarkDescription" class="form-label">Description</label>
+            <textarea class="form-control" id="bookmarkDescription" rows="3"></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="bookmarkContext" class="form-label">Context</label>
+            <textarea class="form-control" id="bookmarkContext" rows="3"></textarea>
+          </div>
+        </fieldset>
         
-        <div class="row g-3">
-          <div class="col-md-4">
-            <div class="mb-3">
-              <label for="bookmarkType" class="form-label">Required/Bonus</label>
-              <select class="form-select" id="bookmarkType">
-                <option value="Required">Required</option>
-                <option value="Bonus">Bonus</option>
-              </select>
+        <fieldset class="mb-4">
+          <legend class="h5 mb-3">Classification</legend>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="bookmarkType" class="form-label">Required/Bonus</label>
+                <select class="form-select" id="bookmarkType">
+                  <option value="Required">Required</option>
+                  <option value="Bonus">Bonus</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="bookmarkContentType" class="form-label">Content Type</label>
+                <select class="form-select" id="bookmarkContentType">
+                  <option value="Read">Read</option>
+                  <option value="Watch">Watch</option>
+                  <option value="Listen">Listen</option>
+                  <option value="Participate">Participate</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3" id="stepSelectionContainer">
+                <label for="stepSelect" class="form-label">Step</label>
+                <select class="form-select" id="stepSelect"></select>
+              </div>
             </div>
           </div>
-          <div class="col-md-4">
-            <div class="mb-3">
-              <label for="bookmarkContentType" class="form-label">Content Type</label>
-              <select class="form-select" id="bookmarkContentType">
-                <option value="Read">Read</option>
-                <option value="Watch">Watch</option>
-                <option value="Listen">Listen</option>
-                <option value="Participate">Participate</option>
-              </select>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="mb-3" id="stepSelectionContainer">
-              <label for="stepSelect" class="form-label">Step</label>
-              <select class="form-select" id="stepSelect"></select>
-            </div>
-          </div>
-        </div>
+        </fieldset>
         
         <div class="text-end mt-4">
           <button type="submit" class="btn btn-primary">Save Bookmark</button>

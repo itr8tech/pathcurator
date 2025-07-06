@@ -110,17 +110,22 @@
     </div>
     <div class="card-body">
       <form id="pathwayForm">
-        <div class="mb-3">
-          <label for="pathwayName" class="form-label">Pathway Name</label>
-          <input type="text" class="form-control" id="pathwayName" required>
-        </div>
-        <div class="mb-3">
-          <label for="pathwayDescription" class="form-label">Description (supports Markdown)</label>
-          <textarea class="form-control" id="pathwayDescription" rows="4"></textarea>
-        </div>
+        <fieldset class="mb-4">
+          <legend class="h5 mb-3">Basic Information</legend>
+          <div class="mb-3">
+            <label for="pathwayName" class="form-label">Pathway Name</label>
+            <input type="text" class="form-control" id="pathwayName" required>
+          </div>
+          <div class="mb-3">
+            <label for="pathwayDescription" class="form-label">Description (supports Markdown)</label>
+            <textarea class="form-control" id="pathwayDescription" rows="4"></textarea>
+          </div>
+        </fieldset>
         
-        <div class="mb-4">
-          <label class="form-label">Header Image</label>
+        <fieldset class="mb-4">
+          <legend class="h5 mb-3">Header Image</legend>
+          <div class="mb-4">
+            <label class="form-label visually-hidden">Header Image Preview and Upload</label>
           <div id="headerPreview" class="header-preview">
             <div id="headerPlaceholder" class="header-preview-placeholder">
               <i class="bi bi-image fs-1 mb-2"></i>
@@ -145,18 +150,22 @@
           <div class="form-text">
             The header image will appear at the top of the pathway. If no image is provided, a default image will be used.
           </div>
-        </div>
+          </div>
+        </fieldset>
         
-        <div class="mb-3">
-          <label for="pathwayContentWarning" class="form-label">Content Warning (supports Markdown)</label>
-          <textarea class="form-control" id="pathwayContentWarning" rows="3" placeholder="Enter any content warnings that should be shown before displaying pathway content."></textarea>
-          <div class="form-text">This will be displayed in a collapsible section at the top of the pathway.</div>
-        </div>
-        <div class="mb-3">
-          <label for="pathwayAcknowledgments" class="form-label">Acknowledgments (supports Markdown)</label>
-          <textarea class="form-control" id="pathwayAcknowledgments" rows="3" placeholder="Enter any acknowledgments, credits, or references for this pathway."></textarea>
-          <div class="form-text">This will be displayed at the bottom of the pathway.</div>
-        </div>
+        <fieldset class="mb-4">
+          <legend class="h5 mb-3">Additional Information</legend>
+          <div class="mb-3">
+            <label for="pathwayContentWarning" class="form-label">Content Warning (supports Markdown)</label>
+            <textarea class="form-control" id="pathwayContentWarning" rows="3" placeholder="Enter any content warnings that should be shown before displaying pathway content."></textarea>
+            <div class="form-text">This will be displayed in a collapsible section at the top of the pathway.</div>
+          </div>
+          <div class="mb-3">
+            <label for="pathwayAcknowledgments" class="form-label">Acknowledgments (supports Markdown)</label>
+            <textarea class="form-control" id="pathwayAcknowledgments" rows="3" placeholder="Enter any acknowledgments, credits, or references for this pathway."></textarea>
+            <div class="form-text">This will be displayed at the bottom of the pathway.</div>
+          </div>
+        </fieldset>
         <div class="text-end">
           <button type="submit" class="btn btn-primary">Save Pathway</button>
           <a href="#" id="cancelButton" class="btn btn-outline-secondary ms-2">Cancel</a>
