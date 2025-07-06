@@ -4,8 +4,10 @@
 let autoCommitTimer = null;
 let lastCommitHash = null;
 const STORAGE_PREFIX = 'pathcurator_';
-const AUTO_COMMIT_CONFIG_KEY = STORAGE_PREFIX + 'auto_commit_config';
+const AUTO_COMMIT_CONFIG_KEY = 'auto_commit_config';
 const LAST_COMMIT_HASH_KEY = STORAGE_PREFIX + 'last_commit_hash';
+const LAST_COMMIT_TIME_KEY = STORAGE_PREFIX + 'last_commit_time';
+const TIMER_START_KEY = STORAGE_PREFIX + 'timer_start';
 
 // Function to get current data hash
 async function getDataHash() {
@@ -125,8 +127,9 @@ async function performAutoCommit() {
       return;
     }
     
-    // Get stored hash
-    const storedHash = localStorage.getItem(LAST_COMMIT_HASH_KEY);
+    // Get stored hash from Chrome storage
+    const timerData = await getTimerData();
+    const storedHash = timerData.lastCommitHash;
     if (currentHash === storedHash) {
       console.log('PWA Auto-commit: No changes detected, skipping');
       return;
@@ -178,8 +181,9 @@ async function performAutoCommit() {
       commitMessage
     );
     
-    // Update stored hash
-    localStorage.setItem(LAST_COMMIT_HASH_KEY, currentHash);
+    // Update stored hash and time
+    await setTimerData(LAST_COMMIT_HASH_KEY, currentHash);
+    await setTimerData(LAST_COMMIT_TIME_KEY, Date.now());
     
     console.log('PWA Auto-commit: Completed successfully');
     showAutoCommitNotification('Changes auto-saved to GitHub successfully');
@@ -190,33 +194,101 @@ async function performAutoCommit() {
   }
 }
 
-// Function to reset auto-commit timer
-async function resetAutoCommitTimer() {
-  console.log('PWA Auto-commit: Resetting timer...');
+// Function to get timer data from chrome storage
+async function getTimerData() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get([TIMER_START_KEY, LAST_COMMIT_HASH_KEY, LAST_COMMIT_TIME_KEY], (result) => {
+      resolve({
+        timerStart: result[TIMER_START_KEY],
+        lastCommitHash: result[LAST_COMMIT_HASH_KEY],
+        lastCommitTime: result[LAST_COMMIT_TIME_KEY]
+      });
+    });
+  });
+}
+
+// Function to set timer data in chrome storage
+async function setTimerData(key, value) {
+  return new Promise((resolve) => {
+    chrome.storage.local.set({ [key]: value }, () => {
+      resolve();
+    });
+  });
+}
+
+// Function to check if it's time to commit
+async function checkCommitInterval() {
+  const config = await getAutoCommitConfig();
+  if (!config.enabled) return;
   
-  // Clear existing timer
+  const timerData = await getTimerData();
+  if (!timerData.timerStart) {
+    // No timer start recorded, start now
+    await setTimerData(TIMER_START_KEY, Date.now());
+    return;
+  }
+  
+  const elapsedMs = Date.now() - timerData.timerStart;
+  const intervalMs = config.interval * 60 * 1000;
+  
+  if (elapsedMs >= intervalMs) {
+    console.log(`PWA Auto-commit: Interval reached (${Math.floor(elapsedMs/1000/60)} minutes elapsed)`);
+    // Reset timer start
+    await setTimerData(TIMER_START_KEY, Date.now());
+    // Perform commit
+    await performAutoCommit();
+  } else {
+    const remainingMinutes = Math.ceil((intervalMs - elapsedMs) / 60000);
+    console.log(`PWA Auto-commit: Next check in ${remainingMinutes} minutes`);
+  }
+}
+
+// Function to start persistent timer
+async function startPersistentTimer() {
+  console.log('PWA Auto-commit: Starting persistent timer...');
+  
+  // Clear any existing timer
   if (autoCommitTimer) {
     clearInterval(autoCommitTimer);
     autoCommitTimer = null;
   }
   
-  // Get config
+  // Check immediately on start
+  await checkCommitInterval();
+  
+  // Then check every minute to see if interval has passed
+  autoCommitTimer = setInterval(checkCommitInterval, 60000); // Check every minute
+  console.log('PWA Auto-commit: Timer checking every minute for interval completion');
+}
+
+// Function to reset auto-commit timer (now just ensures timer is running)
+async function resetAutoCommitTimer() {
+  console.log('PWA Auto-commit: Ensuring timer is running...');
+  
   const config = await getAutoCommitConfig();
   console.log('PWA Auto-commit: Config:', config);
   
   if (config.enabled && config.interval > 0) {
-    const intervalMs = config.interval * 60 * 1000; // Convert minutes to milliseconds
-    autoCommitTimer = setInterval(performAutoCommit, intervalMs);
-    console.log(`PWA Auto-commit: Timer set for ${config.interval} minutes (${intervalMs}ms)`);
+    // Don't reset the timer start time, just ensure timer is running
+    await startPersistentTimer();
     
     // Show a subtle notification that auto-commit is active
     if (document.visibilityState === 'visible') {
-      setTimeout(() => {
+      const timerData = await getTimerData();
+      if (timerData.timerStart) {
+        const elapsedMs = Date.now() - timerData.timerStart;
+        const remainingMinutes = Math.max(1, Math.ceil((config.interval * 60000 - elapsedMs) / 60000));
+        showAutoCommitNotification(`Auto-commit active: Next sync in ${remainingMinutes} min`, 'info');
+      } else {
         showAutoCommitNotification(`Auto-commit active: Every ${config.interval} minutes`, 'info');
-      }, 1000);
+      }
     }
   } else {
     console.log('PWA Auto-commit: Disabled or invalid interval');
+    if (autoCommitTimer) {
+      clearInterval(autoCommitTimer);
+      autoCommitTimer = null;
+    }
   }
 }
 
@@ -228,25 +300,26 @@ function initializePWAAutoCommit() {
   resetAutoCommitTimer();
   
   // Listen for storage changes (when settings are updated)
-  window.addEventListener('storage', (e) => {
+  window.addEventListener('storage', async (e) => {
     if (e.key === AUTO_COMMIT_CONFIG_KEY) {
-      console.log('PWA Auto-commit: Config changed, resetting timer');
+      console.log('PWA Auto-commit: Config changed, resetting timer and interval');
+      // Config changed - this SHOULD reset the timer
+      await setTimerData(TIMER_START_KEY, Date.now());
       resetAutoCommitTimer();
     }
   });
   
-  // Listen for page visibility changes to reset timer when page becomes visible
+  // Listen for page visibility changes - but DON'T reset the timer
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
-      console.log('PWA Auto-commit: Page visible, checking timer');
-      resetAutoCommitTimer();
-    } else {
-      // Clear timer when page is hidden to save resources
-      if (autoCommitTimer) {
-        clearInterval(autoCommitTimer);
-        autoCommitTimer = null;
-        console.log('PWA Auto-commit: Page hidden, clearing timer');
+      console.log('PWA Auto-commit: Page visible, ensuring timer is running');
+      // Just ensure timer is running, don't reset the countdown
+      if (!autoCommitTimer) {
+        resetAutoCommitTimer();
       }
+    } else {
+      // Page hidden - timer continues running
+      console.log('PWA Auto-commit: Page hidden, timer continues in background');
     }
   });
   
@@ -263,6 +336,33 @@ function initializePWAAutoCommit() {
 async function triggerAutoCommit() {
   console.log('PWA Auto-commit: Manual trigger requested');
   await performAutoCommit();
+}
+
+// Function to check timer status (for debugging)
+async function checkTimerStatus() {
+  const config = await getAutoCommitConfig();
+  const timerData = await getTimerData();
+  
+  console.log('=== Auto-commit Status ===');
+  console.log('Enabled:', config.enabled);
+  console.log('Interval:', config.interval, 'minutes');
+  
+  if (timerData.timerStart) {
+    const elapsedMs = Date.now() - timerData.timerStart;
+    const intervalMs = config.interval * 60 * 1000;
+    const remainingMs = intervalMs - elapsedMs;
+    
+    console.log('Timer started:', new Date(timerData.timerStart).toLocaleTimeString());
+    console.log('Elapsed time:', Math.floor(elapsedMs / 60000), 'minutes');
+    console.log('Time until next commit:', Math.ceil(remainingMs / 60000), 'minutes');
+  } else {
+    console.log('Timer not started yet');
+  }
+  
+  if (timerData.lastCommitTime) {
+    console.log('Last commit:', new Date(timerData.lastCommitTime).toLocaleString());
+  }
+  console.log('=========================');
 }
 
 // Auto-initialize when script loads
@@ -289,5 +389,6 @@ window.pwaAutoCommit = {
   getDataHash,
   showAutoCommitNotification,
   triggerAutoCommit,
-  initializePWAAutoCommit
+  initializePWAAutoCommit,
+  checkTimerStatus
 };
