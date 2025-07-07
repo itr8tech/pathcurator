@@ -37,26 +37,46 @@ export function generateRSS(pathway) {
     
     // Collect all bookmarks with creation order and metadata
     const allBookmarks = [];
+    // Use pathway creation date as base, or current time if pathway has no date
+    const baseTimestamp = pathway.created || Date.now();
+    let fallbackTimestamp = baseTimestamp;
+    
     if (pathway.steps && pathway.steps.length > 0) {
         pathway.steps.forEach((step, stepIndex) => {
             if (step.bookmarks && step.bookmarks.length > 0) {
                 step.bookmarks.forEach((bookmark, bookmarkIndex) => {
+                    // Try to get the most specific timestamp available
+                    let createdTimestamp = bookmark.created;
+                    
+                    // If bookmark has no timestamp, create one based on position
+                    // Newer bookmarks (later in the list) should get more recent timestamps
+                    if (!createdTimestamp) {
+                        // Calculate offset: later bookmarks get timestamps closer to now
+                        const totalBookmarksEstimate = 100; // Estimate max bookmarks
+                        const globalBookmarkIndex = stepIndex * 20 + bookmarkIndex; // Rough global position
+                        const hoursAgo = totalBookmarksEstimate - globalBookmarkIndex;
+                        
+                        // Create timestamp that's X hours before now
+                        createdTimestamp = Date.now() - (hoursAgo * 60 * 60 * 1000);
+                        
+                        console.log(`No timestamp for "${bookmark.title}", assigning ${new Date(createdTimestamp).toLocaleString()} (${hoursAgo} hours ago)`);
+                    }
+                    
                     allBookmarks.push({
                         ...bookmark,
                         stepName: step.name,
                         stepIndex: stepIndex,
                         bookmarkIndex: bookmarkIndex,
                         stepObjective: step.objective,
-                        // Use bookmark creation time if available, otherwise step creation, otherwise pathway creation
-                        createdTimestamp: bookmark.created || step.created || pathway.created || Date.now()
+                        createdTimestamp: createdTimestamp
                     });
                 });
             }
         });
     }
     
-    // Sort bookmarks by creation time (oldest first)
-    allBookmarks.sort((a, b) => a.createdTimestamp - b.createdTimestamp);
+    // Sort bookmarks by creation time (newest first)
+    allBookmarks.sort((a, b) => b.createdTimestamp - a.createdTimestamp);
     
     // Add each bookmark as an RSS item
     allBookmarks.forEach((bookmark, index) => {
