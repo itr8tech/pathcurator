@@ -693,8 +693,9 @@ pre code {
       let completedRequired = 0;
       
       document.querySelectorAll('.activity-container').forEach(container => {
-        const badge = container.querySelector('.activity-badge');
-        if (badge && badge.textContent.trim() === 'Required') {
+        const badgeArea = container.querySelector('.bookmark-badges');
+        const requiredBadge = badgeArea.querySelector('.badge.text-bg-primary');
+        if (requiredBadge && requiredBadge.textContent.trim() === 'Required') {
           totalRequired++;
           const launchBtn = container.querySelector('.launch-btn');
           if (launchBtn && links[launchBtn.getAttribute('href')]) {
@@ -1247,7 +1248,7 @@ pre code {
               </div>
               <div class="flex-grow-1 p-3">
                 <div class="activity">
-                  <h3 class="h6 mb-2">${esc(bookmark.title)}</h3>
+                  <h3 class="mb-2">${esc(bookmark.title)}</h3>
                   ${bookmark.description ? `<div class="mb-2">${markdownToHTML(bookmark.description)}</div>` : ''}
                   ${bookmark.context ? `<div class="curatorcontext"><blockquote class="mb-2">${markdownToHTML(bookmark.context)}</blockquote></div>` : ''}
                   
@@ -1256,7 +1257,7 @@ pre code {
                     ${bookmark.visited ? '<span class="badge text-bg-success ms-1">✓ Launched</span>' : ''}
                   </div>
                   <a href="${esc(bookmark.url)}" target="_blank" rel="noopener noreferrer"
-                     class="btn btn-outline-primary btn-sm launch-btn"
+                     class="btn btn-success btn-lg launch-btn"
                      onclick="trackLaunch(this)"
                      data-step="${stepIndex}" 
                      data-bookmark="${bookmarkIndex}"
