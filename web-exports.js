@@ -796,40 +796,60 @@ pre code {
         section.style.display = 'none';
       });
       
-      const activities = document.querySelectorAll('.activity');
+      const activities = document.querySelectorAll('article');
       let matchFound = false;
       let matchCount = 0;
       
-      activities.forEach(function(activity) {
-        const titleElement = activity.querySelector('h4') || activity.querySelector('h3');
-        const title = titleElement && titleElement.textContent ? titleElement.textContent.toLowerCase() : '';
-        const descElement = activity.querySelector('h4 + div') || activity.querySelector('h3 + div');
-        const description = descElement && descElement.textContent ? descElement.textContent.toLowerCase() : '';
-        const contextElement = activity.querySelector('.curatorcontext blockquote');
-        const context = contextElement ? contextElement.textContent.toLowerCase() : '';
+      activities.forEach(function(articleElement) {
+        const activity = articleElement.querySelector('.activity');
+        if (!activity) return;
         
-        const hasMatch = title.indexOf(searchTerm) !== -1 ||
-                        description.indexOf(searchTerm) !== -1 ||
-                        (context && context.indexOf(searchTerm) !== -1);
+        const titleElement = activity.querySelector('h3');
+        const title = titleElement && titleElement.textContent ? titleElement.textContent.toLowerCase() : '';
+        
+        // Get all text content from description and context areas
+        const allText = activity.textContent ? activity.textContent.toLowerCase() : '';
+        
+        const hasMatch = title.indexOf(searchTerm) !== -1 || allText.indexOf(searchTerm) !== -1;
         
         if (hasMatch) {
-          activity.style.display = 'block';
+          articleElement.style.display = '';
           matchFound = true;
           matchCount++;
           
-          const parentStep = activity.closest('details.step-container');
+          const parentStep = articleElement.closest('.step-container');
           if (parentStep) {
-            parentStep.setAttribute('open', 'open');
+            const details = parentStep.querySelector('details');
+            if (details) {
+              details.setAttribute('open', 'open');
+            }
           }
           
-          activity.setAttribute('data-search-result', 'true');
-          activity.setAttribute('aria-label', 'Search result ' + matchCount + ' for "' + searchTerm + '"');
+          articleElement.setAttribute('data-search-result', 'true');
+          articleElement.setAttribute('aria-label', 'Search result ' + matchCount + ' for "' + searchTerm + '"');
           
           highlightMatches(activity, searchTerm);
         } else {
-          activity.style.display = 'none';
-          activity.removeAttribute('data-search-result');
-          activity.removeAttribute('aria-label');
+          articleElement.style.display = 'none';
+          articleElement.removeAttribute('data-search-result');
+          articleElement.removeAttribute('aria-label');
+        }
+      });
+      
+      // Hide steps that have no visible bookmarks
+      document.querySelectorAll('.step-container').forEach(function(stepContainer) {
+        const visibleArticles = stepContainer.querySelectorAll('article:not([style*="display: none"])');
+        const stepSection = stepContainer;
+        
+        if (visibleArticles.length === 0) {
+          stepSection.style.display = 'none';
+        } else {
+          stepSection.style.display = '';
+          // Ensure the step is open if it has matches
+          const details = stepSection.querySelector('details');
+          if (details) {
+            details.setAttribute('open', 'open');
+          }
         }
       });
       
@@ -843,7 +863,7 @@ pre code {
       }
       
       if (matchFound) {
-        const firstResult = document.querySelector('.activity[data-search-result="true"]');
+        const firstResult = document.querySelector('article[data-search-result="true"]');
         if (firstResult) {
           firstResult.tabIndex = -1;
           firstResult.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -875,11 +895,16 @@ pre code {
         el.classList.remove('search-highlight');
       });
       
-      document.querySelectorAll('.activity').forEach(function(activity) {
-        activity.style.display = 'block';
-        activity.removeAttribute('data-search-result');
-        activity.removeAttribute('aria-label');
-        activity.removeAttribute('tabindex');
+      document.querySelectorAll('article').forEach(function(articleElement) {
+        articleElement.style.display = '';
+        articleElement.removeAttribute('data-search-result');
+        articleElement.removeAttribute('aria-label');
+        articleElement.removeAttribute('tabindex');
+      });
+      
+      // Show all steps again
+      document.querySelectorAll('.step-container').forEach(function(stepContainer) {
+        stepContainer.style.display = '';
       });
       
       document.querySelectorAll('.pause-reflect-section').forEach(function(section) {
