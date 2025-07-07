@@ -281,8 +281,6 @@ function renderSteps(pathway, pathwayId) {
       const required = (step.bookmarks || []).filter(b => b.required !== false);
       const bonus = (step.bookmarks || []).filter(b => b.required === false);
       
-      const launchedCount = (step.bookmarks || []).filter(b => b.visited).length;
-      
       return `
       <details class="card mb-3 shadow-sm">
         <summary class="card-header step-header d-flex align-items-center p-3 bg-body-tertiary rounded-top" style="cursor: pointer;">
@@ -292,7 +290,6 @@ function renderSteps(pathway, pathwayId) {
             <div class="d-flex align-items-center gap-2">
               ${required.length > 0 ? `<span class="badge text-bg-primary">${required.length} Required</span>` : ''}
               ${bonus.length > 0 ? `<span class="badge text-bg-info">${bonus.length} Bonus</span>` : ''}
-              ${launchedCount > 0 ? `<span class="badge text-bg-success">${launchedCount} Launched</span>` : ''}
             </div>
           </div>
           <div class="btn-group">
@@ -449,12 +446,8 @@ function renderBookmark(bookmark, stepIndex, pathwayId, bookmarkIndex) {
           </span>
           <a href="${bookmark.url}" 
              target="_blank" 
-             class="fw-semibold text-decoration-none"
-             data-action="track-launch"
-             data-step="${stepIndex}" 
-             data-bookmark="${bookmarkIndex}">${esc(bookmark.title)}</a>
+             class="fw-semibold text-decoration-none">${esc(bookmark.title)}</a>
           <span class="badge ${badgeClass} ms-2">${badgeText}</span>
-          ${bookmark.visited ? '<span class="badge text-bg-success ms-2"><i class="bi bi-check2"></i> Visited</span>' : ''}
           <span title="${linkStatusTitle}">${linkStatusIcon}</span>
         </div>
         ${bookmark.description ? `<p class="small text-body-secondary mb-1">${esc(bookmark.description)}</p>` : ''}
@@ -1136,31 +1129,6 @@ async function auditPathwayLinks() {
   }
 }
 
-// Track when a bookmark is launched/visited
-function trackBookmarkLaunch(stepIndex, bookmarkIndex) {
-  const pathwayIndex = getPathwayIndex();
-  if (pathwayIndex === null) return;
-  
-  // Get current data
-  chrome.storage.local.get({pathways: []}, (data) => {
-    const pathways = data.pathways;
-    const pathway = pathways[pathwayIndex];
-    
-    if (!pathway || !pathway.steps[stepIndex] || !pathway.steps[stepIndex].bookmarks[bookmarkIndex]) {
-      return;
-    }
-    
-    // Mark bookmark as visited
-    pathway.steps[stepIndex].bookmarks[bookmarkIndex].visited = true;
-    pathway.steps[stepIndex].bookmarks[bookmarkIndex].visitedAt = Date.now();
-    
-    // Save the updated data
-    save(pathways, pathwayIndex, () => {
-      // Re-render the steps to update the badge counts
-      renderSteps(pathway, getPathwayId());
-    });
-  });
-}
 
 // Event delegation for all actions
 function handleActionClick(e) {
@@ -1199,9 +1167,6 @@ function handleActionClick(e) {
       break;
     case 'export-step-json':
       exportStepAsJson(stepIndex);
-      break;
-    case 'track-launch':
-      trackBookmarkLaunch(stepIndex, bookmarkIndex);
       break;
   }
 }
