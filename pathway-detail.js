@@ -281,50 +281,62 @@ function renderSteps(pathway, pathwayId) {
       const required = (step.bookmarks || []).filter(b => b.required !== false);
       const bonus = (step.bookmarks || []).filter(b => b.required === false);
       
+      const launchedCount = (step.bookmarks || []).filter(b => b.visited).length;
+      
       return `
-      <details class="card mb-3">
-        <summary class="card-header step-header d-flex align-items-center">
-          <span class="drag-handle-step me-2"><i class="bi bi-grip-vertical"></i></span>
-          <span>${esc(step.name)}</span>
-          <div class="ms-2">
-            ${required.length > 0 ? `<span class="badge text-bg-primary">${required.length}</span>` : ''}
-            ${bonus.length > 0 ? `<span class="badge text-bg-info ms-1">${bonus.length}</span>` : ''}
+      <details class="card mb-3 shadow-sm">
+        <summary class="card-header step-header d-flex align-items-center p-3 bg-body-tertiary rounded-top" style="cursor: pointer;">
+          <span class="drag-handle-step me-3"><i class="bi bi-grip-vertical text-muted"></i></span>
+          <div class="flex-grow-1">
+            <h5 class="mb-1">${esc(step.name)}</h5>
+            <div class="d-flex align-items-center gap-2">
+              ${required.length > 0 ? `<span class="badge text-bg-primary">${required.length} Required</span>` : ''}
+              ${bonus.length > 0 ? `<span class="badge text-bg-info">${bonus.length} Bonus</span>` : ''}
+              ${launchedCount > 0 ? `<span class="badge text-bg-success">${launchedCount} Launched</span>` : ''}
+            </div>
           </div>
-          <div class="ms-auto btn-group">
-            <button data-action="edit-step" data-step="${index}" class="btn btn-sm btn-outline-secondary">
+          <div class="btn-group">
+            <button data-action="edit-step" data-step="${index}" class="btn btn-sm btn-outline-secondary" title="Edit Step">
               <i class="bi bi-pencil-square"></i>
             </button>
-            <button data-action="add-bookmark" data-step="${index}" class="btn btn-sm btn-outline-primary">
-              <i class="bi bi-plus-lg"></i> Bookmark
+            <button data-action="add-bookmark" data-step="${index}" class="btn btn-sm btn-outline-primary" title="Add Bookmark">
+              <i class="bi bi-plus-lg"></i>
             </button>
             <div class="btn-group">
-              <button data-action="export-step" data-step="${index}" class="btn btn-sm btn-outline-secondary">
+              <button data-action="export-step" data-step="${index}" class="btn btn-sm btn-outline-secondary" title="Export Step">
                 <i class="bi bi-box-arrow-up-right"></i>
               </button>
               <button class="btn btn-sm btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                 <span class="visually-hidden">Export Options</span>
               </button>
               <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#" data-action="export-step-csv" data-step="${index}">Export as CSV</a></li>
-                <li><a class="dropdown-item" href="#" data-action="export-step-json" data-step="${index}">Export as JSON</a></li>
+                <li><a class="dropdown-item" href="#" data-action="export-step-csv" data-step="${index}">
+                  <i class="bi bi-filetype-csv me-2"></i>Export as CSV
+                </a></li>
+                <li><a class="dropdown-item" href="#" data-action="export-step-json" data-step="${index}">
+                  <i class="bi bi-filetype-json me-2"></i>Export as JSON
+                </a></li>
               </ul>
             </div>
-            <button data-action="delete-step" data-step="${index}" class="btn btn-sm btn-outline-danger">
+            <button data-action="delete-step" data-step="${index}" class="btn btn-sm btn-outline-danger" title="Delete Step">
               <i class="bi bi-trash"></i>
             </button>
           </div>
         </summary>
         
-        <div class="card-body">
-          ${step.objective ? `<div class="mb-3 fst-italic">${md(step.objective)}</div>` : ''}
+        <div class="card-body p-4">
+          ${step.objective ? `<div class="mb-4 p-3 bg-info-subtle rounded">
+            <h6 class="text-info-emphasis mb-2"><i class="bi bi-target me-2"></i>Objective</h6>
+            <div class="fst-italic">${md(step.objective)}</div>
+          </div>` : ''}
 
-          <div id="bookmarks-${index}" class="mt-3">
+          <div id="bookmarks-${index}">
             ${renderBookmarks(step.bookmarks || [], index, pathwayId)}
           </div>
 
           ${step.pauseAndReflect ? `
-          <div class="mt-4 p-3 bg-light rounded pause-reflect-section">
-            <h5 class="mb-3"><i class="bi bi-journal-text me-2"></i> Pause and Reflect</h5>
+          <div class="mt-4 p-3 bg-warning-subtle rounded">
+            <h6 class="text-warning-emphasis mb-3"><i class="bi bi-journal-text me-2"></i>Pause and Reflect</h6>
             <div class="pause-reflect-content">${md(step.pauseAndReflect)}</div>
           </div>` : ''}
         </div>
@@ -348,17 +360,21 @@ function renderBookmarks(bookmarks, stepIndex, pathwayId) {
   
   return `
     ${required.length > 0 ? `
-      <h6>Required Resources</h6>
-      <ul class="list-group mb-3">
-        ${required.map((bookmark, index) => renderBookmark(bookmark, stepIndex, pathwayId, bookmarks.indexOf(bookmark))).join('')}
-      </ul>
+      <div class="mb-4">
+        <h6 class="mb-3"><i class="bi bi-bookmark-fill text-primary me-2"></i>Required Resources</h6>
+        <ul class="list-group list-group-flush">
+          ${required.map((bookmark, index) => renderBookmark(bookmark, stepIndex, pathwayId, bookmarks.indexOf(bookmark))).join('')}
+        </ul>
+      </div>
     ` : ''}
     
     ${bonus.length > 0 ? `
-      <h6 class="mt-4">Bonus Resources</h6>
-      <ul class="list-group mb-3">
-        ${bonus.map((bookmark, index) => renderBookmark(bookmark, stepIndex, pathwayId, bookmarks.indexOf(bookmark))).join('')}
-      </ul>
+      <div class="mb-4">
+        <h6 class="mb-3"><i class="bi bi-bookmark text-info me-2"></i>Bonus Resources</h6>
+        <ul class="list-group list-group-flush">
+          ${bonus.map((bookmark, index) => renderBookmark(bookmark, stepIndex, pathwayId, bookmarks.indexOf(bookmark))).join('')}
+        </ul>
+      </div>
     ` : ''}
   `;
 }
@@ -423,28 +439,34 @@ function renderBookmark(bookmark, stepIndex, pathwayId, bookmarkIndex) {
   }
 
   return `
-    <li class="list-group-item d-flex align-items-start" 
+    <li class="list-group-item d-flex align-items-start py-3" 
         data-step="${stepIndex}" data-bookmark="${bookmarkIndex}">
-      <span class="drag-handle-bm me-2"><i class="bi bi-grip-vertical"></i></span>
+      <span class="drag-handle-bm me-3"><i class="bi bi-grip-vertical text-muted"></i></span>
       <div class="flex-grow-1">
-        <div class="d-flex align-items-center">
+        <div class="d-flex align-items-center mb-2">
           <span class="badge ${contentTypeBadgeClass} me-2" title="${contentType}">
             <i class="bi ${contentTypeIcon}"></i>
           </span>
-          <a href="${bookmark.url}" target="_blank" class="fw-semibold">${esc(bookmark.title)}</a>
+          <a href="${bookmark.url}" 
+             target="_blank" 
+             class="fw-semibold text-decoration-none"
+             data-action="track-launch"
+             data-step="${stepIndex}" 
+             data-bookmark="${bookmarkIndex}">${esc(bookmark.title)}</a>
           <span class="badge ${badgeClass} ms-2">${badgeText}</span>
+          ${bookmark.visited ? '<span class="badge text-bg-success ms-2"><i class="bi bi-check2"></i> Visited</span>' : ''}
           <span title="${linkStatusTitle}">${linkStatusIcon}</span>
         </div>
-        <p class="small text-body-secondary mb-1">${esc(bookmark.description)}</p>
-        <p class="fst-italic small mb-0">${esc(bookmark.context)}</p>
+        ${bookmark.description ? `<p class="small text-body-secondary mb-1">${esc(bookmark.description)}</p>` : ''}
+        ${bookmark.context ? `<p class="fst-italic small text-muted mb-0">${esc(bookmark.context)}</p>` : ''}
       </div>
-      <div class="btn-group ms-2">
+      <div class="btn-group ms-3">
         <button data-action="edit-bookmark" data-step="${stepIndex}" data-bookmark="${bookmarkIndex}" 
-                class="btn btn-sm btn-outline-secondary">
+                class="btn btn-sm btn-outline-secondary" title="Edit Bookmark">
           <i class="bi bi-pencil-square"></i>
         </button>
         <button data-action="delete-bookmark" data-step="${stepIndex}" data-bookmark="${bookmarkIndex}" 
-                class="btn btn-sm btn-outline-danger">
+                class="btn btn-sm btn-outline-danger" title="Delete Bookmark">
           <i class="bi bi-x-lg"></i>
         </button>
       </div>
@@ -1114,6 +1136,32 @@ async function auditPathwayLinks() {
   }
 }
 
+// Track when a bookmark is launched/visited
+function trackBookmarkLaunch(stepIndex, bookmarkIndex) {
+  const pathwayIndex = getPathwayIndex();
+  if (pathwayIndex === null) return;
+  
+  // Get current data
+  chrome.storage.local.get({pathways: []}, (data) => {
+    const pathways = data.pathways;
+    const pathway = pathways[pathwayIndex];
+    
+    if (!pathway || !pathway.steps[stepIndex] || !pathway.steps[stepIndex].bookmarks[bookmarkIndex]) {
+      return;
+    }
+    
+    // Mark bookmark as visited
+    pathway.steps[stepIndex].bookmarks[bookmarkIndex].visited = true;
+    pathway.steps[stepIndex].bookmarks[bookmarkIndex].visitedAt = Date.now();
+    
+    // Save the updated data
+    save(pathways, pathwayIndex, () => {
+      // Re-render the steps to update the badge counts
+      renderSteps(pathway, getPathwayId());
+    });
+  });
+}
+
 // Event delegation for all actions
 function handleActionClick(e) {
   const button = e.target.closest('[data-action]');
@@ -1151,6 +1199,9 @@ function handleActionClick(e) {
       break;
     case 'export-step-json':
       exportStepAsJson(stepIndex);
+      break;
+    case 'track-launch':
+      trackBookmarkLaunch(stepIndex, bookmarkIndex);
       break;
   }
 }

@@ -305,11 +305,9 @@ export function generateSophisticatedHTML(pathway) {
 }
 
 .activity-container {
-    border: 1px solid #dee2e6;
     overflow: hidden;
     border-radius: 0.375rem;
     margin-bottom: 1rem;
-    background-color: #fff;
 }
 
 .activity-icon-container {
@@ -340,15 +338,12 @@ export function generateSophisticatedHTML(pathway) {
 
 details.step-container {
     margin-bottom: 1.5rem;
-    border: 1px solid #dee2e6;
     border-radius: 0.375rem;
     overflow: hidden;
 }
 
 details.step-container summary {
     padding: 0.75rem 1rem;
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
     cursor: pointer;
     transition: background-color 0.2s;
     display: flex;
@@ -378,7 +373,6 @@ details.step-container .step-content {
 }
 
 .step-objective {
-    background-color: #f8f9fa;
     padding: 0.75rem;
     border-radius: 0.25rem;
     font-style: italic;
@@ -394,7 +388,6 @@ details.step-container .step-content {
 }
 
 .pause-reflect-section {
-    background-color: #f8f9fa;
     border-radius: 0.375rem;
     padding: 1rem;
     margin-top: 2rem;
@@ -413,9 +406,7 @@ details.step-container .step-content {
 
 .control-bar {
     padding: 15px 0;
-    border-bottom: 1px solid #dee2e6;
     box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-    background-color: white;
 }
 
 .control-bar.fixed-top {
@@ -491,9 +482,6 @@ details.step-container .step-content {
     outline: 1px solid #d39e00;
 }
 
-.text-muted, .text-muted small {
-    color: #5a6268 !important;
-}
 
 .badge.launched-badge {
     color: white;
@@ -637,152 +625,6 @@ pre code {
     border-color: #ced4da;
 }
 
-/* Dark mode styles */
-body.dark-mode {
-    background-color: #121212;
-    color: #e0e0e0;
-}
-
-body.dark-mode .moodlecurator {
-    background-color: #121212;
-    color: #e0e0e0;
-}
-
-body.dark-mode .card {
-    background-color: #1e1e1e;
-    border-color: #2d2d2d;
-    color: #e0e0e0;
-}
-
-body.dark-mode .card-header {
-    background-color: #2d2d2d;
-    border-bottom-color: #3d3d3d;
-}
-
-body.dark-mode .card-body {
-    color: #e0e0e0;
-}
-
-body.dark-mode .step-container {
-    border-color: #2d2d2d;
-}
-
-body.dark-mode .step-container summary {
-    background-color: #1e1e1e;
-    border-bottom-color: #2d2d2d;
-}
-
-body.dark-mode .step-objective {
-    background-color: #2a2a2a;
-}
-
-body.dark-mode .activity-container {
-    border-color: #2d2d2d;
-    background-color: #1e1e1e;
-}
-
-body.dark-mode .step-summary {
-    color: #aaa;
-}
-
-body.dark-mode .control-bar {
-    background-color: #1e1e1e;
-    border-color: #2d2d2d;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-body.dark-mode .pause-reflect-section {
-    background-color: #1e1e1e !important;
-}
-
-body.dark-mode .progress {
-    background-color: #2d2d2d;
-}
-
-body.dark-mode .form-control {
-    background-color: #2d2d2d;
-    border-color: #3d3d3d;
-    color: #e0e0e0;
-}
-
-body.dark-mode .form-control::placeholder {
-    color: #aaa;
-}
-
-body.dark-mode .btn-outline-secondary {
-    color: #ccc;
-    border-color: #3d3d3d;
-}
-
-body.dark-mode .btn-outline-secondary:hover {
-    background-color: #2d2d2d;
-    color: #fff;
-}
-
-body.dark-mode .text-muted,
-body.dark-mode .text-muted small {
-    color: #adb5bd !important;
-}
-
-body.dark-mode a {
-    color: #8ab4f8;
-}
-
-body.dark-mode a:hover {
-    color: #aecbfa;
-}
-
-body.dark-mode .badge.bg-blue {
-    background-color: #3d5a99 !important;
-}
-
-body.dark-mode .badge.bg-sagedark {
-    background-color: #2c8c6c !important;
-}
-
-body.dark-mode .badge.bg-bluegreen {
-    background-color: #357385 !important;
-}
-
-body.dark-mode blockquote {
-    border-left-color: #4d4d4d;
-    background-color: #252525;
-    padding: 0.5rem;
-    border-radius: 0.25rem;
-}
-
-body.dark-mode .bg-warning-subtle {
-    background-color: #332701 !important;
-    color: #e0e0e0;
-}
-
-body.dark-mode details summary {
-    color: #e0e0e0;
-}
-
-body.dark-mode details summary.text-black {
-    color: #ffc107 !important;
-}
-
-body.dark-mode .search-highlight {
-    background-color: rgba(255, 193, 7, 0.25);
-    outline-color: #b38600;
-}
-
-body.dark-mode :focus-visible {
-    outline-color: #8ab4f8 !important;
-    box-shadow: 0 0 0 0.2rem rgba(138, 180, 248, 0.5) !important;
-}
-
-body.dark-mode #darkModeToggle {
-    border-color: #495057;
-}
-
-body.dark-mode #darkModeToggle:hover {
-    background-color: #212529;
-    border-color: #adb5bd;
-}
-
 .prose {
     max-width: 65ch;
     line-height: 1.6;
@@ -797,64 +639,6 @@ body.dark-mode #darkModeToggle:hover {
 .prose-lg {
     max-width: 75ch;
     line-height: 1.7;
-}
-
-.broken-link-warning {
-    color: #856404;
-    background-color: #fff3cd;
-    border: 1px solid #ffeeba;
-    border-radius: 0.25rem;
-    padding: 0.5rem 0.75rem;
-    margin-left: 1rem;
-    margin-top: 0.5rem;
-    display: inline-block;
-    font-size: 0.875rem;
-    vertical-align: middle;
-}
-
-body.dark-mode .prose,
-body.dark-mode .prose-sm,
-body.dark-mode .prose-lg {
-    color: #e0e0e0;
-}
-
-body.dark-mode .broken-link-warning {
-    color: #ffda6a;
-    background-color: #332701;
-    border-color: #664d03;
-}
-
-body.dark-mode .moodlecurator pre {
-    background-color: #2a2a2a;
-    border-color: #444;
-    color: #e0e0e0;
-}
-
-body.dark-mode .moodlecurator code {
-    background-color: #2a2a2a;
-    color: #ff77aa;
-}
-
-body.dark-mode .moodlecurator table th {
-    background-color: #2a2a2a;
-    border-color: #444;
-    color: #e0e0e0;
-}
-
-body.dark-mode .moodlecurator table td {
-    border-color: #444;
-}
-
-body.dark-mode .moodlecurator table tr:nth-of-type(odd) {
-    background-color: rgba(255, 255, 255, 0.05);
-}
-
-body.dark-mode .moodlecurator hr {
-    border-color: rgba(255, 255, 255, 0.1);
-}
-
-body.dark-mode img:not([src*=".svg"]) {
-    filter: brightness(0.9) contrast(1.1);
 }`;
 
     // Generate the HTML structure
@@ -973,7 +757,7 @@ body.dark-mode img:not([src*=".svg"]) {
         const container = btn.closest('.activity-container');
         const badge = container.querySelector('.launched-badge');
         
-        if (links[url]) {
+        if (links[url] && badge) {
           badge.classList.remove('d-none');
           
           if (justLaunchedUrl && url === justLaunchedUrl) {
@@ -984,14 +768,14 @@ body.dark-mode img:not([src*=".svg"]) {
     }
     
     function expandAll() {
-      var stepDetails = document.querySelectorAll('details.step-container');
+      var stepDetails = document.querySelectorAll('.step-container details');
       for (var i = 0; i < stepDetails.length; i++) {
         stepDetails[i].setAttribute('open', 'open');
       }
     }
     
     function collapseAll() {
-      var stepDetails = document.querySelectorAll('details.step-container');
+      var stepDetails = document.querySelectorAll('.step-container details');
       for (var i = 0; i < stepDetails.length; i++) {
         stepDetails[i].removeAttribute('open');
       }
@@ -1119,10 +903,11 @@ body.dark-mode img:not([src*=".svg"]) {
     
     // Dark mode functionality
     function toggleDarkMode() {
-      document.body.classList.toggle('dark-mode');
-      const isDarkMode = document.body.classList.contains('dark-mode');
-      localStorage.setItem('curator_dark_mode', isDarkMode ? 'true' : 'false');
-      updateDarkModeToggleIcon(isDarkMode);
+      const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-bs-theme', newTheme);
+      localStorage.setItem('curator_dark_mode', newTheme === 'dark' ? 'true' : 'false');
+      updateDarkModeToggleIcon(newTheme === 'dark');
     }
     
     function updateDarkModeToggleIcon(isDarkMode) {
@@ -1141,11 +926,7 @@ body.dark-mode img:not([src*=".svg"]) {
       const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
       const shouldBeDark = savedDarkMode === 'true' || (savedDarkMode === null && prefersDarkMode);
       
-      if (shouldBeDark) {
-        document.body.classList.add('dark-mode');
-      } else {
-        document.body.classList.remove('dark-mode');
-      }
+      document.documentElement.setAttribute('data-bs-theme', shouldBeDark ? 'dark' : 'light');
       
       updateDarkModeToggleIcon(shouldBeDark);
       
@@ -1165,15 +946,63 @@ body.dark-mode img:not([src*=".svg"]) {
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
           if (localStorage.getItem('curator_dark_mode') === null) {
             const shouldBeDark = e.matches;
-            if (shouldBeDark) {
-              document.body.classList.add('dark-mode');
-            } else {
-              document.body.classList.remove('dark-mode');
-            }
+            document.documentElement.setAttribute('data-bs-theme', shouldBeDark ? 'dark' : 'light');
             updateDarkModeToggleIcon(shouldBeDark);
           }
         });
       }
+    }
+    
+    // Track launch function for onclick handlers
+    function trackLaunch(element) {
+      const url = element.getAttribute('href');
+      const stepIndex = element.getAttribute('data-step');
+      const bookmarkIndex = element.getAttribute('data-bookmark');
+      
+      markAsLaunched(url);
+      updateStepBadges();
+    }
+    
+    // Update step badges with launched counts
+    function updateStepBadges() {
+      const links = loadLaunchedLinks();
+      
+      document.querySelectorAll('.step-container').forEach(function(stepContainer, stepIndex) {
+        const launchedBadge = stepContainer.querySelector('.badge.text-bg-success');
+        const stepContent = stepContainer.querySelector('.step-content');
+        const launchButtons = stepContent.querySelectorAll('.launch-btn');
+        
+        let launchedCount = 0;
+        launchButtons.forEach(function(btn) {
+          const url = btn.getAttribute('href');
+          if (links[url]) {
+            launchedCount++;
+            
+            // Update individual bookmark badge
+            const bookmarkContainer = btn.closest('.activity');
+            const badgeArea = bookmarkContainer.querySelector('.bookmark-badges');
+            const existingLaunchedBadge = badgeArea.querySelector('.badge.text-bg-success');
+            
+            if (!existingLaunchedBadge) {
+              badgeArea.innerHTML += '<span class="badge text-bg-success ms-1">✓ Launched</span>';
+            }
+          }
+        });
+        
+        // Update or add launched badge in step header
+        const badgeContainer = stepContainer.querySelector('.summary-content .ms-3');
+        const existingLaunchedBadge = badgeContainer.querySelector('.text-bg-success');
+        
+        if (launchedCount > 0) {
+          if (existingLaunchedBadge) {
+            existingLaunchedBadge.textContent = launchedCount + ' Launched';
+          } else {
+            badgeContainer.innerHTML += '<span class="badge text-bg-success">' + launchedCount + ' Launched</span>';
+          }
+        } else if (existingLaunchedBadge) {
+          existingLaunchedBadge.remove();
+        }
+      });
     }
     
     // Set up event listeners for launch buttons
@@ -1182,6 +1011,7 @@ body.dark-mode img:not([src*=".svg"]) {
         btn.addEventListener('click', function(e) {
           const url = this.getAttribute('href');
           markAsLaunched(url);
+          updateStepBadges();
         });
       });
     }
@@ -1265,10 +1095,12 @@ body.dark-mode img:not([src*=".svg"]) {
       
       setupLaunchTracking();
       updateLaunchedBadges();
+      updateStepBadges();
       
       setTimeout(function() {
         updateProgressBar();
         updateLaunchedBadges();
+        updateStepBadges();
       }, 200);
       
       handleScroll();
@@ -1289,14 +1121,14 @@ body.dark-mode img:not([src*=".svg"]) {
     <div>
       ${pathway.description ? `<div class="lead mb-4 fs-4 prose prose-lg">${markdownToHTML(pathway.description)}</div>` : ''}
     </div>
-    <div class="text-muted small mb-3">
+    <div class="text-body-secondary small mb-3">
       ${pathway.lastUpdated ? `Last updated: ${new Date(pathway.lastUpdated).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : ''} | 
       ${pathway.version ? `Version: ${pathway.version}` : ''}
     </div>
     ${pathway.contentWarning ? `
-    <section class="mb-4 p-3 bg-warning-subtle rounded-3" role="region" aria-labelledby="content-warning-heading">
+    <section class="mb-4 p-3 bg-body-tertiary rounded-3" role="region" aria-labelledby="content-warning-heading">
       <details>
-        <summary role="button" aria-expanded="false" class="text-black" aria-describedby="content-warning-description">
+        <summary role="button" aria-expanded="false" class="text-body-emphasis" aria-describedby="content-warning-description">
           <i class="fa fa-exclamation-triangle me-2" aria-hidden="true"></i> Before you proceed...
         </summary>
         <div id="content-warning-description" class="visually-hidden">Click to read important content warnings for this pathway</div>
@@ -1312,7 +1144,7 @@ body.dark-mode img:not([src*=".svg"]) {
   <div id="control-bar-container" class="mb-4">
     <div id="controls-spacer" class="controls-spacer"></div>
     
-    <div id="control-bar" class="control-bar w-100">
+    <div id="control-bar" class="control-bar w-100 bg-body border-bottom">
       <div class="container">
         <div class="progress-container py-2 mb-2">
           <div class="d-flex justify-content-between align-items-center">
@@ -1324,7 +1156,7 @@ body.dark-mode img:not([src*=".svg"]) {
               </div>
             </div>
             <div class="d-flex align-items-center">
-              <span id="progress-counter" class="text-muted small me-2">0 of 0 required</span>
+              <span id="progress-counter" class="text-body-secondary small me-2">0 of 0 required</span>
               <span id="progress-percentage" class="badge bg-sagedark" aria-live="polite">0%</span>
             </div>
           </div>
@@ -1345,7 +1177,7 @@ body.dark-mode img:not([src*=".svg"]) {
                 <i class="fa fa-search" aria-hidden="true"></i> Search
               </button>
             </div>
-            <div id="searchResultsMessage" class="text-muted small mt-1" aria-live="polite"></div>
+            <div id="searchResultsMessage" class="text-body-secondary small mt-1" aria-live="polite"></div>
           </div>
           <div class="btn-group" role="group" aria-label="Pathway navigation controls">
             <button onclick="expandAll()" class="btn btn-outline-secondary" aria-label="Expand all steps">
@@ -1371,27 +1203,32 @@ body.dark-mode img:not([src*=".svg"]) {
     pathway.steps.forEach((step, stepIndex) => {
       const stepId = `step-${stepIndex + 1}`;
       const requiredCount = step.bookmarks ? step.bookmarks.filter(b => b.required !== false).length : 0;
+      const bonusCount = step.bookmarks ? step.bookmarks.filter(b => b.required === false).length : 0;
+      const launchedCount = step.bookmarks ? step.bookmarks.filter(b => b.visited).length : 0;
       
       html += `
-    <section class="step-container" id="${stepId}">
+    <section class="step-container border rounded shadow-sm mb-3" id="${stepId}">
       <details>
-        <summary class="fw-semibold" role="button" aria-expanded="false" aria-controls="${stepId}-content">
-        <i class="fa fa-caret-right me-2 caret-icon" aria-hidden="true"></i>
+        <summary class="fw-semibold p-3 bg-body-tertiary border-bottom" role="button" aria-expanded="false" aria-controls="${stepId}-content">
         <div class="summary-content">
           <div class="d-flex justify-content-between align-items-start">
             <div class="flex-grow-1">
-              <h2 class="h4 mb-0" id="${stepId}-heading">Step ${stepIndex + 1}: ${esc(step.name)}</h2>
-              ${step.objective ? `<div class="step-summary">${esc(step.objective)}</div>` : ''}
+              <h2 class="h5 mb-1" id="${stepId}-heading">Step ${stepIndex + 1}: ${esc(step.name)}</h2>
+              ${step.objective ? `<div class="step-summary text-body-secondary small">${esc(step.objective)}</div>` : ''}
             </div>
-            <div class="ms-2 d-flex align-items-center">
-              <span class="badge bg-secondary me-1">0 Launched</span>
-              <span class="badge bg-light text-dark">${requiredCount} Required</span>
+            <div class="ms-3 d-flex align-items-center gap-2">
+              ${requiredCount > 0 ? `<span class="badge text-bg-primary">${requiredCount} Required</span>` : ''}
+              ${bonusCount > 0 ? `<span class="badge text-bg-secondary">${bonusCount} Bonus</span>` : ''}
+              ${launchedCount > 0 ? `<span class="badge text-bg-success">${launchedCount} Launched</span>` : ''}
             </div>
           </div>
         </div>
       </summary>
-      <div class="step-content" id="${stepId}-content" aria-labelledby="${stepId}-heading">
-        ${step.objective ? `<div class="step-objective">${markdownToHTML(step.objective)}</div>` : ''}
+      <div class="step-content p-4" id="${stepId}-content" aria-labelledby="${stepId}-heading">
+        ${step.objective ? `<div class="step-objective bg-body-tertiary p-3 rounded mb-4 border-start border-4 border-primary">
+          <h6 class="fw-semibold mb-2"><i class="fa fa-target me-2"></i>Objective</h6>
+          <div class="fst-italic">${markdownToHTML(step.objective)}</div>
+        </div>` : ''}
         
         <div class="row">`;
       
@@ -1404,8 +1241,8 @@ body.dark-mode img:not([src*=".svg"]) {
           
           html += `
           <article class="col-md-12 mb-3">
-            <div class="activity-container d-flex">
-              <div class="activity-icon-container ${bgClass}" aria-hidden="true">
+            <div class="activity-container d-flex border rounded bg-body-tertiary">
+              <div class="activity-icon-container bg-primary d-flex align-items-center justify-content-center p-3" aria-hidden="true" style="width: 60px;">
                 <i class="fa ${icon} text-white" aria-hidden="true"></i>
               </div>
               <div class="flex-grow-1 p-3">
@@ -1414,18 +1251,18 @@ body.dark-mode img:not([src*=".svg"]) {
                   ${bookmark.description ? `<div class="mb-2">${markdownToHTML(bookmark.description)}</div>` : ''}
                   ${bookmark.context ? `<div class="curatorcontext"><blockquote class="mb-2">${markdownToHTML(bookmark.context)}</blockquote></div>` : ''}
                   
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                      <span class="badge activity-badge">${isRequired ? 'Required' : 'Bonus'}</span>
-                      <span class="badge ${bgClass} text-white ms-1">${contentType}</span>
-                      <span class="badge bg-success launched-badge d-none">Launched</span>
-                    </div>
-                    <a href="${esc(bookmark.url)}" target="_blank" rel="noopener noreferrer"
-                       class="btn btn-outline-primary btn-sm launch-btn"
-                       aria-label="Launch ${esc(bookmark.title)} (opens in new tab)">
-                      Launch <i class="fa fa-external-link-alt ms-1" aria-hidden="true"></i>
-                    </a>
+                  <div class="bookmark-badges mb-2">
+                    <span class="badge ${isRequired ? 'text-bg-primary' : 'text-bg-secondary'}">${isRequired ? 'Required' : 'Bonus'}</span>
+                    ${bookmark.visited ? '<span class="badge text-bg-success ms-1">✓ Launched</span>' : ''}
                   </div>
+                  <a href="${esc(bookmark.url)}" target="_blank" rel="noopener noreferrer"
+                     class="btn btn-outline-primary btn-sm launch-btn"
+                     onclick="trackLaunch(this)"
+                     data-step="${stepIndex}" 
+                     data-bookmark="${bookmarkIndex}"
+                     aria-label="Launch ${esc(bookmark.title)} (opens in new tab)">
+                    Launch <i class="fa fa-external-link-alt ms-1" aria-hidden="true"></i>
+                  </a>
                 </div>
               </div>
             </div>
@@ -1434,7 +1271,7 @@ body.dark-mode img:not([src*=".svg"]) {
       } else {
         html += `
           <div class="col-12">
-            <p class="text-muted">No bookmarks in this step.</p>
+            <p class="text-body-secondary">No bookmarks in this step.</p>
           </div>`;
       }
       
@@ -1442,8 +1279,8 @@ body.dark-mode img:not([src*=".svg"]) {
         </div>
         
         ${step.pauseAndReflect ? `
-        <section class="pause-reflect-section" role="region" aria-labelledby="pause-reflect-${stepIndex}">
-          <h3 id="pause-reflect-${stepIndex}" class="h4"><i class="fa fa-pause me-2" aria-hidden="true"></i>Pause and Reflect</h3>
+        <section class="pause-reflect-section bg-body-tertiary p-3 rounded mt-4 border-start border-4 border-warning" role="region" aria-labelledby="pause-reflect-${stepIndex}">
+          <h6 id="pause-reflect-${stepIndex}" class="fw-semibold mb-3"><i class="fa fa-journal-text me-2" aria-hidden="true"></i>Pause and Reflect</h6>
           <div class="pause-reflect-content">${markdownToHTML(step.pauseAndReflect)}</div>
         </section>
         ` : ''}
@@ -1452,13 +1289,13 @@ body.dark-mode img:not([src*=".svg"]) {
     </section>`;
     });
   } else {
-    html += '<p class="text-muted">No steps in this pathway.</p>';
+    html += '<p class="text-body-secondary">No steps in this pathway.</p>';
   }
   
   html += `
   </main>
   
-  <footer class="mt-5 pt-4 border-top text-muted small" role="contentinfo">
+  <footer class="mt-5 pt-4 border-top text-body-secondary small" role="contentinfo">
     ${pathway.acknowledgments ? `
     <section aria-labelledby="acknowledgments-heading">
       <h2 id="acknowledgments-heading" class="h6 mb-3">Acknowledgments</h2>
