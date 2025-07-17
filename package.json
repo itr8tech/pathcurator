@@ -16,14 +16,17 @@
     "playwright:install": "npx playwright install"
   },
   "devDependencies": {
-    "@playwright/test": "^1.40.0",
     "@axe-core/playwright": "^4.8.0",
-    "playwright-lighthouse": "^3.0.0",
-    "lighthouse": "^11.0.0",
+    "@axe-core/puppeteer": "^4.8.0",
+    "@playwright/test": "^1.40.0",
     "chrome-launcher": "^1.1.0",
-    "puppeteer": "^21.0.0",
-    "@axe-core/puppeteer": "^4.8.0"
+    "lighthouse": "^12.8.0",
+    "playwright-lighthouse": "^3.0.0",
+    "puppeteer": "^24.14.0"
   },
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/claude-code": "^1.0.53"
+  }
 }

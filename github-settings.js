@@ -183,6 +183,9 @@ async function handleLoggedInState() {
     
     // Load current configuration
     await loadCurrentConfig();
+    
+    // Load auto-commit settings after the card is shown
+    await loadAutoCommitSettings();
   } catch (error) {
     console.error('Error handling logged in state:', error);
     
@@ -670,9 +673,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Auto-commit settings
   document.getElementById('auto-commit-enabled').addEventListener('change', toggleAutoCommitOptions);
   document.getElementById('btn-save-auto-commit').addEventListener('click', saveAutoCommitSettings);
-  
-  // Load auto-commit settings (after storage is ready)
-  loadAutoCommitSettings();
   
   // Debug button
   const debugBtn = document.getElementById('btn-debug');
