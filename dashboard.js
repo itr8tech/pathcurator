@@ -1532,22 +1532,35 @@ async function importFromGitHub() {
               return;
             }
             
-            // If there are existing pathways, ask for confirmation
-            const importConfirmed = confirm(
-              `You already have ${existingPathways.length} pathways in your extension.\\n\\n` +
-              `Would you like to:\\n` +
-              `1. Replace all existing pathways with the imported ones\\n` +
-              `2. Cancel and keep your current pathways\\n\\n` +
-              `Choose "OK" to replace, or "Cancel" to keep your current pathways.`
-            );
+            // Check for duplicate pathway names
+            const duplicatePathways = [];
+            const newPathways = [];
             
-            if (importConfirmed) {
-              // Save the imported pathways
-              await chrome.storage.local.set({pathways: importedData});
-              showStatus(`Successfully imported ${importedData.length} pathways from GitHub (replaced ${existingPathways.length} existing pathways)`, 'success');
-              render(); // Refresh the UI
+            importedData.forEach(importPathway => {
+              const existingPathwayIndex = existingPathways.findIndex(p => p.name === importPathway.name);
+              if (existingPathwayIndex >= 0) {
+                duplicatePathways.push({
+                  existingIndex: existingPathwayIndex,
+                  existing: existingPathways[existingPathwayIndex],
+                  imported: importPathway
+                });
+              } else {
+                newPathways.push(importPathway);
+              }
+            });
+            
+            // Hide the status message before showing the modal
+            if (statusEl && document.body.contains(statusEl)) {
+              document.body.removeChild(statusEl);
+              statusEl = null;
+            }
+            
+            if (duplicatePathways.length > 0 || newPathways.length > 0) {
+              // Show diff UI for any changes detected
+              showPathwayDiff(duplicatePathways, newPathways, existingPathways);
             } else {
-              showStatus('Import cancelled. Your existing pathways were not changed.', 'warning');
+              // No changes detected
+              showStatus('No new pathways found in GitHub repository.', 'warning');
             }
           } catch (error) {
             console.error('Error processing import:', error);
