@@ -2,6 +2,34 @@
 const SortableGlobal = window.Sortable;
 
 const $ = s=>document.querySelector(s);
+
+// Modal helper functions
+function showModalState(stateId) {
+  // Hide all modal states
+  ['commitModalInitial', 'commitModalSyncing', 'commitModalMerge', 'commitModalError', 'commitModalSuccess'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('d-none');
+  });
+  
+  // Show the requested state
+  const stateEl = document.getElementById(stateId);
+  if (stateEl) stateEl.classList.remove('d-none');
+}
+
+function showModalError(title, message) {
+  document.getElementById('errorTitle').textContent = title;
+  document.getElementById('errorMessage').textContent = message;
+  showModalState('commitModalError');
+  
+  // Update buttons
+  document.getElementById('commitProceedBtn').classList.add('d-none');
+  document.getElementById('commitMergeBtn').classList.add('d-none');
+  document.getElementById('commitCloseBtn').classList.remove('d-none');
+}
+
+function updateSyncStatus(message) {
+  document.getElementById('syncStatusMessage').textContent = message;
+}
 // Safer escape function that handles undefined/null values
 const esc = s=>{
   // If s is null, undefined, or not a string, convert to empty string
@@ -1152,40 +1180,6 @@ function createNewPathway() {
 
 // Commit to GitHub (all pathways)
 async function commitToGitHub() {
-  // Create a status element for user feedback
-  let statusEl = null;
-
-  // Function to show status messages to the user
-  const showStatus = (message, type = 'info') => {
-    // Create status element if it doesn't exist
-    if (!statusEl) {
-      statusEl = document.createElement('div');
-      statusEl.style.zIndex = '9999';
-      statusEl.style.transition = 'all 0.3s ease';
-      document.body.appendChild(statusEl);
-    }
-
-    // Set color based on status type
-    let bgColor = 'bg-dark';
-    if (type === 'success') bgColor = 'bg-success';
-    if (type === 'error') bgColor = 'bg-danger';
-    if (type === 'warning') bgColor = 'bg-warning text-dark';
-
-    // Update status message
-    statusEl.className = `position-fixed top-0 start-0 end-0 ${bgColor} text-white p-3 text-center`;
-    statusEl.textContent = message; // SECURITY: Use textContent to prevent XSS
-
-    // For success or error messages, set a timeout to remove the status
-    if (type === 'success' || type === 'error') {
-      setTimeout(() => {
-        if (statusEl && document.body.contains(statusEl)) {
-          document.body.removeChild(statusEl);
-          statusEl = null;
-        }
-      }, 5000); // Show for 5 seconds for better visibility
-    }
-  };
-
   try {
     // Import the GitHub API module
     const GitHubModule = await import('./github-api.js');
@@ -1194,20 +1188,26 @@ async function commitToGitHub() {
     // Check if authenticated and configured
     const isAuthenticated = await GitHub.isAuthenticated();
     if (!isAuthenticated) {
-      const connectNow = confirm('You need to connect to GitHub first. Go to GitHub Settings now?');
-      if (connectNow) {
+      const modal = new bootstrap.Modal(document.getElementById('githubCommitModal'));
+      showModalError('Not Connected', 'You need to connect to GitHub first. Please go to GitHub Settings to connect your account.');
+      document.getElementById('commitProceedBtn').textContent = 'Go to Settings';
+      document.getElementById('commitProceedBtn').onclick = () => {
         window.location.href = 'github-settings.html';
-      }
+      };
+      modal.show();
       return;
     }
 
     // Get GitHub configuration
     const config = await GitHub.getGitHubConfig();
     if (!config.repository) {
-      const configureNow = confirm('You need to select a repository first. Go to GitHub Settings now?');
-      if (configureNow) {
+      const modal = new bootstrap.Modal(document.getElementById('githubCommitModal'));
+      showModalError('No Repository Selected', 'You need to select a repository first. Please go to GitHub Settings to configure a repository.');
+      document.getElementById('commitProceedBtn').textContent = 'Go to Settings';
+      document.getElementById('commitProceedBtn').onclick = () => {
         window.location.href = 'github-settings.html';
-      }
+      };
+      modal.show();
       return;
     }
 
@@ -1216,185 +1216,214 @@ async function commitToGitHub() {
       try {
         // Verify we have pathways data to commit
         if (!pathways || pathways.length === 0) {
-          alert('No pathways data to commit. Create at least one pathway first.');
+          const modal = new bootstrap.Modal(document.getElementById('githubCommitModal'));
+          showModalError('No Pathways', 'No pathways data to commit. Create at least one pathway first.');
+          modal.show();
           return;
         }
-
-        // First, check if we should sync from GitHub first to avoid conflicts
-        const syncFirst = confirm(
-          'Would you like to sync with GitHub before committing? This is recommended if the file has been modified remotely.\n\n' +
-          'Click OK to sync first, or Cancel to commit directly.'
-        );
-
-        if (syncFirst) {
-          showStatus('Checking for remote changes from GitHub...');
-
-          try {
-            // Get the remote file content
-            const fileContent = await GitHub.getFileContent();
-
-            if (fileContent.exists) {
-              try {
-                // Parse the JSON content
-                const remotePathways = JSON.parse(fileContent.content);
-
-                // Only offer to merge if the remote content is valid
-                if (Array.isArray(remotePathways) && remotePathways.length > 0) {
-                  const mergeStrategy = confirm(
-                    `Found ${remotePathways.length} pathways on GitHub.\n\n` +
-                    `How would you like to proceed?\n\n` +
-                    `OK: Merge with your local changes (local sort order will be preserved)\n` +
-                    `Cancel: Use your local changes only`
-                  );
-
-                  if (mergeStrategy) {
-                    // Merge strategy: Keep local sort order but update with remote data where possible
-                    // This focuses on preserving the user's local organization
-
-                    // Create a map of local pathway names to their indices for quick lookup
-                    const localPathwayMap = new Map();
-                    pathways.forEach((pathway, index) => {
-                      localPathwayMap.set(pathway.name, index);
-                    });
-
-                    // Create a new array to store the merged pathways
-                    const mergedPathways = [...pathways]; // Start with the local pathways
-
-                    // For any pathways in the remote that aren't in local, add them to the end
-                    remotePathways.forEach(remotePath => {
-                      const localIndex = localPathwayMap.get(remotePath.name);
-
-                      if (localIndex === undefined) {
-                        // Remote pathway doesn't exist locally, add it to the end
-                        mergedPathways.push(remotePath);
-                      }
-                      // We don't update content for pathways that exist locally
-                      // This preserves local changes while maintaining sort order
-                    });
-
-                    // Use the merged pathways for our commit
-                    pathways = mergedPathways;
-                    showStatus('Successfully merged with remote changes', 'success');
-                  }
-                }
-              } catch (parseError) {
-                console.error('Error parsing GitHub file:', parseError);
-                const continueAnyway = confirm(
-                  `Error parsing the GitHub file: ${parseError.message}\n\n` +
-                  `Do you want to continue with the commit anyway? This will overwrite the remote file.`
-                );
-
-                if (!continueAnyway) {
-                  showStatus('Commit cancelled by user', 'warning');
-                  return;
-                }
-              }
-            }
-          } catch (error) {
-            console.error('Error fetching from GitHub before commit:', error);
-            const continueAnyway = confirm(
-              `Error fetching from GitHub: ${error.message}\n\n` +
-              `Do you want to continue with the commit anyway?`
-            );
-
-            if (!continueAnyway) {
-              showStatus('Commit cancelled by user', 'warning');
-              return;
-            }
-          }
-        }
-
-        // Ask for commit message
+        
+        // Show the modal with initial state
+        const modal = new bootstrap.Modal(document.getElementById('githubCommitModal'));
+        showModalState('commitModalInitial');
+        
+        // Update repository info
+        document.getElementById('commitRepoInfo').textContent = `${config.repository}/${config.branch}/${config.filepath}`;
+        
+        // Set default commit message
         const defaultMessage = `Update curator pathways (${pathways.length} pathways)`;
-        const commitMessage = prompt('Enter a commit message:', defaultMessage);
-        if (!commitMessage) return; // Cancelled
-
-        // Create a deep copy of pathways with sort order information
-        const pathwaysWithSortOrder = JSON.parse(JSON.stringify(pathways, (key, value) => {
-          // Preserve all audit-related fields during JSON serialization
-          if (key === 'available' || key === 'status' || key === 'lastChecked' || 
-              key === 'error' || key === 'redirectUrl' || key === 'requiresAuth' || 
-              key === 'isExemptDomain' || key === 'checkDuration') {
-            return value;
-          }
-          return value;
-        }));
-
-        // Add sort order to each bookmark in each pathway's steps
-        pathwaysWithSortOrder.forEach(pathway => {
-          if (pathway.steps) {
-            pathway.steps.forEach(step => {
-              if (step.bookmarks) {
-                step.bookmarks.forEach((bookmark, index) => {
-                  bookmark.sortOrder = index;
-                });
-              }
-            });
-          }
-        });
-
-        // Convert to JSON
-        const json = JSON.stringify(pathwaysWithSortOrder, null, 2);
-
-        // Display committing status
-        showStatus(`Committing to GitHub repository: ${config.repository} (${config.branch})...`);
-
-        try {
-          // Commit to GitHub
-          const result = await GitHub.commitFile(json, commitMessage);
-
-          // Check if the commit was successful
-          if (result && result.commit) {
-            // Show success message with commit details
-            showStatus(
-              `Successfully committed to GitHub!<br>` +
-              `<small>File: ${config.filepath}<br>` +
-              `Commit: <a href="${result.commit.html_url}" target="_blank" class="text-white">${result.commit.sha.substring(0, 7)}</a></small>`,
-              'success'
-            );
-            
-            // Notify background script to reset auto-commit timer
-            if (chrome.runtime && chrome.runtime.sendMessage) {
-              chrome.runtime.sendMessage({ type: 'manualCommit' });
-            }
-          } else {
-            showStatus('Commit completed, but could not verify details.', 'success');
-            
-            // Notify background script to reset auto-commit timer
-            if (chrome.runtime && chrome.runtime.sendMessage) {
-              chrome.runtime.sendMessage({ type: 'manualCommit' });
-            }
-          }
-        } catch (error) {
-          // Handle specific GitHub API errors
-          console.error('Failed to commit to GitHub:', error);
-
-          let errorMessage = error.message;
-
-          // Check for common error types and provide more helpful messages
-          if (error.message.includes('401')) {
-            errorMessage = 'Authentication error. Your GitHub token may have expired. Please reconnect in GitHub Settings.';
-          } else if (error.message.includes('403')) {
-            errorMessage = 'Permission denied. Make sure your token has the "repo" scope.';
-          } else if (error.message.includes('404')) {
-            errorMessage = 'Repository not found. Check your repository settings.';
-          } else if (error.message.includes('network') || error.message.includes('fetch')) {
-            errorMessage = 'Network error. Check your internet connection and try again.';
-          } else if (error.message.includes('409')) {
-            errorMessage = 'Conflict error: The file has been modified on GitHub since your last sync. ' +
-                           'Please use "Import from GitHub" first to sync changes before committing.';
-          }
-
-          showStatus(`Failed to commit to GitHub: ${errorMessage}`, 'error');
-        }
+        document.getElementById('commitMessage').value = defaultMessage;
+        
+        // Reset buttons
+        document.getElementById('commitProceedBtn').classList.remove('d-none');
+        document.getElementById('commitProceedBtn').textContent = 'Proceed with Commit';
+        document.getElementById('commitMergeBtn').classList.add('d-none');
+        document.getElementById('commitCloseBtn').classList.add('d-none');
+        
+        modal.show();
+        
+        // Store data for later use
+        window.commitData = { pathways, config, GitHub, modal };
+        
+        // Set up the proceed button handler
+        document.getElementById('commitProceedBtn').onclick = handleCommitProceed;
       } catch (error) {
-        console.error('Error preparing data for GitHub commit:', error);
-        showStatus(`Error preparing data: ${error.message}`, 'error');
+        console.error('Error setting up commit modal:', error);
+        showModalError('Error', 'Failed to prepare commit: ' + error.message);
       }
     });
   } catch (error) {
     console.error('Error loading GitHub module:', error);
-    alert('Failed to load GitHub integration: ' + error.message);
+    const modal = new bootstrap.Modal(document.getElementById('githubCommitModal'));
+    showModalError('Module Error', 'Failed to load GitHub integration: ' + error.message);
+    modal.show();
+  }
+}
+
+// Handle the proceed button click in the commit modal
+async function handleCommitProceed() {
+  const { pathways, config, GitHub, modal } = window.commitData;
+  const syncOption = document.querySelector('input[name="syncOption"]:checked').value;
+  const commitMessage = document.getElementById('commitMessage').value.trim();
+  
+  if (!commitMessage) {
+    alert('Please enter a commit message');
+    return;
+  }
+  
+  // Hide proceed button and show syncing state
+  document.getElementById('commitProceedBtn').classList.add('d-none');
+  showModalState('commitModalSyncing');
+  
+  let finalPathways = pathways;
+  
+  if (syncOption === 'sync') {
+    updateSyncStatus('Checking for remote changes...');
+    
+    try {
+      const fileContent = await GitHub.getFileContent();
+      
+      if (fileContent.exists) {
+        try {
+          const remotePathways = JSON.parse(fileContent.content);
+          
+          if (Array.isArray(remotePathways) && remotePathways.length > 0) {
+            // Show merge options
+            document.getElementById('remotePathwayCount').textContent = remotePathways.length;
+            showModalState('commitModalMerge');
+            
+            // Show merge button
+            document.getElementById('commitMergeBtn').classList.remove('d-none');
+            document.getElementById('commitMergeBtn').onclick = () => handleMergeDecision(remotePathways, commitMessage);
+            
+            return; // Wait for user decision
+          }
+        } catch (parseError) {
+          console.error('Error parsing GitHub file:', parseError);
+          // Continue with commit if parse fails
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching from GitHub:', error);
+      // Continue with commit if fetch fails
+    }
+  }
+  
+  // Proceed with commit
+  await performCommit(finalPathways, commitMessage);
+}
+
+// Handle merge decision
+async function handleMergeDecision(remotePathways, commitMessage) {
+  const { pathways } = window.commitData;
+  const mergeOption = document.querySelector('input[name="mergeOption"]:checked').value;
+  
+  let finalPathways = pathways;
+  
+  if (mergeOption === 'merge') {
+    // Merge strategy: Keep local sort order but add new remote pathways
+    const localPathwayMap = new Map();
+    pathways.forEach((pathway, index) => {
+      localPathwayMap.set(pathway.name, index);
+    });
+    
+    const mergedPathways = [...pathways];
+    
+    remotePathways.forEach(remotePath => {
+      if (!localPathwayMap.has(remotePath.name)) {
+        mergedPathways.push(remotePath);
+      }
+    });
+    
+    finalPathways = mergedPathways;
+  }
+  
+  // Hide merge button and show syncing
+  document.getElementById('commitMergeBtn').classList.add('d-none');
+  showModalState('commitModalSyncing');
+  updateSyncStatus('Committing changes...');
+  
+  await performCommit(finalPathways, commitMessage);
+}
+
+// Perform the actual commit
+async function performCommit(pathways, commitMessage) {
+  const { config, GitHub } = window.commitData;
+  
+  try {
+    // Create a deep copy of pathways with sort order information
+    const pathwaysWithSortOrder = JSON.parse(JSON.stringify(pathways, (key, value) => {
+      // Preserve all audit-related fields during JSON serialization
+      if (key === 'available' || key === 'status' || key === 'lastChecked' || 
+          key === 'error' || key === 'redirectUrl' || key === 'requiresAuth' || 
+          key === 'isExemptDomain' || key === 'checkDuration') {
+        return value;
+      }
+      return value;
+    }));
+    
+    // Add sort order to each bookmark in each pathway's steps
+    pathwaysWithSortOrder.forEach(pathway => {
+      if (pathway.steps) {
+        pathway.steps.forEach(step => {
+          if (step.bookmarks) {
+            step.bookmarks.forEach((bookmark, index) => {
+              bookmark.sortOrder = index;
+            });
+          }
+        });
+      }
+    });
+    
+    // Convert to JSON
+    const json = JSON.stringify(pathwaysWithSortOrder, null, 2);
+    
+    // Update status
+    updateSyncStatus(`Committing to ${config.repository}...`);
+    
+    // Commit to GitHub
+    const result = await GitHub.commitFile(json, commitMessage);
+    
+    // Show success
+    if (result && result.commit) {
+      document.getElementById('successFilePath').textContent = config.filepath;
+      document.getElementById('successCommitLink').href = result.commit.html_url;
+      document.getElementById('successCommitLink').textContent = result.commit.sha.substring(0, 7);
+      showModalState('commitModalSuccess');
+      
+      // Update button
+      document.getElementById('commitCloseBtn').classList.remove('d-none');
+      
+      // Notify background script to reset auto-commit timer
+      if (chrome.runtime && chrome.runtime.sendMessage) {
+        chrome.runtime.sendMessage({ type: 'manualCommit' });
+      }
+    } else {
+      showModalError('Success', 'Commit completed successfully');
+      
+      // Notify background script to reset auto-commit timer
+      if (chrome.runtime && chrome.runtime.sendMessage) {
+        chrome.runtime.sendMessage({ type: 'manualCommit' });
+      }
+    }
+  } catch (error) {
+    console.error('Failed to commit to GitHub:', error);
+    
+    let errorMessage = error.message;
+    
+    // Check for common error types and provide more helpful messages
+    if (error.message.includes('401')) {
+      errorMessage = 'Authentication error. Your GitHub token may have expired. Please reconnect in GitHub Settings.';
+    } else if (error.message.includes('403')) {
+      errorMessage = 'Permission denied. Make sure your token has the "repo" scope.';
+    } else if (error.message.includes('404')) {
+      errorMessage = 'Repository not found. Check your repository settings.';
+    } else if (error.message.includes('network') || error.message.includes('fetch')) {
+      errorMessage = 'Network error. Check your internet connection and try again.';
+    } else if (error.message.includes('409')) {
+      errorMessage = 'Conflict error: The file has been modified on GitHub since your last sync. Please use "Import from GitHub" first to sync changes before committing.';
+    }
+    
+    showModalError('Commit Failed', errorMessage);
   }
 }
 
@@ -1503,22 +1532,35 @@ async function importFromGitHub() {
               return;
             }
             
-            // If there are existing pathways, ask for confirmation
-            const importConfirmed = confirm(
-              `You already have ${existingPathways.length} pathways in your extension.\n\n` +
-              `Would you like to:\n` +
-              `1. Replace all existing pathways with the imported ones\n` +
-              `2. Cancel and keep your current pathways\n\n` +
-              `Choose "OK" to replace, or "Cancel" to keep your current pathways.`
-            );
+            // Check for duplicate pathway names
+            const duplicatePathways = [];
+            const newPathways = [];
             
-            if (importConfirmed) {
-              // Save the imported pathways
-              await chrome.storage.local.set({pathways: importedData});
-              showStatus(`Successfully imported ${importedData.length} pathways from GitHub (replaced ${existingPathways.length} existing pathways)`, 'success');
-              render(); // Refresh the UI
+            importedData.forEach(importPathway => {
+              const existingPathwayIndex = existingPathways.findIndex(p => p.name === importPathway.name);
+              if (existingPathwayIndex >= 0) {
+                duplicatePathways.push({
+                  existingIndex: existingPathwayIndex,
+                  existing: existingPathways[existingPathwayIndex],
+                  imported: importPathway
+                });
+              } else {
+                newPathways.push(importPathway);
+              }
+            });
+            
+            // Hide the status message before showing the modal
+            if (statusEl && document.body.contains(statusEl)) {
+              document.body.removeChild(statusEl);
+              statusEl = null;
+            }
+            
+            if (duplicatePathways.length > 0 || newPathways.length > 0) {
+              // Show diff UI for any changes detected
+              showPathwayDiff(duplicatePathways, newPathways, existingPathways);
             } else {
-              showStatus('Import cancelled. Your existing pathways were not changed.', 'warning');
+              // No changes detected
+              showStatus('No new pathways found in GitHub repository.', 'warning');
             }
           } catch (error) {
             console.error('Error processing import:', error);
@@ -1549,7 +1591,7 @@ async function importFromGitHub() {
     }
   } catch (error) {
     console.error('Error loading GitHub module:', error);
-    alert('Failed to load GitHub integration: ' + error.message);
+    showStatus('Failed to load GitHub integration: ' + error.message, 'error');
   }
 }
 
@@ -1668,24 +1710,8 @@ document.addEventListener('DOMContentLoaded',()=>{
         const bm = d.pathways[idx]?.steps[sIdx]?.bookmarks[bmIdx];
         if (!bm) return;
         bm.title       = prompt('Bookmark title:', bm.title) || bm.title;
-        bm.description = prompt('Description:', bm.description || '') ?? bm.description;
-        bm.context     = prompt('Context:', bm.context || '') ?? bm.context;
-        
-        // Link type selection
-        const currentType = bm.type || 'required';
-        const typePrompt = prompt('Link type (required/bonus):', currentType);
-        if (typePrompt && ['required', 'bonus'].includes(typePrompt.toLowerCase())) {
-          bm.type = typePrompt.toLowerCase();
-        }
-
-        // allow moving bookmark to another step within same pathway
-        const dest = parseInt(prompt(`Move to step index (0‑${d.pathways[idx].steps.length-1}):`, sIdx), 10);
-        if (!isNaN(dest) && dest !== sIdx && d.pathways[idx].steps[dest]) {
-          // remove from old position and push to new step
-          d.pathways[idx].steps[sIdx].bookmarks.splice(bmIdx,1);
-          d.pathways[idx].steps[dest].bookmarks.push(bm);
-        }
-
+        bm.url         = prompt('Bookmark URL:', bm.url) || bm.url;
+        bm.description = prompt('Bookmark description:', bm.description || '') || bm.description;
         save(d.pathways, render);
       });
     } else if (act === 'delete-bm') {
@@ -1693,112 +1719,173 @@ document.addEventListener('DOMContentLoaded',()=>{
       const bmIdx = +btn.dataset.bm;
       if (!confirm('Delete this bookmark?')) return;
       chrome.storage.local.get({pathways: []}, d => {
-        const bookmarks = d.pathways[idx]?.steps[sIdx]?.bookmarks;
-        if (!bookmarks) return;
-        bookmarks.splice(bmIdx, 1);
+        d.pathways[idx].steps[sIdx].bookmarks.splice(bmIdx, 1);
         save(d.pathways, render);
       });
     }
   });
-});
-
-// Initialize bookmarklet functionality
-function initializeBookmarklet() {
-  const baseUrl = window.location.origin + window.location.pathname.replace(/[^\/]*$/, '');
   
-  // Generate bookmarklet code
-  const bookmarkletCode = `(function(){
-    const url=encodeURIComponent(window.location.href);
-    const title=encodeURIComponent(document.title);
-    const description=encodeURIComponent(document.querySelector('meta[name="description"]')?.content||document.querySelector('meta[property="og:description"]')?.content||'');
-    window.open('${baseUrl}bookmarklet.html?url='+url+'&title='+title+'&description='+description,'_blank');
-  })()`;
+  // Toggle bookmarklet visibility
+  $('#toggleBookmarklet')?.addEventListener('click', () => {
+    $('#bookmarkletSection').classList.add('d-none');
+    localStorage.setItem('hideBookmarklet', 'true');
+  });
   
-  const bookmarkletUrl = 'javascript:' + encodeURIComponent(bookmarkletCode);
+  // Setup bookmarklet
+  setupBookmarklet();
   
-  // Set bookmarklet links
-  const bookmarkletLink = document.getElementById('bookmarkletLink');
-  const emptyStateBookmarklet = document.getElementById('emptyStateBookmarklet');
+  // Initialize sortable for pathways
+  let pathwaysSortable = null;
   
-  if (bookmarkletLink) {
-    bookmarkletLink.href = bookmarkletUrl;
-  }
-  if (emptyStateBookmarklet) {
-    emptyStateBookmarklet.href = bookmarkletUrl;
-  }
-  
-  // Handle bookmarklet toggle
-  const toggleBtn = document.getElementById('toggleBookmarklet');
-  if (toggleBtn && !toggleBtn.hasEventListener) {
-    toggleBtn.hasEventListener = true;
-    toggleBtn.addEventListener('click', () => {
-      const section = document.getElementById('bookmarkletSection');
-      if (section) {
-        section.classList.add('d-none');
-        localStorage.setItem('bookmarkletHidden', 'true');
+  // Initialize drag and drop for pathways
+  function initializePathwaysDragAndDrop() {
+    const pathwayList = document.getElementById('pathwayList');
+    if (!pathwayList) return;
+    
+    // Destroy existing sortable if it exists
+    if (pathwaysSortable) {
+      pathwaysSortable.destroy();
+    }
+    
+    pathwaysSortable = new SortableGlobal(pathwayList, {
+      animation: 150,
+      onEnd: function(evt) {
+        const oldIndex = evt.oldIndex;
+        const newIndex = evt.newIndex;
+        
+        if (oldIndex !== newIndex) {
+          chrome.storage.local.get({pathways: []}, d => {
+            const moved = d.pathways.splice(oldIndex, 1)[0];
+            d.pathways.splice(newIndex, 0, moved);
+            save(d.pathways, render);
+          });
+        }
       }
     });
   }
-}
-
-// Add storage change listener for debugging
-if (chrome && chrome.storage && chrome.storage.onChanged) {
-  chrome.storage.onChanged.addListener((changes, namespace) => {
-    console.log('Storage changed:', namespace, changes);
-    if (changes.pathways) {
-      console.log('Pathways changed in storage, auto-refreshing dashboard...');
-      render();
-    }
-  });
-} else {
-  console.log('No storage change listener available');
-}
-
-// Listen for refresh requests from bookmarklet
-window.addEventListener('storage', (e) => {
-  if (e.key === 'pathcurator_refresh_needed') {
-    console.log('Bookmarklet requested dashboard refresh');
-    render();
-  }
-});
-
-// Also check for refresh request on page focus
-window.addEventListener('focus', () => {
-  if (localStorage.getItem('pathcurator_refresh_needed')) {
-    console.log('Dashboard focused, checking for refresh request');
-    render();
-    localStorage.removeItem('pathcurator_refresh_needed');
-  }
-});
-
-// Web Share Target API Service Worker Registration
-async function registerShareServiceWorker() {
-  if ('serviceWorker' in navigator) {
-    try {
-      const registration = await navigator.serviceWorker.register('/share-service-worker.js', {
-        scope: '/'
-      });
+  
+  // Initialize drag and drop for steps within pathways
+  function initializeStepsDragAndDrop() {
+    document.querySelectorAll('.steps-container').forEach(container => {
+      const pathwayIdx = parseInt(container.dataset.pathway);
       
-      console.log('Share service worker registered successfully:', registration);
-      
-      // Listen for messages from the service worker
-      navigator.serviceWorker.addEventListener('message', event => {
-        if (event.data.type === 'SHARE_RECEIVED') {
-          console.log('Received shared content:', event.data);
-          // Could trigger a UI update or notification here
+      new SortableGlobal(container, {
+        animation: 150,
+        onEnd: function(evt) {
+          const oldIndex = evt.oldIndex;
+          const newIndex = evt.newIndex;
+          
+          if (oldIndex !== newIndex) {
+            chrome.storage.local.get({pathways: []}, d => {
+              const moved = d.pathways[pathwayIdx].steps.splice(oldIndex, 1)[0];
+              d.pathways[pathwayIdx].steps.splice(newIndex, 0, moved);
+              save(d.pathways, render);
+            });
+          }
         }
       });
-      
-    } catch (error) {
-      console.log('Share service worker registration failed:', error);
-    }
+    });
   }
-}
+  
+  // Initialize drag and drop for bookmarks within steps
+  function initializeBookmarksDragAndDrop() {
+    document.querySelectorAll('.bookmarks-container').forEach(container => {
+      const pathwayIdx = parseInt(container.dataset.pathway);
+      const stepIdx = parseInt(container.dataset.step);
+      
+      new SortableGlobal(container, {
+        animation: 150,
+        onEnd: function(evt) {
+          const oldIndex = evt.oldIndex;
+          const newIndex = evt.newIndex;
+          
+          if (oldIndex !== newIndex) {
+            chrome.storage.local.get({pathways: []}, d => {
+              const moved = d.pathways[pathwayIdx].steps[stepIdx].bookmarks.splice(oldIndex, 1)[0];
+              d.pathways[pathwayIdx].steps[stepIdx].bookmarks.splice(newIndex, 0, moved);
+              save(d.pathways, render);
+            });
+          }
+        }
+      });
+    });
+  }
+  
+  // Initialize all drag and drop after render
+  window.initializeDragAndDrop = function() {
+    initializePathwaysDragAndDrop();
+    initializeStepsDragAndDrop();
+    initializeBookmarksDragAndDrop();
+  };
+  
+  // Listen for system preference changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+    setTheme(e.matches ? 'dark' : 'light');
+  });
+});
 
 // Register Web Share Target support on page load
 document.addEventListener('DOMContentLoaded', () => {
   registerShareServiceWorker();
 });
+
+// Setup bookmarklet functionality
+function setupBookmarklet() {
+  // Bookmarklet setup code would go here
+  console.log('Bookmarklet setup complete');
+}
+
+// Initialize bookmarklet links
+function initializeBookmarklet() {
+  const bookmarkletLinks = document.querySelectorAll('#bookmarkletLink, #emptyStateBookmarklet');
+  
+  bookmarkletLinks.forEach(link => {
+    if (link) {
+      const bookmarkletCode = `
+        javascript:(function(){
+          const url = window.location.href;
+          const title = document.title;
+          const selection = window.getSelection().toString();
+          
+          const pathcuratorUrl = new URL('${window.location.origin}/edit-pathway.html');
+          pathcuratorUrl.searchParams.set('bookmark', 'true');
+          pathcuratorUrl.searchParams.set('url', url);
+          pathcuratorUrl.searchParams.set('title', title);
+          if (selection) {
+            pathcuratorUrl.searchParams.set('description', selection);
+          }
+          
+          window.open(pathcuratorUrl.toString(), '_blank');
+        })();
+      `;
+      
+      link.href = bookmarkletCode;
+    }
+  });
+}
+
+// Register Web Share Target service worker
+function registerShareServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    // Check if sw.js exists before trying to register
+    fetch('/sw.js', { method: 'HEAD' })
+      .then(response => {
+        if (response.ok) {
+          return navigator.serviceWorker.register('/sw.js');
+        } else {
+          console.log('Service worker file not found, skipping registration');
+          return Promise.reject('Service worker file not found');
+        }
+      })
+      .then(function(registration) {
+        console.log('Share service worker registered successfully');
+      })
+      .catch(function(error) {
+        // Silently fail if service worker is not available
+        console.log('Service worker registration skipped:', error);
+      });
+  }
+}
 
 // Add Web Share API functionality for sharing PathCurator itself
 function setupWebShareAPI() {
