@@ -278,8 +278,14 @@ function loadPathwayData(openStates = null) {
 function renderSteps(pathway, pathwayId) {
   const stepsHtml = (pathway.steps || [])
     .map((step, index) => {
-      const required = (step.bookmarks || []).filter(b => b.required !== false);
-      const bonus = (step.bookmarks || []).filter(b => b.required === false);
+      const required = (step.bookmarks || []).filter(b => {
+        const typeIsBonus = b.type && b.type.toLowerCase() === 'bonus';
+        return b.required === true || (b.required !== false && !typeIsBonus);
+      });
+      const bonus = (step.bookmarks || []).filter(b => {
+        const typeIsBonus = b.type && b.type.toLowerCase() === 'bonus';
+        return b.required === false || typeIsBonus;
+      });
       
       return `
       <details class="card mb-3 shadow-sm">
@@ -351,9 +357,15 @@ function renderBookmarks(bookmarks, stepIndex, pathwayId) {
     return '<div class="text-center text-muted py-3">No bookmarks yet</div>';
   }
   
-  // Filter by required flag, not by type field
-  const required = bookmarks.filter(b => b.required !== false);
-  const bonus = bookmarks.filter(b => b.required === false);
+  // Filter by required flag or type field for compatibility (case-insensitive)
+  const required = bookmarks.filter(b => {
+    const typeIsBonus = b.type && b.type.toLowerCase() === 'bonus';
+    return b.required === true || (b.required !== false && !typeIsBonus);
+  });
+  const bonus = bookmarks.filter(b => {
+    const typeIsBonus = b.type && b.type.toLowerCase() === 'bonus';
+    return b.required === false || typeIsBonus;
+  });
   
   return `
     ${required.length > 0 ? `
@@ -378,7 +390,8 @@ function renderBookmarks(bookmarks, stepIndex, pathwayId) {
 
 // Render a single bookmark
 function renderBookmark(bookmark, stepIndex, pathwayId, bookmarkIndex) {
-  const isBonus = bookmark.required === false;
+  const typeIsBonus = bookmark.type && bookmark.type.toLowerCase() === 'bonus';
+  const isBonus = bookmark.required === false || typeIsBonus;
   const badgeClass = isBonus ? 'text-bg-info' : 'text-bg-primary';
   const badgeText = isBonus ? 'BONUS' : 'REQUIRED';
   

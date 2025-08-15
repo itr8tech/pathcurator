@@ -136,9 +136,14 @@ function loadBookmarkData() {
     $('#bookmarkDescription').value = bookmark.description || '';
     $('#bookmarkContext').value = bookmark.context || '';
     
-    // Handle case insensitive matching for backward compatibility
-    const bookmarkType = bookmark.type || 'Required';
-    $('#bookmarkType').value = bookmarkType.charAt(0).toUpperCase() + bookmarkType.slice(1).toLowerCase() === 'Required' ? 'Required' : 'Bonus';
+    // Determine bookmark type based on required field (primary) or type field (legacy)
+    let bookmarkType = 'Required'; // Default
+    if (bookmark.required === false || bookmark.type === 'bonus' || bookmark.type === 'Bonus') {
+      bookmarkType = 'Bonus';
+    } else if (bookmark.required === true || bookmark.type === 'required' || bookmark.type === 'Required') {
+      bookmarkType = 'Required';
+    }
+    $('#bookmarkType').value = bookmarkType;
     
     // Set content type (default to "Read" if not set)
     const contentType = bookmark.contentType || 'Read';
@@ -191,6 +196,7 @@ async function saveBookmark(e) {
         description,
         context,
         type,
+        required: type === 'Required' ? true : false, // Set required field based on type
         contentType,
         added: Date.now(),
         // Link audit fields
@@ -201,11 +207,20 @@ async function saveBookmark(e) {
         checkError: null
       };
       
-      // If editing existing bookmark, preserve the original added date
+      // If editing existing bookmark, preserve certain fields
       if (bookmarkIndex !== null) {
         const originalBookmark = pathway.steps[stepIndex]?.bookmarks[bookmarkIndex];
-        if (originalBookmark && originalBookmark.added) {
-          bookmark.added = originalBookmark.added;
+        if (originalBookmark) {
+          // Preserve original added date
+          if (originalBookmark.added) {
+            bookmark.added = originalBookmark.added;
+          }
+          // Preserve link audit fields if they exist
+          if (originalBookmark.lastChecked) bookmark.lastChecked = originalBookmark.lastChecked;
+          if (originalBookmark.status !== null) bookmark.status = originalBookmark.status;
+          if (originalBookmark.available !== null) bookmark.available = originalBookmark.available;
+          if (originalBookmark.redirectUrl) bookmark.redirectUrl = originalBookmark.redirectUrl;
+          if (originalBookmark.checkError) bookmark.checkError = originalBookmark.checkError;
         }
       }
       

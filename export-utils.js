@@ -79,7 +79,7 @@ export async function generateCSV(p) {
         b.url,
         b.description,
         b.context,
-        b.type || 'Required',
+        (b.required === false || (b.type && b.type.toLowerCase() === 'bonus')) ? 'Bonus' : 'Required',
         b.contentType || 'Read',
         i
       ]);

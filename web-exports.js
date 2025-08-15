@@ -97,7 +97,8 @@ export function generateRSS(pathway) {
             description += `<p><strong>Step Objective:</strong> ${esc(bookmark.stepObjective)}</p>`;
         }
         
-        const required = bookmark.required !== false ? 'Required' : 'Bonus';
+        const typeIsBonus = bookmark.type && bookmark.type.toLowerCase() === 'bonus';
+        const required = (bookmark.required === false || typeIsBonus) ? 'Bonus' : 'Required';
         const contentType = bookmark.contentType || 'Read';
         
         rss += `
@@ -150,7 +151,7 @@ function generateCSV(pathway) {
                         esc(bookmark.context || ''),
                         esc(bookmark.type || ''),
                         esc(bookmark.contentType || 'read'),
-                        bookmark.required !== false ? 'Yes' : 'No'
+                        (bookmark.required === false || (bookmark.type && bookmark.type.toLowerCase() === 'bonus')) ? 'No' : 'Yes'
                     ].join(',') + '\n';
                 });
             } else {
@@ -324,37 +325,9 @@ export function generateSophisticatedHTML(pathway) {
     background-image: var(--custom-header-image);
 }
 
-.activity-container {
-    overflow: hidden;
-    border-radius: 0.375rem;
-    margin-bottom: 1rem;
-}
+/* Minimal custom styles needed beyond Bootstrap 5.3 */
 
-.activity-icon-container {
-    width: 50px;
-    padding: 10px;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding-top: 25px;
-}
-
-.activity-badge {
-    background-color: var(--gov-primary-blue);
-    color: white;
-}
-
-.curatorcontext {
-    padding: 0.5rem 0;
-}
-
-.fw-semibold {
-    font-weight: 600;
-}
-
-.font-italic {
-    font-style: italic;
-}
+/* fw-semibold is included in Bootstrap 5.3+ */
 
 details.step-container {
     margin-bottom: 1.5rem;
@@ -1248,8 +1221,14 @@ pre code {
   if (pathway.steps && pathway.steps.length > 0) {
     pathway.steps.forEach((step, stepIndex) => {
       const stepId = `step-${stepIndex + 1}`;
-      const requiredCount = step.bookmarks ? step.bookmarks.filter(b => b.required !== false).length : 0;
-      const bonusCount = step.bookmarks ? step.bookmarks.filter(b => b.required === false).length : 0;
+      const requiredCount = step.bookmarks ? step.bookmarks.filter(b => {
+        const typeIsBonus = b.type && b.type.toLowerCase() === 'bonus';
+        return b.required !== false && !typeIsBonus;
+      }).length : 0;
+      const bonusCount = step.bookmarks ? step.bookmarks.filter(b => {
+        const typeIsBonus = b.type && b.type.toLowerCase() === 'bonus';
+        return b.required === false || typeIsBonus;
+      }).length : 0;
       const launchedCount = step.bookmarks ? step.bookmarks.filter(b => b.visited).length : 0;
       
       html += `
@@ -1279,41 +1258,118 @@ pre code {
         <div class="row">`;
       
       if (step.bookmarks && step.bookmarks.length > 0) {
+        // Separate bookmarks into required and bonus
+        const requiredBookmarks = [];
+        const bonusBookmarks = [];
+        
         step.bookmarks.forEach((bookmark, bookmarkIndex) => {
-          const contentType = bookmark.contentType || 'Read';
-          const isRequired = bookmark.required !== false;
-          const icon = contentTypeIcons[contentType] ? contentTypeIcons[contentType].icon : 'fa-book';
-          const bgClass = contentTypeIcons[contentType] ? contentTypeIcons[contentType].bgClass : 'bg-sagedark';
+          const typeIsBonus = bookmark.type && bookmark.type.toLowerCase() === 'bonus';
+          const isRequired = bookmark.required !== false && !typeIsBonus;
+          
+          if (isRequired) {
+            requiredBookmarks.push({...bookmark, originalIndex: bookmarkIndex});
+          } else {
+            bonusBookmarks.push({...bookmark, originalIndex: bookmarkIndex});
+          }
+        });
+        
+        // Render required activities
+        if (requiredBookmarks.length > 0) {
+          html += `
+          <div class="col-12 mb-4">
+            <h4 class="h5 mb-3 text-primary-emphasis border-bottom border-primary-subtle pb-2">
+              <i class="fa fa-bookmark-solid me-2"></i>Required Resources
+            </h4>
+            <div class="row">`;
+          
+          requiredBookmarks.forEach(bookmark => {
+            const contentType = bookmark.contentType || 'Read';
+            const icon = contentTypeIcons[contentType] ? contentTypeIcons[contentType].icon : 'fa-book';
+            const bgClass = contentTypeIcons[contentType] ? contentTypeIcons[contentType].bgClass : 'bg-sagedark';
+            
+            html += `
+              <article class="col-md-12 mb-3">
+                <div class="d-flex border border-primary-subtle rounded bg-primary-subtle">
+                  <div class="d-flex align-items-center justify-content-center p-3 bg-primary rounded-start" aria-hidden="true" style="width: 60px;">
+                    <i class="fa ${icon} text-white" aria-hidden="true"></i>
+                  </div>
+                  <div class="flex-grow-1 p-3">
+                    <div class="activity">
+                      <h3 class="h5 mb-2">${esc(bookmark.title)}</h3>
+                      ${bookmark.description ? `<div class="mb-2 text-body-secondary">${markdownToHTML(bookmark.description)}</div>` : ''}
+                      ${bookmark.context ? `<div class="fst-italic border-start border-3 border-primary-subtle ps-3 mb-2">${markdownToHTML(bookmark.context)}</div>` : ''}
+                      
+                      <div class="mb-2">
+                        <span class="badge text-bg-primary">Required</span>
+                        ${bookmark.visited ? '<span class="badge text-bg-success ms-1">✓ Launched</span>' : ''}
+                      </div>
+                      <a href="${esc(bookmark.url)}" target="_blank" rel="noopener noreferrer"
+                         class="btn btn-primary"
+                         onclick="trackLaunch(this)"
+                         data-step="${stepIndex}" 
+                         data-bookmark="${bookmark.originalIndex}"
+                         aria-label="Launch ${esc(bookmark.title)} (opens in new tab)">
+                        Launch <i class="fa fa-external-link-alt ms-1" aria-hidden="true"></i>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </article>`;
+          });
           
           html += `
-          <article class="col-md-12 mb-3">
-            <div class="activity-container d-flex border rounded bg-body-tertiary">
-              <div class="activity-icon-container bg-primary d-flex align-items-center justify-content-center p-3" aria-hidden="true" style="width: 60px;">
-                <i class="fa ${icon} text-white" aria-hidden="true"></i>
-              </div>
-              <div class="flex-grow-1 p-3">
-                <div class="activity">
-                  <h3 class="mb-2">${esc(bookmark.title)}</h3>
-                  ${bookmark.description ? `<div class="mb-2">${markdownToHTML(bookmark.description)}</div>` : ''}
-                  ${bookmark.context ? `<div class="curatorcontext"><blockquote class="mb-2">${markdownToHTML(bookmark.context)}</blockquote></div>` : ''}
-                  
-                  <div class="bookmark-badges mb-2">
-                    <span class="badge ${isRequired ? 'text-bg-primary' : 'text-bg-secondary'}">${isRequired ? 'Required' : 'Bonus'}</span>
-                    ${bookmark.visited ? '<span class="badge text-bg-success ms-1">✓ Launched</span>' : ''}
-                  </div>
-                  <a href="${esc(bookmark.url)}" target="_blank" rel="noopener noreferrer"
-                     class="btn btn-success btn-lg launch-btn"
-                     onclick="trackLaunch(this)"
-                     data-step="${stepIndex}" 
-                     data-bookmark="${bookmarkIndex}"
-                     aria-label="Launch ${esc(bookmark.title)} (opens in new tab)">
-                    Launch <i class="fa fa-external-link-alt ms-1" aria-hidden="true"></i>
-                  </a>
-                </div>
-              </div>
             </div>
-          </article>`;
-        });
+          </div>`;
+        }
+        
+        // Render bonus activities with visual separation
+        if (bonusBookmarks.length > 0) {
+          html += `
+          <div class="col-12 mb-4 mt-5">
+            <h4 class="h5 mb-3 text-secondary-emphasis border-bottom border-secondary-subtle pb-2">
+              <i class="fa fa-bookmark me-2"></i>Bonus Resources
+            </h4>
+            <div class="row">`;
+          
+          bonusBookmarks.forEach(bookmark => {
+            const contentType = bookmark.contentType || 'Read';
+            const icon = contentTypeIcons[contentType] ? contentTypeIcons[contentType].icon : 'fa-book';
+            const bgClass = contentTypeIcons[contentType] ? contentTypeIcons[contentType].bgClass : 'bg-sagedark';
+            
+            html += `
+              <article class="col-md-12 mb-3">
+                <div class="d-flex border border-secondary-subtle rounded bg-secondary-subtle">
+                  <div class="d-flex align-items-center justify-content-center p-3 bg-secondary rounded-start" aria-hidden="true" style="width: 60px;">
+                    <i class="fa ${icon} text-white" aria-hidden="true"></i>
+                  </div>
+                  <div class="flex-grow-1 p-3">
+                    <div class="activity">
+                      <h3 class="h5 mb-2">${esc(bookmark.title)}</h3>
+                      ${bookmark.description ? `<div class="mb-2 text-body-secondary">${markdownToHTML(bookmark.description)}</div>` : ''}
+                      ${bookmark.context ? `<div class="fst-italic border-start border-3 border-secondary-subtle ps-3 mb-2">${markdownToHTML(bookmark.context)}</div>` : ''}
+                      
+                      <div class="mb-2">
+                        <span class="badge text-bg-secondary">Bonus</span>
+                        ${bookmark.visited ? '<span class="badge text-bg-success ms-1">✓ Launched</span>' : ''}
+                      </div>
+                      <a href="${esc(bookmark.url)}" target="_blank" rel="noopener noreferrer"
+                         class="btn btn-outline-secondary"
+                         onclick="trackLaunch(this)"
+                         data-step="${stepIndex}" 
+                         data-bookmark="${bookmark.originalIndex}"
+                         aria-label="Launch ${esc(bookmark.title)} (opens in new tab)">
+                        Launch <i class="fa fa-external-link-alt ms-1" aria-hidden="true"></i>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </article>`;
+          });
+          
+          html += `
+            </div>
+          </div>`;
+        }
       } else {
         html += `
           <div class="col-12">
