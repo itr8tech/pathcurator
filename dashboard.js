@@ -1728,7 +1728,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   // Toggle bookmarklet visibility
   $('#toggleBookmarklet')?.addEventListener('click', () => {
     $('#bookmarkletSection').classList.add('d-none');
-    localStorage.setItem('hideBookmarklet', 'true');
+    localStorage.setItem('bookmarkletHidden', 'true');
   });
   
   // Setup bookmarklet
@@ -1847,7 +1847,7 @@ function initializeBookmarklet() {
           const title = document.title;
           const selection = window.getSelection().toString();
           
-          const pathcuratorUrl = new URL('${window.location.origin}/edit-pathway.html');
+          const pathcuratorUrl = new URL('${window.location.origin}/bookmarklet.html');
           pathcuratorUrl.searchParams.set('bookmark', 'true');
           pathcuratorUrl.searchParams.set('url', url);
           pathcuratorUrl.searchParams.set('title', title);
