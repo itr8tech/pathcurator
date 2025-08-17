@@ -13,6 +13,8 @@ const authStatusLoggedIn = $('auth-status-logged-in');
 const repoSettingsCard = $('repo-settings-card');
 const repoSettingsLoading = $('repo-settings-loading');
 const repoSettingsForm = $('repo-settings-form');
+const autoCommitSettingsLoading = $('auto-commit-settings-loading');
+const autoCommitSettingsForm = $('auto-commit-settings-form');
 const githubUsername = $('github-username');
 const repositorySelect = $('repository-select');
 const branchSelect = $('branch-select');
@@ -566,6 +568,10 @@ async function loadAutoCommitSettings() {
   try {
     console.log('Loading auto-commit settings...');
     
+    // Show loading indicator
+    autoCommitSettingsLoading.classList.remove('d-none');
+    autoCommitSettingsForm.classList.add('d-none');
+    
     // Wait for storage to be ready
     await waitForStorageReady();
     
@@ -597,8 +603,16 @@ async function loadAutoCommitSettings() {
     } else {
       console.log('Hiding auto-commit options because enabled =', config.enabled);
     }
+    
+    // Hide loading indicator and show form
+    autoCommitSettingsLoading.classList.add('d-none');
+    autoCommitSettingsForm.classList.remove('d-none');
   } catch (error) {
     console.error('Error loading auto-commit settings:', error);
+    
+    // Hide loading indicator and show form even on error
+    autoCommitSettingsLoading.classList.add('d-none');
+    autoCommitSettingsForm.classList.remove('d-none');
   }
 }
 

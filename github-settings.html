@@ -168,12 +168,20 @@
       <h5 class="card-title">Auto-commit Settings</h5>
       <p class="text-muted">Automatically save your pathways to GitHub at regular intervals while any PathCurator page is open</p>
       
-      <div class="form-check form-switch mb-3">
-        <input class="form-check-input" type="checkbox" id="auto-commit-enabled">
-        <label class="form-check-label" for="auto-commit-enabled">
-          Enable Auto-commit
-        </label>
+      <div id="auto-commit-settings-loading" class="text-center py-3">
+        <div class="spinner-border spinner-border-sm text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <span class="ms-2 text-muted">Loading auto-commit settings...</span>
       </div>
+      
+      <div id="auto-commit-settings-form" class="d-none">
+        <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" id="auto-commit-enabled">
+          <label class="form-check-label" for="auto-commit-enabled">
+            Enable Auto-commit
+          </label>
+        </div>
       
       <div id="auto-commit-options" class="d-none">
         <div class="mb-3">
@@ -198,9 +206,10 @@
           <i class="bi bi-info-circle-fill me-2"></i>
           <strong>Note:</strong> Auto-commits only occur when there are changes to save and while a PathCurator page is open. The timer pauses when all tabs are closed.
         </div>
+        
+        <button id="btn-save-auto-commit" class="btn btn-primary">Save Auto-commit Settings</button>
       </div>
-      
-      <button id="btn-save-auto-commit" class="btn btn-primary">Save Auto-commit Settings</button>
+      </div>
     </div>
   </div>
 
