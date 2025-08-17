@@ -684,7 +684,7 @@ function importData(file) {
         
         if (duplicatePathways.length > 0) {
           // We have duplicates - show diff UI
-          showPathwayDiff(duplicatePathways, newPathways, currentData.pathways);
+          showPathwayDiff(duplicatePathways, newPathways, currentData.pathways, pathways);
         } else {
           // No duplicates - proceed with normal import
           proceedWithImport(pathways, currentData.pathways, currentCount);
@@ -699,7 +699,7 @@ function importData(file) {
 }
 
 // Function to show diff UI for duplicate pathways
-function showPathwayDiff(duplicatePathways, newPathways, existingPathways) {
+function showPathwayDiff(duplicatePathways, newPathways, existingPathways, importedData) {
   // Create modal for diff UI
   const modal = document.createElement('div');
   modal.className = 'modal fade';
@@ -720,6 +720,15 @@ function showPathwayDiff(duplicatePathways, newPathways, existingPathways) {
             <p><strong>Found ${duplicatePathways.length} pathway(s) with conflicting names.</strong></p>
             <p>Please review the differences and choose how to proceed for each pathway.</p>
           </div>
+          <div class="alert alert-secondary">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="useGitHubOrder" checked>
+              <label class="form-check-label" for="useGitHubOrder">
+                <strong>Use GitHub pathway order</strong>
+                <small class="d-block text-muted">Apply the pathway order from GitHub instead of keeping local order</small>
+              </label>
+            </div>
+          </div>
           <div id="diffContent">
             ${duplicatePathways.map((dup, index) => createDiffView(dup, index)).join('<hr class="my-4">')}
           </div>
@@ -739,6 +748,7 @@ function showPathwayDiff(duplicatePathways, newPathways, existingPathways) {
   modal.dataset.duplicates = JSON.stringify(duplicatePathways);
   modal.dataset.newPathways = JSON.stringify(newPathways);
   modal.dataset.existingPathways = JSON.stringify(existingPathways);
+  modal.dataset.importedData = JSON.stringify(importedData);
   
   // Initialize and show the modal
   try {
@@ -1024,9 +1034,13 @@ function handleDiffCompletion(modal, modalInstance) {
   const duplicatePathways = JSON.parse(modal.dataset.duplicates);
   const newPathways = JSON.parse(modal.dataset.newPathways);
   const existingPathways = JSON.parse(modal.dataset.existingPathways);
+  const importedData = JSON.parse(modal.dataset.importedData);
+  
+  // Check if user wants to use GitHub order
+  const useGitHubOrder = document.getElementById('useGitHubOrder').checked;
   
   // Clone existing pathways to modify
-  const resultPathways = [...existingPathways];
+  let resultPathways = [...existingPathways];
   
   // Process each duplicate pathway based on user selection
   duplicatePathways.forEach((dup, index) => {
@@ -1061,6 +1075,22 @@ function handleDiffCompletion(modal, modalInstance) {
   
   // Add all non-duplicate pathways
   resultPathways.push(...newPathways);
+  
+  // Apply GitHub order if requested
+  if (useGitHubOrder) {
+    console.log('Applying GitHub pathway order...');
+    // Sort result pathways by their sortOrder from imported data
+    resultPathways.sort((a, b) => {
+      const aImported = importedData.find(p => p.name === a.name);
+      const bImported = importedData.find(p => p.name === b.name);
+      
+      const aSortOrder = aImported?.sortOrder !== undefined ? aImported.sortOrder : 999;
+      const bSortOrder = bImported?.sortOrder !== undefined ? bImported.sortOrder : 999;
+      
+      return aSortOrder - bSortOrder;
+    });
+    console.log('GitHub order applied. New pathway order:', resultPathways.map(p => p.name));
+  }
   
   // Update storage with final pathways
   chrome.storage.local.set({ pathways: resultPathways }, () => {
@@ -1636,7 +1666,7 @@ async function importFromGitHub() {
             
             if (duplicatePathways.length > 0 || newPathways.length > 0) {
               // Show diff UI for any changes detected
-              showPathwayDiff(duplicatePathways, newPathways, existingPathways);
+              showPathwayDiff(duplicatePathways, newPathways, existingPathways, importedData);
             } else {
               // No changes detected
               showStatus('No new pathways found in GitHub repository.', 'warning');
