@@ -64,12 +64,25 @@ import { updatePathwayVersion, formatVersion, formatTimestamp } from './version-
 // Save helper with version update (now async)
 const save = async (pathways, cb) => {
   try {
-    // Add/update version info for each pathway (now async)
-    const updatedPathwaysPromises = pathways.map(pathway => updatePathwayVersion(pathway));
-    const updatedPathways = await Promise.all(updatedPathwaysPromises);
+    console.log('Save called with pathways order:', pathways.map(p => p.name));
+    
+    // Update version info for each pathway while preserving order
+    // Use for...of loop to ensure sequential processing and order preservation
+    const updatedPathways = [];
+    for (let i = 0; i < pathways.length; i++) {
+      const updated = await updatePathwayVersion(pathways[i]);
+      updatedPathways[i] = updated; // Explicitly place at same index
+    }
+    
+    console.log('After version update, order:', updatedPathways.map(p => p.name));
 
     // Save to storage
-    chrome.storage.local.set({pathways: updatedPathways}, cb);
+    console.log('About to save to Chrome storage:', updatedPathways.map(p => p.name));
+    console.trace('Save stack trace'); // This will show us WHO is calling save
+    chrome.storage.local.set({pathways: updatedPathways}, () => {
+      console.log('Chrome storage save complete');
+      if (cb) cb();
+    });
   } catch (error) {
     console.error('Error updating pathway versions:', error);
     // Fall back to direct save if version updating fails
@@ -267,14 +280,73 @@ function pathHTML(p,idx){
   </li>`;
 }
 
+// Flag to prevent interference during reordering
+let isReordering = false;
+
 // initialise Sortable
 function initSort(){
   // Only enable sorting for pathway list as step details
   // are now managed in the pathway detail page
-  new SortableGlobal($('#pathwayList'),{handle:'.drag-handle',animation:150,onEnd:()=>{
-    const ord=[...$('#pathwayList').children].map(li=>+li.dataset.path);
-    persistPaths(ord);
-  }});
+  const pathwayList = $('#pathwayList');
+  if (!pathwayList) return;
+  
+  new SortableGlobal(pathwayList, {
+    handle: '.drag-handle',
+    animation: 150,
+    onEnd: async (evt) => {
+      const oldIndex = evt.oldIndex;
+      const newIndex = evt.newIndex;
+      
+      if (oldIndex === newIndex) return; // No change
+      
+      console.log('Reordering pathways from', oldIndex, 'to', newIndex);
+      
+      // Get current pathways from storage
+      chrome.storage.local.get({pathways: []}, async (data) => {
+        const pathways = data.pathways || [];
+        console.log('Original storage order:', pathways.map(p => p.name));
+        
+        // Simply move the item from oldIndex to newIndex in the array
+        // This is what SortableJS has done in the DOM
+        const reorderedPathways = [...pathways];
+        const [movedItem] = reorderedPathways.splice(oldIndex, 1);
+        reorderedPathways.splice(newIndex, 0, movedItem);
+        
+        console.log('Reordered pathways:', reorderedPathways.map(p => p.name));
+        
+        // Create a completely new array with deep cloned objects to avoid any reference issues
+        const completelyNewArray = JSON.parse(JSON.stringify(reorderedPathways));
+        console.log('Deep cloned order:', completelyNewArray.map(p => p.name));
+        
+        // Save directly
+        console.log('About to save:', completelyNewArray.map(p => p.name));
+        
+        chrome.storage.local.set({ pathways: completelyNewArray }, () => {
+          console.log('Save complete');
+          
+          // Verify what was saved
+          setTimeout(() => {
+            console.log('Starting verification...');
+            chrome.storage.local.get({pathways: []}, (result) => {
+              console.log('Verified saved order:', result.pathways.map(p => p.name));
+              
+              // Check if it matches what we tried to save
+              const savedOrder = JSON.stringify(result.pathways.map(p => p.name));
+              const intendedOrder = JSON.stringify(completelyNewArray.map(p => p.name));
+              
+              if (savedOrder === intendedOrder) {
+                console.log('SUCCESS! Order persisted correctly!');
+              } else {
+                console.error('FAILED! Order reverted!');
+                console.error('Intended:', intendedOrder);
+                console.error('Got:', savedOrder);
+              }
+            });
+          }, 500);
+        });
+      });
+    }
+  });
 }
 
 // render dashboard
@@ -285,6 +357,7 @@ async function render(){
       // Make sure pathways is always an array
       const pathways = Array.isArray(d.pathways) ? d.pathways : [];
       console.log('Dashboard loaded pathways:', pathways.length, 'pathways');
+      console.log('Loaded pathway order:', pathways.map(p => p.name));
       
       // Debug: Log bookmark counts for each step
       pathways.forEach((pathway, pIdx) => {
@@ -326,15 +399,17 @@ async function render(){
 
       if (needsVersionUpdate) {
         console.log('Some pathways need version updates, processing...');
-        // Only update the ones that actually need it
-        const versionUpdatePromises = updatedPathways.map(async pathway => {
-          if (!pathway.version || !pathway.lastUpdated) {
-            return await updatePathwayVersion(pathway);
+        // Update pathways with version info while preserving order
+        const finalPathways = [];
+        for (let i = 0; i < updatedPathways.length; i++) {
+          if (!updatedPathways[i].version || !updatedPathways[i].lastUpdated) {
+            finalPathways[i] = await updatePathwayVersion(updatedPathways[i]);
+          } else {
+            finalPathways[i] = updatedPathways[i];
           }
-          return pathway; // Return unchanged
-        });
+        }
         
-        const finalPathways = await Promise.all(versionUpdatePromises);
+        console.log('After version updates in render, order:', finalPathways.map(p => p.name));
         
         try {
           chrome.storage.local.set({pathways: finalPathways}, () => {
@@ -362,6 +437,7 @@ function renderPathways(pathways) {
   try {
     // Make sure pathways is always an array
     const validPathways = Array.isArray(pathways) ? pathways : [];
+    console.log('renderPathways called with order:', validPathways.map(p => p.name));
 
     // Initialize bookmarklet links
     initializeBookmarklet();
@@ -1361,8 +1437,11 @@ async function performCommit(pathways, commitMessage) {
       return value;
     }));
     
-    // Add sort order to each bookmark in each pathway's steps
-    pathwaysWithSortOrder.forEach(pathway => {
+    // Add sort order to pathways and each bookmark in each pathway's steps
+    pathwaysWithSortOrder.forEach((pathway, pathwayIndex) => {
+      // Add sort order to pathway itself
+      pathway.sortOrder = pathwayIndex;
+      
       if (pathway.steps) {
         pathway.steps.forEach(step => {
           if (step.bookmarks) {

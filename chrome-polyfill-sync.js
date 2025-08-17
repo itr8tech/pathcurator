@@ -13,7 +13,7 @@ window.chromeStorageEnhanced = false;
 window.chrome.storage = {
     local: {
         get: function(keys, callback) {
-            console.log('Chrome storage get called (basic):', keys);
+            console.log('BASIC POLYFILL: Chrome storage get called (basic):', keys);
             // Temporary implementation that returns empty data
             // This prevents immediate errors while async storage loads
             setTimeout(() => {
@@ -114,14 +114,17 @@ function enhanceStorage() {
             // Replace the basic storage API with the full implementation
             window.chrome.storage.local = {
                 get: function(keys, callback) {
+                    console.log('POLYFILL: Enhanced get() called with:', keys);
                     (async () => {
                         try {
                             let result = {};
                             
                             if (keys === null || keys === undefined) {
                                 // Get all data
+                                console.log('POLYFILL: Getting all pathways...');
                                 const pathways = await storageManager.getPathways();
-                                result.pathways = pathways.sort((a, b) => (a.created || 0) - (b.created || 0));
+                                console.log('POLYFILL: Got pathways from storage-manager:', pathways.map(p => `${p.name} (sortOrder: ${p.sortOrder})`));
+                                result.pathways = pathways;
                                 
                                 // Get all settings
                                 const settings = await storageManager.getAll('settings');
@@ -140,7 +143,6 @@ function enhanceStorage() {
                                 // Single key
                                 if (keys === 'pathways') {
                                     result.pathways = await storageManager.getPathways();
-                                    result.pathways = result.pathways.sort((a, b) => (a.created || 0) - (b.created || 0));
                                 } else if (keys === 'githubToken' || keys === 'githubRepo' || keys === 'githubPath') {
                                     const config = await storageManager.getGitHubConfig();
                                     if (config) {
@@ -157,19 +159,20 @@ function enhanceStorage() {
                                 for (const key of keys) {
                                     if (key === 'pathways') {
                                         result.pathways = await storageManager.getPathways();
-                                        result.pathways = result.pathways.sort((a, b) => (a.created || 0) - (b.created || 0));
-                                    } else {
+                                        } else {
                                         const value = await storageManager.getSetting(key);
                                         if (value !== null) result[key] = value;
                                     }
                                 }
                             } else if (typeof keys === 'object') {
                                 // Object with defaults
+                                console.log('POLYFILL: Processing object keys:', Object.keys(keys));
                                 for (const [key, defaultValue] of Object.entries(keys)) {
                                     if (key === 'pathways') {
+                                        console.log('POLYFILL: Getting pathways for object key...');
                                         result.pathways = await storageManager.getPathways();
-                                        result.pathways = result.pathways.sort((a, b) => (a.created || 0) - (b.created || 0));
-                                        if (result.pathways.length === 0) result.pathways = defaultValue;
+                                        console.log('POLYFILL: Got pathways from storage-manager (object):', result.pathways.map(p => `${p.name} (sortOrder: ${p.sortOrder})`));
+                                            if (result.pathways.length === 0) result.pathways = defaultValue;
                                     } else {
                                         const value = await storageManager.getSetting(key);
                                         result[key] = value !== null ? value : defaultValue;
@@ -197,13 +200,15 @@ function enhanceStorage() {
                                         for (const pathway of existingPathways) {
                                             await storageManager.deletePathway(pathway.id);
                                         }
-                                        // Save each pathway with generated ID
+                                        // Save each pathway with generated ID and sort order
                                         for (let i = 0; i < value.length; i++) {
                                             const pathway = value[i];
                                             // Generate ID based on creation time or index
                                             if (!pathway.id) {
                                                 pathway.id = pathway.created ? pathway.created.toString() : Date.now().toString() + i;
                                             }
+                                            // Set sort order to maintain array position
+                                            pathway.sortOrder = i;
                                             await storageManager.savePathway(pathway);
                                         }
                                     }
@@ -290,6 +295,7 @@ function enhanceStorage() {
             
             window.chromeStorageEnhanced = true;
             console.log('Chrome storage API enhanced with IndexedDB');
+            console.log('Enhanced storage functions:', typeof window.chrome.storage.local.get, typeof window.chrome.storage.local.set);
         });
     }).catch(err => {
         console.error('Failed to enhance storage API:', err);

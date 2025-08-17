@@ -2740,6 +2740,9 @@ resetAutoCommitTimer();
 // Listen for storage changes to reset timer when data changes
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === 'local' && changes.pathways) {
+    console.log('BACKGROUND: Pathways changed detected');
+    console.log('BACKGROUND: Old value:', changes.pathways.oldValue?.map(p => p.name));
+    console.log('BACKGROUND: New value:', changes.pathways.newValue?.map(p => p.name));
     // Data changed, reset the timer
     resetAutoCommitTimer();
   }

@@ -43,7 +43,7 @@ window.chrome.storage = {
                     if (keys === null || keys === undefined) {
                         // Get all data
                         const pathways = await storageManager.getPathways();
-                        result.pathways = pathways.sort((a, b) => (a.created || 0) - (b.created || 0));
+                        result.pathways = pathways;
                         
                         // Get all settings
                         const settings = await storageManager.getAll('settings');
@@ -62,7 +62,6 @@ window.chrome.storage = {
                         // Single key
                         if (keys === 'pathways') {
                             result.pathways = await storageManager.getPathways();
-                            result.pathways = result.pathways.sort((a, b) => (a.created || 0) - (b.created || 0));
                         } else if (keys === 'githubToken' || keys === 'githubRepo' || keys === 'githubPath') {
                             const config = await storageManager.getGitHubConfig();
                             if (config) {
@@ -79,7 +78,6 @@ window.chrome.storage = {
                         for (const key of keys) {
                             if (key === 'pathways') {
                                 result.pathways = await storageManager.getPathways();
-                                result.pathways = result.pathways.sort((a, b) => (a.created || 0) - (b.created || 0));
                             } else {
                                 const value = await storageManager.getSetting(key);
                                 if (value !== null) result[key] = value;
@@ -90,7 +88,6 @@ window.chrome.storage = {
                         for (const [key, defaultValue] of Object.entries(keys)) {
                             if (key === 'pathways') {
                                 result.pathways = await storageManager.getPathways();
-                                result.pathways = result.pathways.sort((a, b) => (a.created || 0) - (b.created || 0));
                                 if (result.pathways.length === 0) result.pathways = defaultValue;
                             } else {
                                 const value = await storageManager.getSetting(key);
@@ -108,9 +105,11 @@ window.chrome.storage = {
         },
         
         set(items, callback) {
+            console.log('Polyfill set() called with:', Object.keys(items));
             ensureStorageReady().then(async () => {
                 try {
                     for (const [key, value] of Object.entries(items)) {
+                        console.log(`Processing key: ${key}, value type: ${Array.isArray(value) ? 'array' : typeof value}, length: ${Array.isArray(value) ? value.length : 'N/A'}`);
                         if (key === 'pathways') {
                             // Handle pathways array
                             if (Array.isArray(value)) {
@@ -119,13 +118,16 @@ window.chrome.storage = {
                                 for (const pathway of existingPathways) {
                                     await storageManager.deletePathway(pathway.id);
                                 }
-                                // Save each pathway with generated ID
+                                // Save each pathway with generated ID and sort order
                                 for (let i = 0; i < value.length; i++) {
                                     const pathway = value[i];
                                     // Generate ID based on creation time or index
                                     if (!pathway.id) {
                                         pathway.id = pathway.created ? pathway.created.toString() : Date.now().toString() + i;
                                     }
+                                    // Set sort order to maintain array position
+                                    pathway.sortOrder = i;
+                                    console.log(`Saving pathway "${pathway.name}" with sortOrder: ${pathway.sortOrder}`);
                                     await storageManager.savePathway(pathway);
                                 }
                             }

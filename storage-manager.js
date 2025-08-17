@@ -87,7 +87,22 @@ export const storageManager = {
     
     // Pathway-specific methods
     async getPathways() {
-        return this.getAll('pathways');
+        const pathways = await this.getAll('pathways');
+        
+        console.log('STORAGE-MANAGER: Raw pathways before sorting:', pathways.map(p => `${p.name} (sortOrder: ${p.sortOrder})`));
+        
+        // Sort by sortOrder if available, fallback to creation time
+        const sorted = pathways.sort((a, b) => {
+            if (a.sortOrder !== undefined && b.sortOrder !== undefined) {
+                console.log(`STORAGE-MANAGER: Comparing ${a.name} (${a.sortOrder}) vs ${b.name} (${b.sortOrder}) = ${a.sortOrder - b.sortOrder}`);
+                return a.sortOrder - b.sortOrder;
+            }
+            console.log(`STORAGE-MANAGER: Fallback to creation time: ${a.name} vs ${b.name}`);
+            return (a.created || 0) - (b.created || 0);
+        });
+        
+        console.log('STORAGE-MANAGER: Final sorted order:', sorted.map(p => `${p.name} (sortOrder: ${p.sortOrder})`));
+        return sorted;
     },
     
     async getPathway(id) {

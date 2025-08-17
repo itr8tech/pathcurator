@@ -34,8 +34,8 @@ const createEnhancedStorage = () => ({
                 if (keys === null || keys === undefined) {
                     // Get all data
                     const pathwaysFromDB = await storageManager.getPathways();
-                    // Convert to array format that extension expects (indexed by position)
-                    result.pathways = pathwaysFromDB.sort((a, b) => (a.created || 0) - (b.created || 0));
+                    // Use storage-manager's sorting (by sortOrder, fallback to creation time)
+                    result.pathways = pathwaysFromDB;
                     
                     // Get all settings
                     const settings = await storageManager.getAll('settings');
@@ -54,7 +54,7 @@ const createEnhancedStorage = () => ({
                     // Single key
                     if (keys === 'pathways') {
                         const pathwaysFromDB = await storageManager.getPathways();
-                        result.pathways = pathwaysFromDB.sort((a, b) => (a.created || 0) - (b.created || 0));
+                        result.pathways = pathwaysFromDB;
                     } else if (keys === 'githubToken' || keys === 'githubRepo' || keys === 'githubPath') {
                         const config = await storageManager.getGitHubConfig();
                         if (config) {
@@ -71,7 +71,7 @@ const createEnhancedStorage = () => ({
                     for (const key of keys) {
                         if (key === 'pathways') {
                             const pathwaysFromDB = await storageManager.getPathways();
-                            result.pathways = pathwaysFromDB.sort((a, b) => (a.created || 0) - (b.created || 0));
+                            result.pathways = pathwaysFromDB;
                         } else {
                             const value = await storageManager.getSetting(key);
                             if (value !== null) result[key] = value;
@@ -82,7 +82,7 @@ const createEnhancedStorage = () => ({
                     for (const [key, defaultValue] of Object.entries(keys)) {
                         if (key === 'pathways') {
                             const pathwaysFromDB = await storageManager.getPathways();
-                            result.pathways = pathwaysFromDB.sort((a, b) => (a.created || 0) - (b.created || 0));
+                            result.pathways = pathwaysFromDB;
                             if (result.pathways.length === 0) result.pathways = defaultValue;
                         } else {
                             const value = await storageManager.getSetting(key);
@@ -136,7 +136,7 @@ const createEnhancedStorage = () => ({
                             
                             // Get existing pathways to preserve IDs for existing items
                             const existingPathways = await storageManager.getPathways();
-                            const existingSorted = existingPathways.sort((a, b) => (a.created || 0) - (b.created || 0));
+                            const existingSorted = existingPathways;
                             
                             console.log('Current existing pathways:', existingSorted.length);
                             console.log('New pathways to save:', value.length);
@@ -168,7 +168,9 @@ const createEnhancedStorage = () => ({
                                 
                                 pathwaysToKeep.add(pathway.id);
                                 
-                                console.log(`About to save pathway ${i} with ID ${pathway.id}. Steps:`, pathway.steps?.length);
+                                // Set sort order to maintain array position
+                                pathway.sortOrder = i;
+                                console.log(`About to save pathway ${i} with ID ${pathway.id} and sortOrder ${pathway.sortOrder}. Steps:`, pathway.steps?.length);
                                 await storageManager.savePathway(pathway);
                                 console.log(`Successfully saved pathway ${i}`);
                             }
