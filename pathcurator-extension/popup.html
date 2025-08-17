@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Share to PathCurator</title>
+  <style>
+    body {
+      width: 320px;
+      min-height: 200px;
+      margin: 0;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      line-height: 1.4;
+      background: #ffffff;
+      color: #333;
+    }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .logo {
+      width: 24px;
+      height: 24px;
+      margin-right: 8px;
+      background: #0d6efd;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 12px;
+    }
+    
+    .title {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0;
+    }
+    
+    .page-info {
+      margin-bottom: 16px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      border: 1px solid #e9ecef;
+    }
+    
+    .page-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #212529;
+      word-wrap: break-word;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .page-url {
+      font-size: 12px;
+      color: #6c757d;
+      word-wrap: break-word;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-primary {
+      background: #0d6efd;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #0b5ed7;
+      transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background: #5c636a;
+      transform: translateY(-1px);
+    }
+    
+    .btn-outline {
+      background: white;
+      color: #0d6efd;
+      border: 1px solid #0d6efd;
+    }
+    
+    .btn-outline:hover {
+      background: #0d6efd;
+      color: white;
+    }
+    
+    .status {
+      margin-top: 12px;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      text-align: center;
+    }
+    
+    .status.success {
+      background: #d1edff;
+      color: #0c5aa6;
+      border: 1px solid #9ec5fe;
+    }
+    
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    .footer {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid #e0e0e0;
+      text-align: center;
+    }
+    
+    .footer a {
+      color: #6c757d;
+      text-decoration: none;
+      font-size: 12px;
+    }
+    
+    .footer a:hover {
+      color: #0d6efd;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">P</div>
+    <h1 class="title">PathCurator</h1>
+  </div>
+  
+  <div class="page-info">
+    <div class="page-title" id="pageTitle">Loading...</div>
+    <div class="page-url" id="pageUrl">Getting page information...</div>
+  </div>
+  
+  <div class="actions">
+    <button class="btn btn-primary" id="shareBtn">
+      <span class="icon">📚</span>
+      Share to PathCurator
+    </button>
+    
+    <button class="btn btn-outline" id="openDashboardBtn">
+      <span class="icon">🏠</span>
+      Open Dashboard
+    </button>
+    
+    <button class="btn btn-secondary" id="manageExtensionBtn">
+      <span class="icon">⚙️</span>
+      Extension Settings
+    </button>
+  </div>
+  
+  <div class="status hidden" id="statusMessage"></div>
+  
+  <div class="footer">
+    <a href="#" id="helpLink">Need help?</a>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
