@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="auto">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <title>Documentation - PathCurator</title>
+    <script>
+      // Prevent flash of wrong theme by setting theme immediately
+      (function() {
+        const storedTheme = localStorage.getItem('theme');
+        const theme = storedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-bs-theme', theme);
+      })();
+    </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="dashboard.html">
+                <i class="bi bi-signpost-2"></i> PathCurator
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">
+                            <i class="bi bi-grid-3x3-gap"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="docs.html">
+                            <i class="bi bi-book"></i> Docs
+                        </a>
+                    </li>
+                </ul>
+                <button id="theme-toggle" class="btn btn-outline-light btn-sm me-2" title="Toggle Dark Mode" aria-label="Toggle Dark Mode">
+                    <i class="bi bi-moon-stars-fill" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-lg-3">
+                <nav class="sticky-top" style="top: 2rem;">
+                    <div class="card">
+                        <div class="card-header bg-secondary text-white">
+                            <h6 class="mb-0"><i class="bi bi-list-ul"></i> Table of Contents</h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <nav class="nav nav-pills flex-column">
+                                <a class="nav-link" href="#overview">What is PathCurator?</a>
+                                <a class="nav-link" href="#getting-started">Getting Started</a>
+                                <a class="nav-link" href="#pathways">Creating Pathways</a>
+                                <a class="nav-link" href="#steps">Adding Steps</a>
+                                <a class="nav-link" href="#bookmarks">Managing Bookmarks</a>
+                                <a class="nav-link" href="#bookmarklet">Using the Bookmarklet</a>
+                                <a class="nav-link" href="#organization">Organization Features</a>
+                                <a class="nav-link" href="#export">Export Options</a>
+                                <a class="nav-link" href="#github">GitHub Integration</a>
+                                <a class="nav-link" href="#import-export">Import & Export</a>
+                                <a class="nav-link" href="#tips">Tips & Best Practices</a>
+                            </nav>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+            
+            <div class="col-lg-9">
+                <div class="documentation">
+                    <header class="mb-5">
+                        <h1 class="display-4 text-primary">
+                            <i class="bi bi-signpost-2"></i> PathCurator Documentation
+                        </h1>
+                        <p class="lead">Your complete guide to organizing and curating learning pathways</p>
+                    </header>
+
+                    <section id="overview" class="mb-5">
+                        <h2><i class="bi bi-info-circle"></i> What is PathCurator?</h2>
+                        <p>PathCurator is a powerful tool for organizing bookmarks into structured learning pathways. Whether you're building professional development tracks, educational curricula, or research collections, PathCurator helps you create meaningful sequences of resources.</p>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><i class="bi bi-lightbulb"></i> Key Features</h5>
+                                        <ul class="list-unstyled">
+                                            <li><i class="bi bi-check-circle text-success"></i> Structured learning pathways</li>
+                                            <li><i class="bi bi-check-circle text-success"></i> Drag-and-drop organization</li>
+                                            <li><i class="bi bi-check-circle text-success"></i> Rich markdown descriptions</li>
+                                            <li><i class="bi bi-check-circle text-success"></i> Multiple export formats</li>
+                                            <li><i class="bi bi-check-circle text-success"></i> GitHub integration</li>
+                                            <li><i class="bi bi-check-circle text-success"></i> One-click bookmarklet</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><i class="bi bi-person-workspace"></i> Perfect For</h5>
+                                        <ul class="list-unstyled">
+                                            <li><i class="bi bi-arrow-right text-primary"></i> Educators creating course materials</li>
+                                            <li><i class="bi bi-arrow-right text-primary"></i> HR teams building training programs</li>
+                                            <li><i class="bi bi-arrow-right text-primary"></i> Researchers organizing resources</li>
+                                            <li><i class="bi bi-arrow-right text-primary"></i> Students planning their learning</li>
+                                            <li><i class="bi bi-arrow-right text-primary"></i> Teams sharing knowledge</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="getting-started" class="mb-5">
+                        <h2><i class="bi bi-play-circle"></i> Getting Started</h2>
+                        <p>PathCurator runs entirely in your browser - no installation required! Your data is stored locally and can be backed up to GitHub.</p>
+                        
+                        <div class="alert alert-info">
+                            <h5 class="alert-heading"><i class="bi bi-shield-check"></i> Privacy First</h5>
+                            <p class="mb-0">PathCurator is 100% free and runs entirely in your browser. Your data is stored locally with no tracking, ads, or accounts required (except for optional GitHub integration).</p>
+                        </div>
+
+                        <ol class="list-group list-group-numbered">
+                            <li class="list-group-item">Visit the <a href="dashboard.html">Dashboard</a> to see your pathways</li>
+                            <li class="list-group-item">Click <strong>"+ New Pathway"</strong> to create your first pathway</li>
+                            <li class="list-group-item">Add steps and bookmarks to build your learning sequence</li>
+                            <li class="list-group-item">Use the bookmarklet to quickly add resources from any website</li>
+                            <li class="list-group-item">Export and share your pathways when ready</li>
+                        </ol>
+                    </section>
+
+                    <section id="pathways" class="mb-5">
+                        <h2><i class="bi bi-signpost-2"></i> Creating Pathways</h2>
+                        <p>A pathway is a collection of learning steps that guide someone through a topic or skill. Think of it as a structured curriculum or reading list.</p>
+
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Creating a New Pathway</h5>
+                            </div>
+                            <div class="card-body">
+                                <ol>
+                                    <li><strong>Name:</strong> Give your pathway a clear, descriptive title</li>
+                                    <li><strong>Description:</strong> Use markdown to describe the pathway's goals and audience</li>
+                                    <li><strong>Metadata:</strong> Add tags, difficulty level, and estimated time</li>
+                                    <li><strong>Structure:</strong> Plan the logical sequence of steps</li>
+                                </ol>
+                                
+                                <div class="alert alert-tip">
+                                    <strong>Tip:</strong> Good pathway names are specific and actionable, like "Full Stack JavaScript Development" or "Anti-Racism Training for Managers."
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4><i class="bi bi-pencil"></i> Editing Pathways</h4>
+                        <p>Click the edit icon on any pathway to modify its details. You can:</p>
+                        <ul>
+                            <li>Update the title and description</li>
+                            <li>Reorganize steps using drag-and-drop</li>
+                            <li>Add or remove steps</li>
+                            <li>Change pathway metadata</li>
+                        </ul>
+                    </section>
+
+                    <section id="steps" class="mb-5">
+                        <h2><i class="bi bi-ladder"></i> Adding Steps</h2>
+                        <p>Steps break down your pathway into logical sections or modules. Each step contains related bookmarks and resources.</p>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0"><i class="bi bi-list-ol"></i> Step Structure</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-unstyled">
+                                            <li><strong>Title:</strong> Clear section name</li>
+                                            <li><strong>Description:</strong> Learning objectives</li>
+                                            <li><strong>Bookmarks:</strong> Resources for this step</li>
+                                            <li><strong>Order:</strong> Sequence within pathway</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Best Practices</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-unstyled">
+                                            <li>• Keep steps focused on one concept</li>
+                                            <li>• Use progressive difficulty</li>
+                                            <li>• Include 3-7 resources per step</li>
+                                            <li>• Mix different content types</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="mt-4"><i class="bi bi-arrows-move"></i> Reordering Steps</h4>
+                        <p>Use the drag handle (⋮⋮) to reorder steps within a pathway. The new order is automatically saved.</p>
+                    </section>
+
+                    <section id="bookmarks" class="mb-5">
+                        <h2><i class="bi bi-bookmark"></i> Managing Bookmarks</h2>
+                        <p>Bookmarks are the individual resources that make up each step. PathCurator supports various types of content and provides rich metadata.</p>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-gear"></i> Bookmark Properties</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Basic Information</h6>
+                                        <ul>
+                                            <li><strong>Title:</strong> Resource name</li>
+                                            <li><strong>URL:</strong> Web address</li>
+                                            <li><strong>Description:</strong> Summary of content</li>
+                                            <li><strong>Context:</strong> How it fits in the pathway</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Classification</h6>
+                                        <ul>
+                                            <li><strong>Type:</strong> Resource, Tool, Video, Article, Course</li>
+                                            <li><strong>Content Type:</strong> Read, Watch, Listen, Participate</li>
+                                            <li><strong>Required/Bonus:</strong> Essential vs. supplementary</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4><i class="bi bi-tags"></i> Required vs. Bonus Resources</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="alert alert-primary">
+                                    <h6><i class="bi bi-star-fill"></i> Required Resources</h6>
+                                    <p class="mb-0">Essential materials that all learners should complete. These form the core curriculum of your pathway.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="alert alert-info">
+                                    <h6><i class="bi bi-plus-circle"></i> Bonus Resources</h6>
+                                    <p class="mb-0">Optional materials for learners who want to go deeper or explore related topics.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="bookmarklet" class="mb-5">
+                        <h2><i class="bi bi-bookmark-star"></i> Using the Bookmarklet</h2>
+                        <p>The PathCurator bookmarklet lets you instantly add any webpage to your pathways without leaving the site you're browsing.</p>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-download"></i> Installing the Bookmarklet</h5>
+                            </div>
+                            <div class="card-body">
+                                <ol>
+                                    <li>Visit the <a href="bookmarklet.html">Bookmarklet page</a></li>
+                                    <li>Drag the "Add to PathCurator" button to your bookmarks bar</li>
+                                    <li>If your bookmarks bar isn't visible, press <kbd>Ctrl+Shift+B</kbd> (or <kbd>Cmd+Shift+B</kbd> on Mac)</li>
+                                </ol>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-mouse"></i> Using the Bookmarklet</h5>
+                            </div>
+                            <div class="card-body">
+                                <ol>
+                                    <li>Navigate to any webpage you want to add</li>
+                                    <li>Click the "Add to PathCurator" bookmark in your bookmarks bar</li>
+                                    <li>Choose the pathway and step where you want to add the resource</li>
+                                    <li>Edit the title, description, and classification as needed</li>
+                                    <li>Click "Add Bookmark" to save</li>
+                                </ol>
+                                
+                                <div class="alert alert-success">
+                                    <strong>Pro Tip:</strong> The bookmarklet automatically fills in the page title and URL, but you can edit these before saving.
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4><i class="bi bi-shield-check"></i> Privacy & Security</h4>
+                        <p>The bookmarklet only accesses the current page's title and URL. It doesn't read page content or send data to external servers.</p>
+                    </section>
+
+                    <section id="organization" class="mb-5">
+                        <h2><i class="bi bi-arrows-move"></i> Organization Features</h2>
+                        
+                        <h4><i class="bi bi-grip-vertical"></i> Drag-and-Drop Sorting</h4>
+                        <p>PathCurator supports intuitive drag-and-drop organization at multiple levels:</p>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-signpost-2 display-4 text-primary"></i>
+                                        <h6>Pathways</h6>
+                                        <p class="small">Reorder entire pathways on the dashboard</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-ladder display-4 text-primary"></i>
+                                        <h6>Steps</h6>
+                                        <p class="small">Reorganize steps within pathways</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-bookmark display-4 text-primary"></i>
+                                        <h6>Bookmarks</h6>
+                                        <p class="small">Sort resources within steps</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info mt-3">
+                            <strong>Note:</strong> All changes are automatically saved and will persist when you reload the page or sync with GitHub.
+                        </div>
+
+                        <h4 class="mt-4"><i class="bi bi-search"></i> Finding Content</h4>
+                        <p>Use the search functionality to quickly locate pathways, steps, or bookmarks across your entire collection.</p>
+                    </section>
+
+                    <section id="export" class="mb-5">
+                        <h2><i class="bi bi-download"></i> Export Options</h2>
+                        <p>PathCurator offers multiple export formats to suit different needs and platforms.</p>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h5 class="mb-0"><i class="bi bi-file-earmark-code"></i> HTML Export</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>Creates a standalone HTML file with:</p>
+                                        <ul>
+                                            <li>Complete pathway content</li>
+                                            <li>Beautiful formatting</li>
+                                            <li>Print-friendly layout</li>
+                                            <li>No external dependencies</li>
+                                        </ul>
+                                        <p class="text-muted small">Perfect for sharing or archiving</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h5 class="mb-0"><i class="bi bi-file-earmark-spreadsheet"></i> CSV Export</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>Spreadsheet-compatible format with:</p>
+                                        <ul>
+                                            <li>All bookmark metadata</li>
+                                            <li>Structured columns</li>
+                                            <li>Excel/Sheets compatibility</li>
+                                            <li>Easy data analysis</li>
+                                        </ul>
+                                        <p class="text-muted small">Great for reporting and analysis</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> JSON Export</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>Raw data format including:</p>
+                                        <ul>
+                                            <li>Complete pathway structure</li>
+                                            <li>All metadata and settings</li>
+                                            <li>Machine-readable format</li>
+                                            <li>Backup and migration</li>
+                                        </ul>
+                                        <p class="text-muted small">For developers and data portability</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h5 class="mb-0"><i class="bi bi-rss"></i> RSS Export</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>Web feed format for:</p>
+                                        <ul>
+                                            <li>RSS readers</li>
+                                            <li>Feed aggregators</li>
+                                            <li>Automated distribution</li>
+                                            <li>Timeline tracking</li>
+                                        </ul>
+                                        <p class="text-muted small">Subscribe to pathway updates</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="mt-4"><i class="bi bi-gear"></i> Export Levels</h4>
+                        <p>You can export at different levels of granularity:</p>
+                        <ul>
+                            <li><strong>Individual Pathways:</strong> Export a single pathway</li>
+                            <li><strong>Individual Steps:</strong> Export just one step from a pathway</li>
+                            <li><strong>Entire Collection:</strong> Export all your pathways at once</li>
+                        </ul>
+                    </section>
+
+                    <section id="github" class="mb-5">
+                        <h2><i class="bi bi-github"></i> GitHub Integration</h2>
+                        <p>Connect PathCurator to GitHub for backup, collaboration, and sharing across devices.</p>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-link-45deg"></i> Setting Up GitHub Integration</h5>
+                            </div>
+                            <div class="card-body">
+                                <ol>
+                                    <li>Visit <a href="github-settings.html">GitHub Settings</a></li>
+                                    <li>Click "Connect to GitHub" and authorize PathCurator</li>
+                                    <li>Select a repository for storing your pathways</li>
+                                    <li>Choose a branch and file path</li>
+                                    <li>Test the connection</li>
+                                </ol>
+                                
+                                <div class="alert alert-warning">
+                                    <strong>Token Security:</strong> Your GitHub token is stored locally in your browser and never sent to external servers.
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4><i class="bi bi-cloud-upload"></i> Committing Changes</h4>
+                        <p>Use the "Commit to GitHub" button to save your pathways:</p>
+                        <ul>
+                            <li>Manual commits with custom messages</li>
+                            <li>Automatic commits on a schedule</li>
+                            <li>Conflict resolution for simultaneous edits</li>
+                        </ul>
+
+                        <h4><i class="bi bi-cloud-download"></i> Importing from GitHub</h4>
+                        <p>Use "Import from GitHub" to sync changes from other devices:</p>
+                        <ul>
+                            <li>Smart conflict detection</li>
+                            <li>Option to preserve GitHub pathway order</li>
+                            <li>Merge or replace strategies</li>
+                        </ul>
+                    </section>
+
+                    <section id="import-export" class="mb-5">
+                        <h2><i class="bi bi-arrow-left-right"></i> Import & Export</h2>
+                        
+                        <h4><i class="bi bi-upload"></i> Importing Data</h4>
+                        <p>PathCurator can import data from various sources:</p>
+                        
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">JSON File Import</h6>
+                            </div>
+                            <div class="card-body">
+                                <p>Import previously exported PathCurator data:</p>
+                                <ol>
+                                    <li>Click "Import JSON" on the dashboard</li>
+                                    <li>Select your JSON file</li>
+                                    <li>Review conflicts and choose merge strategy</li>
+                                    <li>Confirm import</li>
+                                </ol>
+                            </div>
+                        </div>
+
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">GitHub Import</h6>
+                            </div>
+                            <div class="card-body">
+                                <p>Sync pathways from your GitHub repository:</p>
+                                <ol>
+                                    <li>Ensure GitHub integration is set up</li>
+                                    <li>Click "Import from GitHub"</li>
+                                    <li>Choose how to handle conflicts</li>
+                                    <li>Optionally use GitHub pathway order</li>
+                                </ol>
+                            </div>
+                        </div>
+
+                        <h4><i class="bi bi-arrow-repeat"></i> Conflict Resolution</h4>
+                        <p>When importing data that conflicts with existing pathways, you can:</p>
+                        <ul>
+                            <li><strong>Keep existing:</strong> Don't change local pathways</li>
+                            <li><strong>Use imported:</strong> Replace with imported version</li>
+                            <li><strong>Merge:</strong> Combine both versions intelligently</li>
+                            <li><strong>Import as new:</strong> Add with a modified name</li>
+                        </ul>
+                    </section>
+
+                    <section id="tips" class="mb-5">
+                        <h2><i class="bi bi-lightbulb"></i> Tips & Best Practices</h2>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h5 class="mb-0"><i class="bi bi-star"></i> Content Curation</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-unstyled">
+                                            <li>• Start with learning objectives</li>
+                                            <li>• Mix different content types</li>
+                                            <li>• Include hands-on practice</li>
+                                            <li>• Provide multiple perspectives</li>
+                                            <li>• Update resources regularly</li>
+                                            <li>• Test the pathway yourself</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h5 class="mb-0"><i class="bi bi-people"></i> Collaboration</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-unstyled">
+                                            <li>• Use GitHub for team collaboration</li>
+                                            <li>• Export HTML for easy sharing</li>
+                                            <li>• Include contact information</li>
+                                            <li>• Version your pathways</li>
+                                            <li>• Gather learner feedback</li>
+                                            <li>• Document prerequisites clearly</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-success mt-4">
+                            <h5 class="alert-heading"><i class="bi bi-rocket"></i> Advanced Usage</h5>
+                            <ul class="mb-0">
+                                <li>Use markdown in descriptions for rich formatting</li>
+                                <li>Leverage the bookmarklet for rapid content collection</li>
+                                <li>Export to different formats for different audiences</li>
+                                <li>Set up automated GitHub commits for continuous backup</li>
+                                <li>Use CSV exports for data analysis and reporting</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <footer class="text-center py-4 border-top mt-5">
+                        <p class="text-muted">
+                            <i class="bi bi-heart-fill text-danger"></i> 
+                            Built with care for educators, learners, and knowledge curators
+                        </p>
+                        <p class="text-muted small">
+                            PathCurator is open source and privacy-focused. 
+                            <a href="dashboard.html">Get started now</a> →
+                        </p>
+                    </footer>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Dark mode functionality
+        function getPreferredTheme() {
+            const storedTheme = localStorage.getItem('theme');
+            if (storedTheme) {
+                return storedTheme;
+            }
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            localStorage.setItem('theme', theme);
+            
+            const themeIcon = document.getElementById('theme-toggle').querySelector('i');
+            if (theme === 'dark') {
+                themeIcon.classList.remove('bi-moon-stars-fill');
+                themeIcon.classList.add('bi-sun-fill');
+                document.getElementById('theme-toggle').title = 'Switch to Light Mode';
+            } else {
+                themeIcon.classList.remove('bi-sun-fill');
+                themeIcon.classList.add('bi-moon-stars-fill');
+                document.getElementById('theme-toggle').title = 'Switch to Dark Mode';
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+        }
+
+        // Initialize theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTheme(getPreferredTheme());
+            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+            
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+                if (!localStorage.getItem('theme')) {
+                    setTheme(e.matches ? 'dark' : 'light');
+                }
+            });
+
+            // Smooth scrolling for navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // Update navigation active states on scroll
+            const observerOptions = {
+                rootMargin: '-20% 0% -80% 0%'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // Remove active class from all nav links
+                        document.querySelectorAll('.nav-pills .nav-link').forEach(link => {
+                            link.classList.remove('active');
+                        });
+                        // Add active class to corresponding nav link
+                        const id = entry.target.getAttribute('id');
+                        const correspondingNavLink = document.querySelector(`.nav-pills a[href="#${id}"]`);
+                        if (correspondingNavLink) {
+                            correspondingNavLink.classList.add('active');
+                        }
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all sections
+            document.querySelectorAll('section[id]').forEach(section => {
+                observer.observe(section);
+            });
+        });
+    </script>
+    <script src="accessibility-fixes.js"></script>
+</body>
+</html>
