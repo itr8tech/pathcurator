@@ -55,7 +55,7 @@
                             <h6 class="mb-0"><i class="bi bi-list-ul"></i> Table of Contents</h6>
                         </div>
                         <div class="card-body p-0">
-                            <nav class="nav nav-pills flex-column">
+                            <nav class="nav nav-pills flex-column mt-3">
                                 <a class="nav-link" href="#overview">What is PathCurator?</a>
                                 <a class="nav-link" href="#getting-started">Getting Started</a>
                                 <a class="nav-link" href="#pathways">Creating Pathways</a>
@@ -63,8 +63,10 @@
                                 <a class="nav-link" href="#bookmarks">Managing Bookmarks</a>
                                 <a class="nav-link" href="#bookmarklet">Using the Bookmarklet</a>
                                 <a class="nav-link" href="#organization">Organization Features</a>
+                                <a class="nav-link" href="#auditing">Link Auditing</a>
                                 <a class="nav-link" href="#export">Export Options</a>
                                 <a class="nav-link" href="#github">GitHub Integration</a>
+                                <a class="nav-link" href="#publishing">Publishing to GitHub Pages</a>
                                 <a class="nav-link" href="#import-export">Import & Export</a>
                                 <a class="nav-link" href="#tips">Tips & Best Practices</a>
                             </nav>
@@ -256,6 +258,55 @@
                                 </div>
                             </div>
                         </div>
+
+                        <h4><i class="bi bi-chat-text"></i> Adding Curator Context</h4>
+                        <div class="alert alert-warning-subtle">
+                            <h6><i class="bi bi-lightbulb"></i> Why Curator Context Matters</h6>
+                            <p>While the <strong>description</strong> field captures what the resource contains, the <strong>context</strong> field is where you explain <em>why</em> this specific resource is included in your pathway.</p>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card border-secondary">
+                                    <div class="card-header bg-secondary-subtle">
+                                        <h6 class="mb-0"><i class="bi bi-file-text"></i> Description Field</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="mb-2"><strong>Purpose:</strong> Describes the content itself</p>
+                                        <p class="mb-2"><strong>Example:</strong></p>
+                                        <blockquote class="small text-muted">"A comprehensive guide to React hooks with practical examples and best practices."</blockquote>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-success">
+                                    <div class="card-header bg-success-subtle">
+                                        <h6 class="mb-0"><i class="bi bi-compass"></i> Context Field</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="mb-2"><strong>Purpose:</strong> Explains your curatorial reasoning</p>
+                                        <p class="mb-2"><strong>Example:</strong></p>
+                                        <blockquote class="small text-muted">"Start here to understand hooks before moving to advanced patterns. Focus on useState and useEffect sections."</blockquote>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="bi bi-list-check"></i> Best Practices for Curator Context</h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="mb-0">
+                                    <li><strong>Learning sequence:</strong> "Read this after completing the previous exercise"</li>
+                                    <li><strong>Specific focus:</strong> "Pay special attention to the authentication section"</li>
+                                    <li><strong>Skill level:</strong> "Advanced concepts - skip if you're new to the topic"</li>
+                                    <li><strong>Time investment:</strong> "Quick 5-minute overview before diving deeper"</li>
+                                    <li><strong>Comparison guidance:</strong> "Compare this approach with the method shown in the previous link"</li>
+                                    <li><strong>Practical application:</strong> "Use this as reference while working on your project"</li>
+                                </ul>
+                            </div>
+                        </div>
                     </section>
 
                     <section id="bookmarklet" class="mb-5">
@@ -340,6 +391,198 @@
 
                         <h4 class="mt-4"><i class="bi bi-search"></i> Finding Content</h4>
                         <p>Use the search functionality to quickly locate pathways, steps, or bookmarks across your entire collection.</p>
+                    </section>
+
+                    <section id="auditing" class="mb-5">
+                        <h2><i class="bi bi-shield-check"></i> Link Auditing</h2>
+                        <p>PathCurator's link auditing feature helps you combat "link rot" by automatically checking if your bookmarked resources are still accessible and working correctly.</p>
+
+                        <div class="alert alert-warning">
+                            <h5 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> What is Link Rot?</h5>
+                            <p class="mb-0"><strong>Link rot</strong> occurs when web links become broken over time due to websites going offline, pages being moved, or content being deleted. Studies show that 25-50% of links become broken within just a few years!</p>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-gear"></i> How Link Auditing Works</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>PathCurator's auditing system:</p>
+                                <ul>
+                                    <li><strong>Automatically checks</strong> all bookmark URLs in the background</li>
+                                    <li><strong>Tests HTTP status codes</strong> to verify accessibility</li>
+                                    <li><strong>Detects redirects</strong> and updates URLs when appropriate</li>
+                                    <li><strong>Handles authentication</strong> for sites requiring login</li>
+                                    <li><strong>Respects rate limits</strong> to avoid overwhelming servers</li>
+                                    <li><strong>Runs periodically</strong> to catch new issues as they arise</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <h4><i class="bi bi-play-circle"></i> Running Link Audits</h4>
+                        <p>You can audit your links in several ways:</p>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="bi bi-lightning"></i> Manual Audit</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <ol class="small">
+                                            <li>Visit the <strong>Audit page</strong> from the navigation menu</li>
+                                            <li>Click <strong>"Audit All Links"</strong></li>
+                                            <li>Watch real-time progress as links are checked</li>
+                                            <li>Review results and take action on broken links</li>
+                                        </ol>
+                                        <p class="text-muted small">Perfect for immediate quality checks</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="bi bi-clock"></i> Automatic Audit</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <ol class="small">
+                                            <li>PathCurator automatically audits links every <strong>24 hours</strong></li>
+                                            <li>Runs silently in the background</li>
+                                            <li>Updates link status information</li>
+                                            <li>No user intervention required</li>
+                                        </ol>
+                                        <p class="text-muted small">Keeps your pathways healthy automatically</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="mt-4"><i class="bi bi-list-check"></i> Understanding Audit Results</h4>
+                        <p>Link audit results are displayed with clear visual indicators:</p>
+
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="bi bi-traffic-cone"></i> Status Indicators</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <ul class="list-unstyled">
+                                            <li><i class="bi bi-check-circle text-success"></i> <strong>Available:</strong> Link works perfectly</li>
+                                            <li><i class="bi bi-x-circle text-danger"></i> <strong>Broken:</strong> Link returns an error (404, 500, etc.)</li>
+                                            <li><i class="bi bi-arrow-right-circle text-info"></i> <strong>Redirected:</strong> Link moved to a new location</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <ul class="list-unstyled">
+                                            <li><i class="bi bi-lock text-warning"></i> <strong>Requires Auth:</strong> Needs login to access</li>
+                                            <li><i class="bi bi-shield-check text-secondary"></i> <strong>Exempt:</strong> Known to work despite errors</li>
+                                            <li><i class="bi bi-clock text-muted"></i> <strong>Pending:</strong> Not yet checked</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4><i class="bi bi-tools"></i> Advanced Auditing Features</h4>
+                        
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="bi bi-key"></i> Authentication Support</h6>
+                            </div>
+                            <div class="card-body">
+                                <p>For sites requiring login credentials:</p>
+                                <ol>
+                                    <li>Go to the <strong>Audit page</strong></li>
+                                    <li>Scroll to <strong>"Authentication Domains"</strong></li>
+                                    <li>Add domains with username/password</li>
+                                    <li>PathCurator will authenticate when auditing those sites</li>
+                                </ol>
+                                <div class="alert alert-info small">
+                                    <strong>Security:</strong> Credentials are stored locally in your browser and never sent to external servers.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="bi bi-shield"></i> Exempt Domains</h6>
+                            </div>
+                            <div class="card-body">
+                                <p>Some sites (like Quora or Medium) block automated requests but work fine in browsers. You can mark these as "exempt" to avoid false positives:</p>
+                                <ol>
+                                    <li>In the audit results, find the problematic link</li>
+                                    <li>Click <strong>"Mark as Exempt"</strong></li>
+                                    <li>The link will be excluded from future error reports</li>
+                                </ol>
+                            </div>
+                        </div>
+
+                        <h4 class="mt-4"><i class="bi bi-wrench"></i> Fixing Broken Links</h4>
+                        <p>When auditing reveals broken links, you have several options:</p>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card text-center h-100">
+                                    <div class="card-body">
+                                        <i class="bi bi-pencil display-6 text-primary"></i>
+                                        <h6 class="mt-2">Update URL</h6>
+                                        <p class="small">Edit the bookmark to point to the new location</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card text-center h-100">
+                                    <div class="card-body">
+                                        <i class="bi bi-search display-6 text-primary"></i>
+                                        <h6 class="mt-2">Find Alternative</h6>
+                                        <p class="small">Replace with a similar resource that covers the same content</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card text-center h-100">
+                                    <div class="card-body">
+                                        <i class="bi bi-archive display-6 text-primary"></i>
+                                        <h6 class="mt-2">Use Archive</h6>
+                                        <p class="small">Check Wayback Machine or other web archives for saved copies</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="mt-4"><i class="bi bi-graph-up"></i> Audit Reports</h4>
+                        <p>The audit system provides comprehensive reporting:</p>
+                        <ul>
+                            <li><strong>Overall health score:</strong> Percentage of working links</li>
+                            <li><strong>Breakdown by status:</strong> Count of available, broken, redirected links</li>
+                            <li><strong>Detailed results:</strong> Individual link status with error messages</li>
+                            <li><strong>Last checked times:</strong> When each link was last audited</li>
+                            <li><strong>Export capability:</strong> Generate CSV reports for analysis</li>
+                        </ul>
+
+                        <div class="alert alert-success">
+                            <h6 class="alert-heading"><i class="bi bi-heart"></i> Best Practices for Link Maintenance</h6>
+                            <ul class="mb-0">
+                                <li>Run manual audits before sharing pathways publicly</li>
+                                <li>Set up authentication for private institutional resources</li>
+                                <li>Regularly review and update broken links</li>
+                                <li>Consider using archived versions for historical content</li>
+                                <li>Include multiple sources for critical information</li>
+                                <li>Monitor audit reports to catch issues early</li>
+                            </ul>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading"><i class="bi bi-lightbulb"></i> Pro Tip: Preventive Measures</h6>
+                            <p class="mb-0">When curating pathways, prefer links to:</p>
+                            <ul class="mb-0">
+                                <li><strong>Established institutions:</strong> Universities, government sites, major organizations</li>
+                                <li><strong>Permanent URLs:</strong> DOI links for academic papers, official documentation</li>
+                                <li><strong>Multiple sources:</strong> Include backup links for critical resources</li>
+                                <li><strong>Archive-friendly sites:</strong> Content that's likely to be preserved</li>
+                            </ul>
+                        </div>
                     </section>
 
                     <section id="export" class="mb-5">
@@ -467,6 +710,117 @@
                             <li>Option to preserve GitHub pathway order</li>
                             <li>Merge or replace strategies</li>
                         </ul>
+                    </section>
+
+                    <section id="publishing" class="mb-5">
+                        <h2><i class="bi bi-globe"></i> Publishing to GitHub Pages</h2>
+                        <p>PathCurator can publish your pathways directly to GitHub Pages, making them accessible as beautiful web pages that anyone can visit.</p>
+
+                        <div class="alert alert-info">
+                            <h5 class="alert-heading"><i class="bi bi-lightbulb"></i> What is GitHub Pages Publishing?</h5>
+                            <p class="mb-0">This feature converts your pathways into standalone HTML files and publishes them to your GitHub repository, where GitHub Pages can serve them as live websites. Perfect for sharing learning resources publicly!</p>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-gear"></i> Setting Up GitHub Pages Publishing</h5>
+                            </div>
+                            <div class="card-body">
+                                <ol>
+                                    <li><strong>Enable GitHub Pages:</strong> Go to your repository settings on GitHub and enable Pages for your repository</li>
+                                    <li><strong>Choose Source:</strong> Select "Deploy from a branch" and choose your main/master branch</li>
+                                    <li><strong>Configure PathCurator:</strong> In GitHub Settings, ensure your repository and file paths are set correctly</li>
+                                    <li><strong>Test Connection:</strong> Verify your GitHub integration is working</li>
+                                </ol>
+                            </div>
+                        </div>
+
+                        <h4><i class="bi bi-upload"></i> Publishing Individual Pathways</h4>
+                        <p>From any pathway detail page, you can publish that specific pathway:</p>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="bi bi-file-earmark-code"></i> Publishing Process</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <ol class="small">
+                                            <li>Open any pathway detail page</li>
+                                            <li>Click the "Publish to GitHub" button</li>
+                                            <li>PathCurator creates multiple formats:
+                                                <ul>
+                                                    <li>JSON data file</li>
+                                                    <li>Standalone HTML page</li>
+                                                    <li>CSV spreadsheet</li>
+                                                    <li>RSS feed</li>
+                                                </ul>
+                                            </li>
+                                            <li>All files are committed to GitHub</li>
+                                            <li>GitHub Pages automatically publishes the HTML</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="bi bi-eye"></i> What Gets Published</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="small">
+                                            <li><strong>Beautiful HTML page</strong> with full pathway content</li>
+                                            <li><strong>Responsive design</strong> that works on all devices</li>
+                                            <li><strong>Print-friendly layout</strong> for offline use</li>
+                                            <li><strong>Dark/light mode support</strong></li>
+                                            <li><strong>Required vs. bonus resources</strong> clearly distinguished</li>
+                                            <li><strong>Rich metadata</strong> including descriptions and context</li>
+                                            <li><strong>Professional styling</strong> with Bootstrap</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="mt-4"><i class="bi bi-link-45deg"></i> Accessing Published Pathways</h4>
+                        <p>Once published, your pathways will be available at:</p>
+                        <div class="alert alert-secondary">
+                            <code>https://[username].github.io/[repository]/[pathway-name].html</code>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="bi bi-share"></i> Sharing Published Pathways</h6>
+                            </div>
+                            <div class="card-body">
+                                <p>Published pathways are perfect for:</p>
+                                <ul>
+                                    <li><strong>Course syllabi:</strong> Share with students or learners</li>
+                                    <li><strong>Training materials:</strong> Corporate learning and development</li>
+                                    <li><strong>Research collections:</strong> Academic resource sharing</li>
+                                    <li><strong>Public learning paths:</strong> Open educational resources</li>
+                                    <li><strong>Professional portfolios:</strong> Showcase your expertise</li>
+                                </ul>
+                                
+                                <div class="alert alert-success">
+                                    <strong>Pro Tip:</strong> Published pathways are fully standalone - recipients don't need PathCurator to view them!
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="mt-4"><i class="bi bi-arrow-clockwise"></i> Updating Published Content</h4>
+                        <p>When you update a pathway and publish again:</p>
+                        <ul>
+                            <li>The HTML file is automatically updated</li>
+                            <li>The live GitHub Pages site reflects changes within minutes</li>
+                            <li>All formats (JSON, CSV, RSS) are kept in sync</li>
+                            <li>Previous versions remain in your Git history</li>
+                        </ul>
+
+                        <div class="alert alert-warning">
+                            <h6 class="alert-heading"><i class="bi bi-shield-check"></i> Privacy Considerations</h6>
+                            <p class="mb-0">Published pathways are <strong>public</strong> and accessible to anyone with the URL. Only publish content you're comfortable sharing publicly. For private sharing, use the export features instead.</p>
+                        </div>
                     </section>
 
                     <section id="import-export" class="mb-5">
