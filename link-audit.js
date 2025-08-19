@@ -632,9 +632,35 @@ function viewInArchiveOrg() {
   window.open(archiveUrl, '_blank');
 }
 
+// Helper function to log progress to UI
+function logProgress(message, type = 'info') {
+  const progressLog = $('#progressLog');
+  const timestamp = new Date().toLocaleTimeString();
+  const entry = document.createElement('div');
+  
+  // Set color based on type
+  let color = '';
+  switch(type) {
+    case 'success': color = 'text-success'; break;
+    case 'error': color = 'text-danger'; break;
+    case 'warning': color = 'text-warning'; break;
+    default: color = 'text-secondary';
+  }
+  
+  entry.className = color;
+  entry.innerHTML = `${esc(timestamp)} - ${esc(message)}`;
+  progressLog.appendChild(entry);
+  
+  // Auto-scroll to bottom
+  progressLog.scrollTop = progressLog.scrollHeight;
+  
+  // Also log to console for debugging
+  console.log(message);
+}
+
 // Check all links directly in web app mode
 async function checkAllLinksDirectly() {
-  console.log('Starting direct link checking...');
+  logProgress('Starting link check process...');
   
   // Get all pathways from storage directly
   const pathwaysData = await new Promise((resolve, reject) => {
@@ -647,10 +673,10 @@ async function checkAllLinksDirectly() {
     });
   });
   
-  console.log('Loaded pathways for checking:', pathwaysData.length, 'pathways');
+  logProgress(`Loaded ${pathwaysData.length} pathways for checking`);
   
   if (pathwaysData.length === 0) {
-    console.log('No pathways found to check');
+    logProgress('No pathways found to check', 'warning');
     return;
   }
   
@@ -670,7 +696,7 @@ async function checkAllLinksDirectly() {
     }
   });
   
-  console.log(`Found ${totalLinks} links to check`);
+  logProgress(`Found ${totalLinks} links to check`);
   
   // Check each link
   for (let pIdx = 0; pIdx < pathways.length; pIdx++) {
@@ -683,7 +709,7 @@ async function checkAllLinksDirectly() {
       
       for (let bIdx = 0; bIdx < step.bookmarks.length; bIdx++) {
         const bookmark = step.bookmarks[bIdx];
-        console.log(`Checking link ${totalChecked + 1}/${totalLinks}: ${bookmark.title}`);
+        logProgress(`[${totalChecked + 1}/${totalLinks}] Checking: ${bookmark.title}`);
         
         try {
           // Simple link check using fetch with no-cors mode
@@ -704,8 +730,10 @@ async function checkAllLinksDirectly() {
           bookmark.isValid = true;
           bookmark.available = true; // Mark as available for audit table
           
+          logProgress(`✓ ${bookmark.title} - OK`, 'success');
+          
         } catch (error) {
-          console.log(`Error checking ${bookmark.url}:`, error.message);
+          logProgress(`✗ ${bookmark.title} - ${error.name === 'AbortError' ? 'Timeout' : 'Error'}`, 'error');
           bookmark.lastChecked = Date.now();
           bookmark.status = error.name === 'AbortError' ? 'Timeout' : 'Error';
           bookmark.checkError = error.message;
@@ -731,12 +759,11 @@ async function checkAllLinksDirectly() {
       });
     });
     
-    console.log('Current pathways before save:', currentData.length, 'pathways');
-    console.log('Updated pathways to save:', pathways.length, 'pathways');
+    logProgress('Saving results...');
     
     // Make sure we're not saving empty data
     if (pathways.length === 0 && currentData.length > 0) {
-      console.error('WARNING: Preventing save of empty pathways array!');
+      logProgress('WARNING: Preventing save of empty pathways array!', 'error');
       throw new Error('Refusing to save empty pathways - would lose all data');
     }
     
@@ -749,7 +776,7 @@ async function checkAllLinksDirectly() {
         }
       });
     });
-    console.log(`Link checking complete. Checked ${totalChecked} links and saved data.`);
+    logProgress(`✓ Check complete! Checked ${totalChecked} links and saved data.`, 'success');
     
     // VERIFICATION: Re-read from storage to confirm data was saved
     console.log('=== VERIFYING STORAGE SAVE ===');
@@ -786,16 +813,20 @@ async function checkAllLinksDirectly() {
     console.log('=== END VERIFICATION ===');
     
   } catch (error) {
-    console.error('Error saving link check results:', error);
+    logProgress(`Error saving results: ${error.message}`, 'error');
     throw error; // Re-throw to prevent silent data loss
   }
 }
 
 // Check all links
 async function checkAllLinks() {
-  // Show loading state
+  // Show loading state and progress log
   $('#checkAllLinksBtn').innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Checking...';
   $('#checkAllLinksBtn').disabled = true;
+  
+  // Show and clear the progress log
+  $('#progressLogContainer').classList.remove('d-none');
+  $('#progressLog').innerHTML = '';
 
   try {
     // Check if we're in a browser extension context
@@ -835,11 +866,13 @@ async function checkAllLinks() {
       await checkAllLinksDirectly();
     } else {
       // Extension mode - use background script
+      logProgress('Using background script to check links...');
       await new Promise(resolve => {
         chrome.runtime.sendMessage({
           type: 'auditAllLinks'
         }, resolve);
       });
+      logProgress('Background check complete!', 'success');
     }
 
     // Reload pathways and update table

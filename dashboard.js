@@ -1738,8 +1738,42 @@ async function checkAutoCommitStatus() {
   }
 }
 
+// Check GitHub connection and update UI
+async function updateGitHubButtonVisibility() {
+  try {
+    // Try to load GitHub module and check authentication
+    const GitHubModule = await import('./github-api.js');
+    const GitHub = GitHubModule;
+    
+    const isAuthenticated = await GitHub.isAuthenticated();
+    const config = await GitHub.getGitHubConfig();
+    
+    // Show buttons only if connected and configured
+    const showButtons = isAuthenticated && config.repository;
+    
+    const commitBtn = $('#commitToGithub');
+    const importBtn = $('#importFromGithub');
+    
+    if (commitBtn) {
+      commitBtn.style.display = showButtons ? '' : 'none';
+    }
+    
+    if (importBtn) {
+      importBtn.style.display = showButtons ? '' : 'none';
+    }
+  } catch (error) {
+    // If GitHub module fails to load or auth check fails, hide buttons
+    console.log('GitHub integration not available:', error.message);
+    const commitBtn = $('#commitToGithub');
+    const importBtn = $('#importFromGithub');
+    
+    if (commitBtn) commitBtn.style.display = 'none';
+    if (importBtn) importBtn.style.display = 'none';
+  }
+}
+
 // events
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded',async ()=>{
   // Initialize theme based on preference
   setTheme(getPreferredTheme());
   
@@ -1747,6 +1781,9 @@ document.addEventListener('DOMContentLoaded',()=>{
   
   // Check auto-commit status
   checkAutoCommitStatus();
+  
+  // Check GitHub connection and update button visibility
+  await updateGitHubButtonVisibility();
   
   // Add Pathway button
   $('#addPathway').addEventListener('click', createNewPathway);
