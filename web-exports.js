@@ -685,15 +685,12 @@ pre code {
       let totalRequired = 0;
       let completedRequired = 0;
       
-      document.querySelectorAll('.activity-container').forEach(container => {
-        const badgeArea = container.querySelector('.bookmark-badges');
-        const requiredBadge = badgeArea.querySelector('.badge.text-bg-primary');
-        if (requiredBadge && requiredBadge.textContent.trim() === 'Required') {
-          totalRequired++;
-          const launchBtn = container.querySelector('.launch-btn');
-          if (launchBtn && links[launchBtn.getAttribute('href')]) {
-            completedRequired++;
-          }
+      // Find all launch buttons with primary style (required items)
+      document.querySelectorAll('.launch-btn.btn-primary').forEach(btn => {
+        totalRequired++;
+        const url = btn.getAttribute('href');
+        if (links[url]) {
+          completedRequired++;
         }
       });
       
@@ -748,11 +745,15 @@ pre code {
       
       document.querySelectorAll('.launch-btn').forEach(function(btn) {
         const url = btn.getAttribute('href');
-        const container = btn.closest('.activity-container');
-        const badge = container.querySelector('.launched-badge');
         
-        if (links[url] && badge) {
-          badge.classList.remove('d-none');
+        if (links[url]) {
+          // Show individual bookmark launched badges
+          const bookmarkLaunchedBadges = document.querySelectorAll('.bookmark-launched');
+          bookmarkLaunchedBadges.forEach(function(badge) {
+            if (badge.getAttribute('data-url') === url) {
+              badge.style.display = 'inline-block';
+            }
+          });
           
           if (justLaunchedUrl && url === justLaunchedUrl) {
             setTimeout(function() { btn.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
@@ -975,11 +976,13 @@ pre code {
     // Track launch function for onclick handlers
     function trackLaunch(element) {
       const url = element.getAttribute('href');
-      const stepIndex = element.getAttribute('data-step');
-      const bookmarkIndex = element.getAttribute('data-bookmark');
       
+      // Save to localStorage and update UI
       markAsLaunched(url);
       updateStepBadges();
+      
+      // Don't prevent default - let the link open
+      return true;
     }
     
     // Update step badges with launched counts
@@ -987,7 +990,6 @@ pre code {
       const links = loadLaunchedLinks();
       
       document.querySelectorAll('.step-container').forEach(function(stepContainer, stepIndex) {
-        const launchedBadge = stepContainer.querySelector('.badge.text-bg-success');
         const stepContent = stepContainer.querySelector('.step-content');
         const launchButtons = stepContent.querySelectorAll('.launch-btn');
         
@@ -997,42 +999,32 @@ pre code {
           if (links[url]) {
             launchedCount++;
             
-            // Update individual bookmark badge
-            const bookmarkContainer = btn.closest('.activity');
-            const badgeArea = bookmarkContainer.querySelector('.bookmark-badges');
-            const existingLaunchedBadge = badgeArea.querySelector('.badge.text-bg-success');
-            
-            if (!existingLaunchedBadge) {
-              badgeArea.innerHTML += '<span class="badge text-bg-success ms-1">✓ Launched</span>';
-            }
+            // Show individual bookmark launched badges
+            const bookmarkLaunchedBadges = document.querySelectorAll('.bookmark-launched[data-url="' + CSS.escape(url) + '"]');
+            bookmarkLaunchedBadges.forEach(function(badge) {
+              badge.style.display = 'inline-block';
+            });
           }
         });
         
-        // Update or add launched badge in step header
-        const badgeContainer = stepContainer.querySelector('.summary-content .ms-3');
-        const existingLaunchedBadge = badgeContainer.querySelector('.text-bg-success');
-        
-        if (launchedCount > 0) {
-          if (existingLaunchedBadge) {
-            existingLaunchedBadge.textContent = launchedCount + ' Launched';
+        // Update launched badge in step header
+        const launchedBadge = stepContainer.querySelector('.launched-badge[data-step="' + stepIndex + '"]');
+        if (launchedBadge) {
+          if (launchedCount > 0) {
+            launchedBadge.textContent = launchedCount + ' Launched';
+            launchedBadge.style.display = 'inline-block';
           } else {
-            badgeContainer.innerHTML += '<span class="badge text-bg-success">' + launchedCount + ' Launched</span>';
+            launchedBadge.style.display = 'none';
           }
-        } else if (existingLaunchedBadge) {
-          existingLaunchedBadge.remove();
         }
       });
     }
     
     // Set up event listeners for launch buttons
     function setupLaunchTracking() {
-      document.querySelectorAll('.launch-btn').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-          const url = this.getAttribute('href');
-          markAsLaunched(url);
-          updateStepBadges();
-        });
-      });
+      // We're using onclick handlers instead of event listeners
+      // Just make sure the functions are available
+      window.trackLaunch = trackLaunch;
     }
     
     function scrollToTop() {
@@ -1229,7 +1221,8 @@ pre code {
         const typeIsBonus = b.type && b.type.toLowerCase() === 'bonus';
         return b.required === false || typeIsBonus;
       }).length : 0;
-      const launchedCount = step.bookmarks ? step.bookmarks.filter(b => b.visited).length : 0;
+      // Note: visited tracking was removed from the main app, only tracked in exported HTML via localStorage
+      const launchedCount = 0;
       
       html += `
     <section class="step-container border rounded shadow-sm mb-3" id="${stepId}">
@@ -1244,7 +1237,7 @@ pre code {
             <div class="ms-3 d-flex align-items-center gap-2">
               ${requiredCount > 0 ? `<span class="badge text-bg-primary">${requiredCount} Required</span>` : ''}
               ${bonusCount > 0 ? `<span class="badge text-bg-secondary">${bonusCount} Bonus</span>` : ''}
-              ${launchedCount > 0 ? `<span class="badge text-bg-success">${launchedCount} Launched</span>` : ''}
+              <span class="badge text-bg-success launched-badge" data-step="${stepIndex}" style="display: none;">0 Launched</span>
             </div>
           </div>
         </div>
@@ -1301,10 +1294,10 @@ pre code {
                       
                       <div class="mb-2">
                         <span class="badge text-bg-primary">Required</span>
-                        ${bookmark.visited ? '<span class="badge text-bg-success ms-1">✓ Launched</span>' : ''}
+                        <span class="badge text-bg-success ms-1 bookmark-launched" data-url="${esc(bookmark.url)}" style="display: none;">✓ Launched</span>
                       </div>
                       <a href="${esc(bookmark.url)}" target="_blank" rel="noopener noreferrer"
-                         class="btn btn-primary"
+                         class="btn btn-primary launch-btn"
                          onclick="trackLaunch(this)"
                          data-step="${stepIndex}" 
                          data-bookmark="${bookmark.originalIndex}"
@@ -1350,10 +1343,10 @@ pre code {
                       
                       <div class="mb-2">
                         <span class="badge text-bg-secondary">Bonus</span>
-                        ${bookmark.visited ? '<span class="badge text-bg-success ms-1">✓ Launched</span>' : ''}
+                        <span class="badge text-bg-success ms-1 bookmark-launched" data-url="${esc(bookmark.url)}" style="display: none;">✓ Launched</span>
                       </div>
                       <a href="${esc(bookmark.url)}" target="_blank" rel="noopener noreferrer"
-                         class="btn btn-outline-secondary"
+                         class="btn btn-outline-secondary launch-btn"
                          onclick="trackLaunch(this)"
                          data-step="${stepIndex}" 
                          data-bookmark="${bookmark.originalIndex}"

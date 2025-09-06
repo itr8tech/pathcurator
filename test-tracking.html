@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Tracking</title>
+  <script>
+    // Simple test of localStorage tracking
+    const LAUNCHED_LINKS_KEY = 'test_launched_links';
+    
+    function loadLaunchedLinks() {
+      try {
+        const stored = localStorage.getItem(LAUNCHED_LINKS_KEY);
+        return stored ? JSON.parse(stored) : {};
+      } catch (e) {
+        console.error('Error loading launched links:', e);
+        return {};
+      }
+    }
+    
+    function saveLaunchedLinks(links) {
+      try {
+        localStorage.setItem(LAUNCHED_LINKS_KEY, JSON.stringify(links));
+      } catch (e) {
+        console.error('Error saving launched links:', e);
+      }
+    }
+    
+    function trackLaunch(element) {
+      const url = element.getAttribute('href');
+      console.log('Tracking launch for:', url);
+      
+      const links = loadLaunchedLinks();
+      links[url] = Date.now();
+      saveLaunchedLinks(links);
+      
+      // Update display
+      updateDisplay();
+      
+      // Let the link open
+      return true;
+    }
+    
+    function updateDisplay() {
+      const links = loadLaunchedLinks();
+      const count = Object.keys(links).length;
+      document.getElementById('count').textContent = count;
+      document.getElementById('data').textContent = JSON.stringify(links, null, 2);
+    }
+    
+    window.onload = function() {
+      updateDisplay();
+    };
+  </script>
+</head>
+<body>
+  <h1>Test Link Tracking</h1>
+  <p>Launched links: <span id="count">0</span></p>
+  
+  <p>
+    <a href="https://example.com/1" onclick="trackLaunch(this)" target="_blank">Link 1</a><br>
+    <a href="https://example.com/2" onclick="trackLaunch(this)" target="_blank">Link 2</a><br>
+    <a href="https://example.com/3" onclick="trackLaunch(this)" target="_blank">Link 3</a>
+  </p>
+  
+  <h2>LocalStorage Data:</h2>
+  <pre id="data">{}</pre>
+  
+  <button onclick="localStorage.clear(); updateDisplay();">Clear Storage</button>
+</body>
+</html>

@@ -985,8 +985,8 @@ function exportStepAsJson(stepIndex) {
   });
 }
 
-// Audit links in a pathway
-async function auditPathwayLinks() {
+// Audit links in a pathway - REMOVED: Using link-audit.html instead
+/* async function auditPathwayLinks() {
   // Save open state
   const openStates = saveOpenState();
   
@@ -1140,7 +1140,7 @@ async function auditPathwayLinks() {
       }
     }, 5000);
   }
-}
+} */
 
 
 // Event delegation for all actions
@@ -1643,7 +1643,6 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#exportCsv').addEventListener('click', exportAsCsv);
   $('#exportJson').addEventListener('click', exportAsJson);
   $('#commitToGithub').addEventListener('click', publishPathwayToGitHub);
-  $('#auditLinks').addEventListener('click', auditPathwayLinks);
   
   // Add expand/collapse all steps handlers
   $('#expandAllSteps').addEventListener('click', expandAllSteps);
