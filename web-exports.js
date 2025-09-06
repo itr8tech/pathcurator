@@ -477,12 +477,22 @@ details.step-container .step-content {
 
 
 .badge.launched-badge {
-    color: white;
     margin-left: 0.25rem;
 }
 
 .launched-badge.d-none {
     display: none !important;
+}
+
+/* Light/Dark mode adaptive launched badge styling */
+.launched-badge-style {
+    background-color: var(--bs-dark);
+    color: var(--bs-light);
+}
+
+[data-bs-theme="dark"] .launched-badge-style {
+    background-color: var(--bs-light);
+    color: var(--bs-dark);
 }
 
 #scrollTopBtn {
@@ -685,8 +695,8 @@ pre code {
       let totalRequired = 0;
       let completedRequired = 0;
       
-      // Find all launch buttons with primary style (required items)
-      document.querySelectorAll('.launch-btn.btn-primary').forEach(btn => {
+      // Find all launch buttons for required items (they have data-required="true")
+      document.querySelectorAll('.launch-btn[data-required="true"]').forEach(btn => {
         totalRequired++;
         const url = btn.getAttribute('href');
         if (links[url]) {
@@ -1237,17 +1247,12 @@ pre code {
             <div class="ms-3 d-flex align-items-center gap-2">
               ${requiredCount > 0 ? `<span class="badge text-bg-primary">${requiredCount} Required</span>` : ''}
               ${bonusCount > 0 ? `<span class="badge text-bg-secondary">${bonusCount} Bonus</span>` : ''}
-              <span class="badge text-bg-success launched-badge" data-step="${stepIndex}" style="display: none;">0 Launched</span>
+              <span class="badge launched-badge launched-badge-style" data-step="${stepIndex}" style="display: none;">0 Launched</span>
             </div>
           </div>
         </div>
       </summary>
       <div class="step-content p-4" id="${stepId}-content" aria-labelledby="${stepId}-heading">
-        ${step.objective ? `<div class="step-objective bg-body-tertiary p-3 rounded mb-4 border-start border-4 border-primary">
-          <h6 class="fw-semibold mb-2"><i class="fa fa-target me-2"></i>Objective</h6>
-          <div class="fst-italic">${markdownToHTML(step.objective)}</div>
-        </div>` : ''}
-        
         <div class="row">`;
       
       if (step.bookmarks && step.bookmarks.length > 0) {
@@ -1270,7 +1275,7 @@ pre code {
         if (requiredBookmarks.length > 0) {
           html += `
           <div class="col-12 mb-4">
-            <h4 class="h5 mb-3 text-primary-emphasis border-bottom border-primary-subtle pb-2">
+            <h4 class="h5 mb-3 border-bottom pb-2" style="color: #4a7c59; border-color: #4a7c59;">
               <i class="fa fa-bookmark-solid me-2"></i>Required Resources
             </h4>
             <div class="row">`;
@@ -1282,25 +1287,26 @@ pre code {
             
             html += `
               <article class="col-md-12 mb-3">
-                <div class="d-flex border border-primary-subtle rounded bg-primary-subtle">
-                  <div class="d-flex align-items-center justify-content-center p-3 bg-primary rounded-start" aria-hidden="true" style="width: 60px;">
+                <div class="d-flex border rounded bg-secondary-subtle" style="border-color: #4a7c59;">
+                  <div class="d-flex align-items-center justify-content-center p-3 rounded-start flex-shrink-0" aria-hidden="true" style="width: 60px; min-width: 60px; max-width: 60px; background-color: #4a7c59;">
                     <i class="fa ${icon} text-white" aria-hidden="true"></i>
                   </div>
                   <div class="flex-grow-1 p-3">
                     <div class="activity">
+                      <div class="mb-2">
+                        <span class="badge text-white" style="background-color: #4a7c59;">Required</span>
+                        <span class="badge ms-1 bookmark-launched launched-badge-style" data-url="${esc(bookmark.url)}" style="display: none;">✓ Launched</span>
+                      </div>
                       <h3 class="h5 mb-2">${esc(bookmark.title)}</h3>
                       ${bookmark.description ? `<div class="mb-2 text-body-secondary">${markdownToHTML(bookmark.description)}</div>` : ''}
                       ${bookmark.context ? `<div class="fst-italic border-start border-3 border-primary-subtle ps-3 mb-2">${markdownToHTML(bookmark.context)}</div>` : ''}
                       
-                      <div class="mb-2">
-                        <span class="badge text-bg-primary">Required</span>
-                        <span class="badge text-bg-success ms-1 bookmark-launched" data-url="${esc(bookmark.url)}" style="display: none;">✓ Launched</span>
-                      </div>
                       <a href="${esc(bookmark.url)}" target="_blank" rel="noopener noreferrer"
-                         class="btn btn-primary launch-btn"
+                         class="btn launch-btn" style="background-color: #384a6b; border-color: #384a6b; color: white;"
                          onclick="trackLaunch(this)"
                          data-step="${stepIndex}" 
                          data-bookmark="${bookmark.originalIndex}"
+                         data-required="true"
                          aria-label="Launch ${esc(bookmark.title)} (opens in new tab)">
                         Launch <i class="fa fa-external-link-alt ms-1" aria-hidden="true"></i>
                       </a>
@@ -1332,24 +1338,25 @@ pre code {
             html += `
               <article class="col-md-12 mb-3">
                 <div class="d-flex border border-secondary-subtle rounded bg-secondary-subtle">
-                  <div class="d-flex align-items-center justify-content-center p-3 bg-secondary rounded-start" aria-hidden="true" style="width: 60px;">
+                  <div class="d-flex align-items-center justify-content-center p-3 bg-secondary rounded-start flex-shrink-0" aria-hidden="true" style="width: 60px; min-width: 60px; max-width: 60px;">
                     <i class="fa ${icon} text-white" aria-hidden="true"></i>
                   </div>
                   <div class="flex-grow-1 p-3">
                     <div class="activity">
+                      <div class="mb-2">
+                        <span class="badge text-bg-secondary">Bonus</span>
+                        <span class="badge ms-1 bookmark-launched launched-badge-style" data-url="${esc(bookmark.url)}" style="display: none;">✓ Launched</span>
+                      </div>
                       <h3 class="h5 mb-2">${esc(bookmark.title)}</h3>
                       ${bookmark.description ? `<div class="mb-2 text-body-secondary">${markdownToHTML(bookmark.description)}</div>` : ''}
                       ${bookmark.context ? `<div class="fst-italic border-start border-3 border-secondary-subtle ps-3 mb-2">${markdownToHTML(bookmark.context)}</div>` : ''}
                       
-                      <div class="mb-2">
-                        <span class="badge text-bg-secondary">Bonus</span>
-                        <span class="badge text-bg-success ms-1 bookmark-launched" data-url="${esc(bookmark.url)}" style="display: none;">✓ Launched</span>
-                      </div>
                       <a href="${esc(bookmark.url)}" target="_blank" rel="noopener noreferrer"
-                         class="btn btn-outline-secondary launch-btn"
+                         class="btn launch-btn" style="background-color: #384a6b; border-color: #384a6b; color: white;"
                          onclick="trackLaunch(this)"
                          data-step="${stepIndex}" 
                          data-bookmark="${bookmark.originalIndex}"
+                         data-required="false"
                          aria-label="Launch ${esc(bookmark.title)} (opens in new tab)">
                         Launch <i class="fa fa-external-link-alt ms-1" aria-hidden="true"></i>
                       </a>
