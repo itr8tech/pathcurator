@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="auto">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <title>GitHub Personal Access Token Guide - PathCurator</title>
+    <script>
+      // Prevent flash of wrong theme by setting theme immediately
+      (function() {
+        const storedTheme = localStorage.getItem('theme');
+        const theme = storedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-bs-theme', theme);
+      })();
+    </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+            background-color: var(--bs-primary);
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .mockup-container {
+            border: 2px solid var(--bs-gray-300);
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 20px 0;
+            background-color: var(--bs-gray-100);
+        }
+        
+        .github-header {
+            background-color: #24292e;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 20px;
+        }
+        
+        .github-profile {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #6366f1;
+            position: relative;
+        }
+        
+        .settings-sidebar {
+            background-color: var(--bs-gray-100);
+            width: 250px;
+            padding: 20px;
+            border-right: 1px solid var(--bs-gray-300);
+            min-height: 300px;
+        }
+        
+        .settings-item {
+            padding: 8px 12px;
+            margin: 4px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--bs-body-color);
+        }
+        
+        .settings-item:hover {
+            background-color: var(--bs-gray-200);
+        }
+        
+        .settings-item.active {
+            background-color: var(--bs-primary);
+            color: white;
+        }
+        
+        .highlight-arrow {
+            color: var(--bs-danger);
+            font-size: 1.5rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .direct-link-box {
+            background: linear-gradient(135deg, var(--bs-primary-bg-subtle) 0%, var(--bs-info-bg-subtle) 100%);
+            border: 2px solid var(--bs-primary);
+            border-radius: 10px;
+            padding: 25px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .token-example {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background-color: var(--bs-gray-200);
+            padding: 10px 15px;
+            border-radius: 6px;
+            word-break: break-all;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="dashboard.html">
+                <i class="bi bi-signpost-2"></i> PathCurator
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">
+                            <i class="bi bi-grid-3x3-gap"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="docs.html">
+                            <i class="bi bi-book"></i> Docs
+                        </a>
+                    </li>
+                </ul>
+                <button id="theme-toggle" class="btn btn-outline-light btn-sm me-2" title="Toggle Dark Mode" aria-label="Toggle Dark Mode">
+                    <i class="bi bi-moon-stars-fill" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="docs.html">Documentation</a></li>
+                <li class="breadcrumb-item active" aria-current="page">GitHub Personal Access Token Guide</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <header class="mb-5">
+                    <h1 class="display-4 text-primary">
+                        <i class="bi bi-key-fill"></i> Creating a GitHub Personal Access Token
+                    </h1>
+                    <p class="lead">Step-by-step visual guide to create a fine-grained personal access token for PathCurator</p>
+                </header>
+
+                <div class="alert alert-success">
+                    <h5 class="alert-heading"><i class="bi bi-shield-check"></i> Why Fine-grained Tokens?</h5>
+                    <p class="mb-0">Fine-grained personal access tokens are more secure than classic tokens because you can:</p>
+                    <ul class="mb-0 mt-2">
+                        <li>Limit access to specific repositories</li>
+                        <li>Set expiration dates</li>
+                        <li>Grant only the permissions your app needs</li>
+                    </ul>
+                </div>
+
+                <div class="direct-link-box">
+                    <h3><i class="bi bi-lightning-fill"></i> Quick Start</h3>
+                    <p class="mb-3">Already logged into GitHub? Use this direct link:</p>
+                    <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" class="btn btn-primary btn-lg">
+                        <i class="bi bi-box-arrow-up-right"></i> Create Token on GitHub
+                    </a>
+                    <p class="text-muted mt-3 mb-0">Or follow the detailed steps below if you need help</p>
+                </div>
+
+                <h2 class="mt-5 mb-4"><i class="bi bi-list-ol"></i> Step-by-Step Instructions</h2>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="mb-0"><span class="step-number">1</span> Click Your Profile Picture</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Look in the top-right corner of any GitHub page for your profile picture or avatar.</p>
+                        <div class="mockup-container">
+                            <div class="github-header">
+                                <div class="github-profile"></div>
+                                <span class="highlight-arrow ms-2">← Click here!</span>
+                            </div>
+                        </div>
+                        <p class="text-muted">A dropdown menu will appear with various options.</p>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="mb-0"><span class="step-number">2</span> Select "Settings"</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>From the dropdown menu, click on <strong>"Settings"</strong>.</p>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> The Settings option is typically near the bottom of the dropdown menu.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="mb-0"><span class="step-number">3</span> Find "Developer Settings"</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Scroll down to the <strong>very bottom</strong> of the left sidebar to find "Developer settings".</p>
+                        <div class="mockup-container d-flex">
+                            <div class="settings-sidebar">
+                                <div class="settings-item">Public profile</div>
+                                <div class="settings-item">Account</div>
+                                <div class="settings-item">Appearance</div>
+                                <div class="settings-item">Accessibility</div>
+                                <div class="settings-item text-center text-muted">
+                                    <i class="bi bi-arrow-down"></i> Scroll down <i class="bi bi-arrow-down"></i>
+                                </div>
+                                <div class="settings-item">Billing and plans</div>
+                                <div class="settings-item">Emails</div>
+                                <div class="settings-item active">
+                                    Developer settings
+                                    <span class="highlight-arrow float-end">←</span>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 p-4">
+                                <p class="text-muted">Main settings content area</p>
+                            </div>
+                        </div>
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i> <strong>Don't give up!</strong> "Developer settings" is at the very bottom of a long list. Keep scrolling!
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="mb-0"><span class="step-number">4</span> Navigate to Personal Access Tokens</h3>
+                    </div>
+                    <div class="card-body">
+                        <ol>
+                            <li>Click on <strong>"Personal access tokens"</strong> in the left sidebar</li>
+                            <li>Select <strong>"Fine-grained tokens"</strong> (not "Tokens (classic)")</li>
+                        </ol>
+                        <div class="alert alert-info">
+                            <i class="bi bi-lightbulb"></i> Fine-grained tokens offer better security through more precise permission control.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="mb-0"><span class="step-number">5</span> Generate New Token</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Click the green <span class="btn btn-success btn-sm">Generate new token</span> button.</p>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="mb-0"><span class="step-number">6</span> Configure Token Details</h3>
+                    </div>
+                    <div class="card-body">
+                        <h5><i class="bi bi-pencil"></i> Basic Information</h5>
+                        <div class="bg-light p-3 rounded mb-3">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Token name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" value="PathCurator Token" readonly>
+                                <small class="text-muted">Give it a descriptive name so you remember what it's for</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Expiration <span class="text-danger">*</span></label>
+                                <select class="form-select">
+                                    <option>30 days (recommended)</option>
+                                    <option>60 days</option>
+                                    <option>90 days</option>
+                                    <option>Custom</option>
+                                </select>
+                                <small class="text-muted">Shorter expiration times are more secure</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Description</label>
+                                <textarea class="form-control" rows="2" readonly>Token for PathCurator GitHub integration</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="mb-0"><span class="step-number">7</span> Select Repository Access</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Choose which repositories this token can access:</p>
+                        <div class="list-group">
+                            <label class="list-group-item">
+                                <input class="form-check-input me-2" type="radio" name="repo-access">
+                                <strong>All repositories</strong>
+                                <br>
+                                <small class="text-muted">Easier setup, but less secure</small>
+                            </label>
+                            <label class="list-group-item">
+                                <input class="form-check-input me-2" type="radio" name="repo-access" checked>
+                                <strong>Selected repositories</strong> <span class="badge bg-success ms-2">Recommended</span>
+                                <br>
+                                <small class="text-muted">More secure - only grant access to repos you'll use with PathCurator</small>
+                            </label>
+                        </div>
+                        <div class="alert alert-success mt-3">
+                            <i class="bi bi-shield-check"></i> <strong>Best Practice:</strong> Select only the repository where you'll store your PathCurator data.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="mb-0"><span class="step-number">8</span> Set Permissions</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>For PathCurator, you'll need these <strong>Repository permissions</strong>:</p>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Permission</th>
+                                        <th>Level</th>
+                                        <th>Why It's Needed</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>Contents</code></td>
+                                        <td><span class="badge bg-warning">Read & Write</span></td>
+                                        <td>To read and save your pathway data</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>Metadata</code></td>
+                                        <td><span class="badge bg-info">Read</span></td>
+                                        <td>To access repository information</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i> <strong>Security Tip:</strong> Only grant the minimum permissions required. PathCurator only needs Contents and Metadata access.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="mb-0"><span class="step-number">9</span> Generate the Token</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Scroll to the bottom of the page and click the green <span class="btn btn-success">Generate token</span> button.</p>
+                    </div>
+                </div>
+
+                <div class="card mb-4 border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h3 class="mb-0"><span class="step-number">10</span> Copy Your Token!</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-danger">
+                            <h5 class="alert-heading"><i class="bi bi-exclamation-octagon"></i> Critical Step!</h5>
+                            <p><strong>Copy your token immediately!</strong> You won't be able to see it again after leaving this page.</p>
+                        </div>
+                        
+                        <p>Your token will look similar to this:</p>
+                        <div class="token-example">
+                            github_pat_11EXAMPLE1234567890abcdefghijklmnopqrstuvwxyz_EXAMPLE
+                        </div>
+                        
+                        <h5 class="mt-4"><i class="bi bi-clipboard-check"></i> What to do with your token:</h5>
+                        <ol>
+                            <li>Copy it to your clipboard</li>
+                            <li>Go back to PathCurator's GitHub Settings page</li>
+                            <li>Paste it in the "Personal Access Token" field</li>
+                            <li>Save it in a password manager for future reference</li>
+                        </ol>
+                        
+                        <div class="alert alert-info mt-3">
+                            <i class="bi bi-safe"></i> <strong>Security:</strong> Treat this token like a password. Never share it publicly or commit it to code.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-success">
+                    <h4 class="alert-heading"><i class="bi bi-check-circle-fill"></i> You're Done!</h4>
+                    <p>You've successfully created a GitHub Personal Access Token. Now you can:</p>
+                    <ul class="mb-0">
+                        <li>Return to <a href="github-settings.html">PathCurator's GitHub Settings</a></li>
+                        <li>Enter your token to enable GitHub integration</li>
+                        <li>Start backing up your pathways to GitHub</li>
+                    </ul>
+                </div>
+
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-question-circle"></i> Frequently Asked Questions</h5>
+                        
+                        <h6 class="mt-3">How do I find my tokens later?</h6>
+                        <p>Navigate to: Settings → Developer settings → Personal access tokens → Fine-grained tokens</p>
+                        
+                        <h6 class="mt-3">What if my token expires?</h6>
+                        <p>You'll need to generate a new token and update it in PathCurator's settings.</p>
+                        
+                        <h6 class="mt-3">Is it safe to use tokens?</h6>
+                        <p>Yes! Tokens are safer than passwords because:</p>
+                        <ul>
+                            <li>They have limited permissions</li>
+                            <li>They can be revoked without changing your password</li>
+                            <li>They can have expiration dates</li>
+                        </ul>
+                        
+                        <h6 class="mt-3">What if I think my token was compromised?</h6>
+                        <p>Immediately revoke it in your GitHub settings and generate a new one.</p>
+                    </div>
+                </div>
+
+                <div class="text-center mt-5">
+                    <a href="docs.html" class="btn btn-outline-primary me-2">
+                        <i class="bi bi-arrow-left"></i> Back to Documentation
+                    </a>
+                    <a href="github-settings.html" class="btn btn-primary">
+                        Continue to GitHub Settings <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Dark mode functionality
+        function getPreferredTheme() {
+            const storedTheme = localStorage.getItem('theme');
+            if (storedTheme) {
+                return storedTheme;
+            }
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            localStorage.setItem('theme', theme);
+            
+            const themeIcon = document.getElementById('theme-toggle').querySelector('i');
+            if (theme === 'dark') {
+                themeIcon.classList.remove('bi-moon-stars-fill');
+                themeIcon.classList.add('bi-sun-fill');
+                document.getElementById('theme-toggle').title = 'Switch to Light Mode';
+            } else {
+                themeIcon.classList.remove('bi-sun-fill');
+                themeIcon.classList.add('bi-moon-stars-fill');
+                document.getElementById('theme-toggle').title = 'Switch to Dark Mode';
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+        }
+
+        // Initialize theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTheme(getPreferredTheme());
+            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+            
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+                if (!localStorage.getItem('theme')) {
+                    setTheme(e.matches ? 'dark' : 'light');
+                }
+            });
+        });
+    </script>
+    <script src="accessibility-fixes.js"></script>
+</body>
+</html>
