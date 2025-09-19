@@ -361,28 +361,32 @@ async function getRepositories() {
 }
 
 // Get branches for a specific repository
-async function getBranches(repo) {
+async function getBranches(repo, owner = null) {
   try {
     const token = await getAccessToken();
     if (!token) throw new Error('Not authenticated with GitHub');
-    
-    const config = await getGitHubConfig();
-    const username = config.username;
-    
-    if (!username) throw new Error('GitHub username not found');
+
+    // Use provided owner or fall back to username from config
+    let repoOwner = owner;
+    if (!repoOwner) {
+      const config = await getGitHubConfig();
+      repoOwner = config.username;
+    }
+
+    if (!repoOwner) throw new Error('Repository owner not found');
     if (!repo) throw new Error('Repository name is required');
-    
-    const response = await fetch(`${GITHUB_API_URL}/repos/${username}/${repo}/branches`, {
+
+    const response = await fetch(`${GITHUB_API_URL}/repos/${repoOwner}/${repo}/branches`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/vnd.github.v3+json'
       }
     });
-    
+
     if (!response.ok) {
-      throw new Error(`Failed to fetch branches: ${response.status} ${response.statusText}`);
+      throw new Error(`Failed to fetch branches: ${response.status}`);
     }
-    
+
     return response.json();
   } catch (error) {
     console.error('Error fetching branches:', error);
@@ -400,11 +404,13 @@ async function commitFile(content, message, customFilepath = null) {
     if (!token) throw new Error('Not authenticated with GitHub');
     
     const config = await getGitHubConfig();
-    const { username, repository, branch } = config;
+    const { username, repository, branch, repositoryOwner } = config;
     // Use custom filepath if provided, otherwise use the one from config
     const filepath = customFilepath || config.filepath;
-    
-    if (!username) throw new Error('GitHub username not found');
+    // Use repositoryOwner if available, otherwise fall back to username
+    const owner = repositoryOwner || username;
+
+    if (!owner) throw new Error('Repository owner not found');
     if (!repository) throw new Error('Repository not selected');
     if (!filepath) throw new Error('File path not specified');
     
@@ -414,7 +420,7 @@ async function commitFile(content, message, customFilepath = null) {
     // Check if file already exists to get its SHA
     let sha = null;
     try {
-      const fileResponse = await fetch(`${GITHUB_API_URL}/repos/${username}/${repository}/contents/${filepath}?ref=${branch}`, {
+      const fileResponse = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repository}/contents/${filepath}?ref=${branch}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/vnd.github.v3+json'
@@ -442,7 +448,7 @@ async function commitFile(content, message, customFilepath = null) {
     }
     
     // Commit the file
-    const response = await fetch(`${GITHUB_API_URL}/repos/${username}/${repository}/contents/${filepath}`, {
+    const response = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repository}/contents/${filepath}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -501,11 +507,21 @@ async function logout() {
 async function configureRepository(repository, branch, filepath) {
   try {
     const config = await getGitHubConfig();
-    
-    if (repository) config.repository = repository;
+
+    if (repository) {
+      // Parse owner and repo name if provided in owner/repo format
+      if (repository.includes('/')) {
+        const [owner, repoName] = repository.split('/');
+        config.repositoryOwner = owner;
+        config.repository = repoName;
+      } else {
+        // Just repository name, owner will default to username
+        config.repository = repository;
+      }
+    }
     if (branch) config.branch = branch;
     if (filepath) config.filepath = filepath;
-    
+
     await saveGitHubConfig(config);
     return config;
   } catch (error) {
@@ -521,15 +537,17 @@ async function getFileContent(filepath = null) {
     if (!token) throw new Error('Not authenticated with GitHub');
     
     const config = await getGitHubConfig();
-    const { username, repository, branch } = config;
+    const { username, repository, branch, repositoryOwner } = config;
     // Use provided filepath or default from config
     const path = filepath || config.filepath;
-    
-    if (!username) throw new Error('GitHub username not found');
+    // Use repositoryOwner if available, otherwise fall back to username
+    const owner = repositoryOwner || username;
+
+    if (!owner) throw new Error('Repository owner not found');
     if (!repository) throw new Error('Repository not selected');
     if (!path) throw new Error('File path not specified');
-    
-    const response = await fetch(`${GITHUB_API_URL}/repos/${username}/${repository}/contents/${path}?ref=${branch}`, {
+
+    const response = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repository}/contents/${path}?ref=${branch}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/vnd.github.v3+json'

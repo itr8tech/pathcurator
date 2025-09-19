@@ -220,8 +220,11 @@ async function loadRepositories() {
     repositorySelect.innerHTML = '<option value="">Select a repository</option>';
     repositories.forEach(repo => {
       const option = document.createElement('option');
-      option.value = repo.name;
+      // Store both owner and name as value, separated by '/'
+      option.value = `${repo.owner.login}/${repo.name}`;
       option.textContent = repo.name;
+      // Store owner as data attribute for later use
+      option.setAttribute('data-owner', repo.owner.login);
       repositorySelect.appendChild(option);
     });
     
@@ -243,11 +246,20 @@ async function loadBranches(repository) {
   try {
     // Clear branch select
     branchSelect.innerHTML = '<option value="main">main</option>';
-    
+
     if (!repository) return;
-    
-    // Get branches
-    const branches = await GitHub.getBranches(repository);
+
+    // Parse owner and repo name from the value (format: owner/repo)
+    let owner, repoName;
+    if (repository.includes('/')) {
+      [owner, repoName] = repository.split('/');
+    } else {
+      // Fallback for backward compatibility
+      repoName = repository;
+    }
+
+    // Get branches - pass both owner and repo name if available
+    const branches = await GitHub.getBranches(repoName, owner);
     
     // Populate branch select
     branchSelect.innerHTML = '';
@@ -279,8 +291,21 @@ async function loadCurrentConfig() {
     
     // Set repository if available
     if (config.repository) {
-      repositorySelect.value = config.repository;
-      await loadBranches(config.repository);
+      // Check if we have owner info stored
+      let valueToSet = config.repository;
+      if (config.repositoryOwner) {
+        valueToSet = `${config.repositoryOwner}/${config.repository}`;
+      }
+
+      // Try to find and select the repository
+      const options = repositorySelect.options;
+      for (let i = 0; i < options.length; i++) {
+        if (options[i].value === valueToSet || options[i].textContent === config.repository) {
+          repositorySelect.value = options[i].value;
+          await loadBranches(options[i].value);
+          break;
+        }
+      }
     }
     
     // Set branch if available
