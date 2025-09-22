@@ -15,6 +15,7 @@ PathCurator helps educators and learners organize educational resources into str
 - **Link Tracking**: Track which links you've already visited/launched
 - **Link Auditing**: Verify the status of links in your pathways
 - **GitHub Integration**: Save and share pathways via GitHub repositories
+- **Automatic Versioning**: Track pathway changes with automatic version numbering
 
 ## Getting Started
 
@@ -58,6 +59,40 @@ PathCurator allows you to store and synchronize your pathways using GitHub repos
 - Your GitHub token is stored securely with encryption in your browser's local storage
 - PathCurator only requests the minimum permissions needed (public_repo scope)
 - For maximum security, consider using a token with an expiration date and regularly rotating it
+
+## Version Numbering
+
+PathCurator automatically tracks changes to your pathways with a comprehensive versioning system:
+
+### How Versioning Works
+
+- **Automatic Version Generation**: Every change to a pathway triggers a new version number
+- **Content-Based Hashing**: Version numbers are generated based on the actual content of your pathway, ensuring unique identifiers for each state
+- **Change Detection**: Any modification to the following elements will trigger a version change:
+  - Pathway name or description
+  - Adding, removing, or modifying steps
+  - Adding, removing, or modifying bookmarks within steps
+  - Updating content warnings or acknowledgments
+  - Changing bookmark URLs, titles, descriptions, or context
+
+### Version Format
+
+Versions are formatted as `HASH-DATE` where:
+- **HASH**: A unique 6-character identifier derived from the pathway content
+- **DATE**: The date when the version was created (YYYY-MM-DD format)
+
+Example: `a3b2c1-2024-09-22`
+
+### Version History
+
+- PathCurator maintains a history of the last 10 versions for each pathway
+- Each version entry includes:
+  - Version hash
+  - Timestamp of the change
+  - Number of steps and bookmarks at that version
+  - Username of the person who made the change (when GitHub integration is enabled)
+- Version history is preserved when exporting and importing pathways
+- Previous versions remain accessible in your Git history when using GitHub integration
 
 ## Development
 

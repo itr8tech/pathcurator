@@ -68,6 +68,7 @@
                                 <a class="nav-link" href="#github">GitHub Integration</a>
                                 <a class="nav-link" href="#publishing">Publishing to GitHub Pages</a>
                                 <a class="nav-link" href="#import-export">Import & Export</a>
+                                <a class="nav-link" href="#versioning">Version Numbering</a>
                                 <a class="nav-link" href="#tips">Tips & Best Practices</a>
                             </nav>
                         </div>
@@ -404,56 +405,26 @@
 
                         <div class="card mb-4">
                             <div class="card-header">
-                                <h5 class="mb-0"><i class="bi bi-gear"></i> How Link Auditing Works</h5>
+                                <h4 class="mb-0"><i class="bi bi-gear"></i> How Link Auditing Works</h4>
                             </div>
                             <div class="card-body">
                                 <p>PathCurator's auditing system:</p>
                                 <ul>
-                                    <li><strong>Automatically checks</strong> all bookmark URLs in the background</li>
-                                    <li><strong>Tests HTTP status codes</strong> to verify accessibility</li>
-                                    <li><strong>Detects redirects</strong> and updates URLs when appropriate</li>
-                                    <li><strong>Handles authentication</strong> for sites requiring login</li>
-                                    <li><strong>Respects rate limits</strong> to avoid overwhelming servers</li>
-                                    <li><strong>Runs periodically</strong> to catch new issues as they arise</li>
+                                    <li><strong>Checks</strong> all bookmark URLs.</li>
+                                    <li><strong>Tests HTTP status codes</strong> to verify availablity.</li>
+                                    <li><strong>Detects redirects</strong> and updates URLs when appropriate.</li>
+                                    <li><strong>Report dashboard</strong> showing status of links and shortcuts to update.</li>
+                                    <!-- <li><strong>Handles authentication</strong> for sites requiring login</li> -->
+                                    <!-- <li><strong>Respects rate limits</strong> to avoid overwhelming servers</li> -->
+                                    <!-- <li><strong>Runs periodically</strong> to catch new issues as they arise</li> -->
                                 </ul>
-                            </div>
-                        </div>
-
-                        <h4><i class="bi bi-play-circle"></i> Running Link Audits</h4>
-                        <p>You can audit your links in several ways:</p>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="card h-100">
-                                    <div class="card-header">
-                                        <h6 class="mb-0"><i class="bi bi-lightning"></i> Manual Audit</h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <ol class="small">
-                                            <li>Visit the <strong>Audit page</strong> from the navigation menu</li>
-                                            <li>Click <strong>"Audit All Links"</strong></li>
-                                            <li>Watch real-time progress as links are checked</li>
-                                            <li>Review results and take action on broken links</li>
-                                        </ol>
-                                        <p class="text-muted small">Perfect for immediate quality checks</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="card h-100">
-                                    <div class="card-header">
-                                        <h6 class="mb-0"><i class="bi bi-clock"></i> Automatic Audit</h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <ol class="small">
-                                            <li>PathCurator automatically audits links every <strong>24 hours</strong></li>
-                                            <li>Runs silently in the background</li>
-                                            <li>Updates link status information</li>
-                                            <li>No user intervention required</li>
-                                        </ol>
-                                        <p class="text-muted small">Keeps your pathways healthy automatically</p>
-                                    </div>
-                                </div>
+                                <h5><i class="bi bi-play-circle"></i> Running Link Audits</h5>
+                                <ol class="small">
+                                    <li>Visit the <strong>Audit page</strong> from the navigation menu</li>
+                                    <li>Click <strong>"Audit All Links"</strong></li>
+                                    <li>Watch real-time progress as links are checked</li>
+                                    <li>Review results and take action on broken links</li>
+                                </ol>
                             </div>
                         </div>
 
@@ -480,26 +451,6 @@
                                             <li><i class="bi bi-clock text-muted"></i> <strong>Pending:</strong> Not yet checked</li>
                                         </ul>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <h4><i class="bi bi-tools"></i> Advanced Auditing Features</h4>
-                        
-                        <div class="card mb-3">
-                            <div class="card-header">
-                                <h6 class="mb-0"><i class="bi bi-key"></i> Authentication Support</h6>
-                            </div>
-                            <div class="card-body">
-                                <p>For sites requiring login credentials:</p>
-                                <ol>
-                                    <li>Go to the <strong>Audit page</strong></li>
-                                    <li>Scroll to <strong>"Authentication Domains"</strong></li>
-                                    <li>Add domains with username/password</li>
-                                    <li>PathCurator will authenticate when auditing those sites</li>
-                                </ol>
-                                <div class="alert alert-info small">
-                                    <strong>Security:</strong> Credentials are stored locally in your browser and never sent to external servers.
                                 </div>
                             </div>
                         </div>
@@ -558,16 +509,16 @@
                             <li><strong>Breakdown by status:</strong> Count of available, broken, redirected links</li>
                             <li><strong>Detailed results:</strong> Individual link status with error messages</li>
                             <li><strong>Last checked times:</strong> When each link was last audited</li>
-                            <li><strong>Export capability:</strong> Generate CSV reports for analysis</li>
+                            <!-- <li><strong>Export capability:</strong> Generate CSV reports for analysis</li> -->
                         </ul>
 
                         <div class="alert alert-success">
                             <h6 class="alert-heading"><i class="bi bi-heart"></i> Best Practices for Link Maintenance</h6>
                             <ul class="mb-0">
                                 <li>Run manual audits before sharing pathways publicly</li>
-                                <li>Set up authentication for private institutional resources</li>
+                                <!-- <li>Set up authentication for private institutional resources</li> -->
                                 <li>Regularly review and update broken links</li>
-                                <li>Consider using archived versions for historical content</li>
+                                <li>Consider using <a href="https://archive.org/web/web-advancedsearch.php" target="_blank">archived versions</a> for historical content</li>
                                 <li>Include multiple sources for critical information</li>
                                 <li>Monitor audit reports to catch issues early</li>
                             </ul>
@@ -872,6 +823,93 @@
                             <li><strong>Merge:</strong> Combine both versions intelligently</li>
                             <li><strong>Import as new:</strong> Add with a modified name</li>
                         </ul>
+                    </section>
+
+                    <section id="versioning" class="mb-5">
+                        <h2><i class="bi bi-clock-history"></i> Version Numbering</h2>
+                        <p>PathCurator automatically tracks changes to your pathways with a comprehensive versioning system, ensuring you can always track when and how your content has evolved.</p>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-gear"></i> How Versioning Works</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul>
+                                    <li><strong>Automatic Version Generation:</strong> Every change to a pathway triggers a new version number automatically</li>
+                                    <li><strong>Content-Based Hashing:</strong> Version numbers are generated based on the actual content of your pathway, ensuring unique identifiers for each state</li>
+                                    <li><strong>No Manual Intervention Required:</strong> Versioning happens seamlessly in the background whenever you save changes</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-pencil-square"></i> What Triggers a Version Change</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>Any modification to the following elements will automatically trigger a new version:</p>
+                                <ul>
+                                    <li>Pathway name or description</li>
+                                    <li>Adding, removing, or modifying steps</li>
+                                    <li>Adding, removing, or modifying bookmarks within steps</li>
+                                    <li>Updating content warnings or acknowledgments</li>
+                                    <li>Changing bookmark URLs, titles, descriptions, or context</li>
+                                    <li>Reordering steps or bookmarks</li>
+                                    <li>Updating step objectives or descriptions</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-tag"></i> Version Format</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>Versions are formatted as <code>HASH-DATE</code> where:</p>
+                                <ul>
+                                    <li><strong>HASH:</strong> A unique 6-character identifier derived from the pathway content</li>
+                                    <li><strong>DATE:</strong> The date when the version was created (YYYY-MM-DD format)</li>
+                                </ul>
+                                <div class="alert alert-light">
+                                    <strong>Example:</strong> <code>a3b2c1-2024-09-22</code>
+                                </div>
+                                <p class="text-muted">The hash ensures that even if multiple changes happen on the same day, each version remains unique.</p>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-journal-text"></i> Version History</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>PathCurator maintains a comprehensive history of your pathway changes:</p>
+                                <ul>
+                                    <li><strong>Last 10 Versions:</strong> The system keeps the most recent 10 versions of each pathway</li>
+                                    <li><strong>Version Entry Details:</strong> Each version entry includes:
+                                        <ul>
+                                            <li>Version hash</li>
+                                            <li>Timestamp of the change</li>
+                                            <li>Number of steps at that version</li>
+                                            <li>Number of bookmarks at that version</li>
+                                            <li>Username of the person who made the change (when GitHub integration is enabled)</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>Export Preservation:</strong> Version history is preserved when exporting and importing pathways</li>
+                                    <li><strong>Git History:</strong> Previous versions remain accessible in your Git history when using GitHub integration</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading"><i class="bi bi-info-circle"></i> Version Benefits</h6>
+                            <ul class="mb-0">
+                                <li>Track the evolution of your pathways over time</li>
+                                <li>Identify when specific changes were made</li>
+                                <li>Collaborate with confidence knowing changes are tracked</li>
+                                <li>Maintain accountability with user attribution (when using GitHub)</li>
+                                <li>Review pathway growth through step and bookmark counts</li>
+                            </ul>
+                        </div>
                     </section>
 
                     <section id="tips" class="mb-5">
