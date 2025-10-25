@@ -101,6 +101,8 @@ This web application is built using standard web technologies:
 - Bootstrap 5 for styling
 - Font Awesome for icons
 
+See [Repository Guidelines](AGENTS.md) for project structure, coding style, and testing expectations.
+
 ## License
 
 This project is licensed under the terms specified in the [LICENSE](LICENSE) file.
